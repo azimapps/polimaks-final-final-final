@@ -27,6 +27,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { FlagIcon } from 'src/components/flag-icon';
+import { Iconify } from 'src/components/iconify';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import data from 'src/data/stanok-pechat.json';
@@ -36,6 +37,8 @@ type Machine = {
   language_code: string;
   name: string;
 };
+
+const STORAGE_KEY = 'stanok-pechat';
 
 const LANGUAGE_OPTIONS = [
   { code: 'cn', labelKey: 'languages.cn', country: 'CN' },
@@ -50,16 +53,39 @@ export default function PechatPage() {
 
   const title = `${t('pechatPage.title')} | ${CONFIG.appName}`;
 
-  const initialData = useMemo<Machine[]>(() => data as Machine[], []);
+  const initialData = useMemo<Machine[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          return JSON.parse(stored) as Machine[];
+        } catch {
+          // fall through to seed data
+        }
+      }
+    }
+    return data as Machine[];
+  }, []);
 
   const [items, setItems] = useState<Machine[]>(initialData);
   const [editing, setEditing] = useState<Machine | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Machine | null>(null);
   const [form, setForm] = useState({ language_code: '', name: '' });
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<Machine | null>(null);
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+
+  const setItemsAndPersist = (updater: (prev: Machine[]) => Machine[]) => {
+    setItems((prev) => {
+      const next = updater(prev);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  };
 
   const openAdd = () => {
     setEditing(null);
@@ -76,22 +102,21 @@ export default function PechatPage() {
   const handleSave = () => {
     // TODO: replace with real API calls once backend is ready (persist to server)
     if (editing) {
-      setItems((prev) =>
-        prev.map((it) => (it.id === editing.id ? { ...it, ...form } : it))
-      );
+      setItemsAndPersist((prev) => prev.map((it) => (it.id === editing.id ? { ...it, ...form } : it)));
     } else {
-      setItems((prev) => [...prev, { id: uuidv4(), ...form }]);
+      setItemsAndPersist((prev) => [...prev, { id: uuidv4(), ...form }]);
     }
     dialog.onFalse();
   };
 
   const handleDelete = () => {
     // TODO: replace with real API calls once backend is ready (persist to server)
-    if (editing) {
-      setItems((prev) => prev.filter((it) => it.id !== editing.id));
+    if (pendingDelete) {
+      setItemsAndPersist((prev) => prev.filter((it) => it.id !== pendingDelete.id));
     }
     deleteDialog.onFalse();
-    dialog.onFalse();
+    setPendingDelete(null);
+    setEditing(null);
   };
 
   const canSave = form.language_code.trim() && form.name.trim();
@@ -136,7 +161,7 @@ export default function PechatPage() {
                     <TableCell sx={{ width: 200 }}>{t('pechatPage.languageCode')}</TableCell>
                     <TableCell>{t('pechatPage.name')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
-                      {t('pechatPage.edit')}
+                      {t('pechatPage.actions')}
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -185,7 +210,7 @@ export default function PechatPage() {
                         </TableCell>
                         <TableCell align="right">
                           <IconButton onClick={(e) => openMenu(e, item)}>
-                            <i className="ri-more-2-fill" />
+                            <Iconify icon="eva:more-vertical-fill" />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -228,8 +253,8 @@ export default function PechatPage() {
           </Stack>
           <Divider sx={{ my: 2 }} />
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {/* TODO: replace static JSON with real API endpoints when backend is available */}
-            Data lives in memory for now; hook this up to your API later.
+            {/* TODO: replace static JSON/local storage with real API endpoints when backend is available */}
+            Data is saved in your browser for now; hook this up to your API later.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -266,7 +291,7 @@ export default function PechatPage() {
         onEdit={() => menuItem && openEdit(menuItem)}
         onDelete={() => {
           if (menuItem) {
-            setEditing(menuItem);
+            setPendingDelete(menuItem);
             deleteDialog.onTrue();
           }
         }}
@@ -294,8 +319,8 @@ function ActionsMenu({ anchorEl, open, onClose, onEdit, onDelete, labels }: Acti
           onClose();
         }}
       >
-        <i className="ri-edit-line" />
-        &nbsp;{labels.edit}
+        <Iconify icon="eva:edit-2-fill" width={18} height={18} style={{ marginRight: 8 }} />
+        {labels.edit}
       </MenuItem>
       <MenuItem
         onClick={() => {
@@ -304,8 +329,8 @@ function ActionsMenu({ anchorEl, open, onClose, onEdit, onDelete, labels }: Acti
         }}
         sx={{ color: 'error.main' }}
       >
-        <i className="ri-delete-bin-line" />
-        &nbsp;{labels.delete}
+        <Iconify icon="solar:trash-bin-trash-bold" width={18} height={18} style={{ marginRight: 8 }} />
+        {labels.delete}
       </MenuItem>
     </Menu>
   );

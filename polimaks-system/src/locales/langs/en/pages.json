@@ -14,15 +14,15 @@
   },
   "pechatPage": {
     "title": "Printing machines",
-    "subtitle": "Manage language codes and names for each press. Data is local for now (TODO: connect API).",
-    "languageCode": "Language code",
-    "name": "Name",
-    "search": "Search by code or name",
+    "subtitle": "Manage country codes and names for each press. Data is local for now (TODO: connect API).",
+    "languageCode": "Country",
+    "name": "Machine name",
     "add": "Add machine",
     "edit": "Edit machine",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "actions": "Actions",
     "deleteConfirm": "Delete this machine?",
     "deleteHint": "You can add it back later.",
     "empty": "No printing machines yet."
@@ -92,10 +92,10 @@
     }
   },
   "languages": {
-    "cn": "Chinese",
-    "de": "German",
-    "uz": "Uzbek",
-    "ru": "Russian",
-    "en": "English"
+    "cn": "China",
+    "de": "Germany",
+    "uz": "Uzbekistan",
+    "ru": "Russia",
+    "en": "United Kingdom"
   }
 }

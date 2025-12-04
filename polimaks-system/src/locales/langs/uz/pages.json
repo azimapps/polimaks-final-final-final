@@ -14,15 +14,15 @@
   },
   "pechatPage": {
     "title": "Bosma stanoklari",
-    "subtitle": "Har bir stanok uchun til kodi va nom. Hozircha ma'lumotlar lokal (TODO: API ulash).",
-    "languageCode": "Til kodi",
-    "name": "Nomi",
-    "search": "Kod yoki nom bo'yicha qidirish",
+    "subtitle": "Har bir stanok uchun davlat kodi va nomi. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "languageCode": "Davlat",
+    "name": "Stanok nomi",
     "add": "Stanok qo'shish",
     "edit": "Stanokni tahrirlash",
     "save": "Saqlash",
     "cancel": "Bekor qilish",
     "delete": "O'chirish",
+    "actions": "Amallar",
     "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha stanoklar yo'q."
@@ -91,25 +91,11 @@
       }
     }
   },
-  "pechatPage": {
-    "title": "Bosma stanoklari",
-    "subtitle": "Har bir stanok uchun til kodi va nom. Hozircha ma'lumotlar lokal (TODO: API ulash).",
-    "languageCode": "Til kodi",
-    "name": "Nomi",
-    "add": "Stanok qo'shish",
-    "edit": "Stanokni tahrirlash",
-    "save": "Saqlash",
-    "cancel": "Bekor qilish",
-    "delete": "O'chirish",
-    "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
-    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
-    "empty": "Hozircha stanoklar yo'q."
-  },
   "languages": {
-    "cn": "Xitoy tili",
-    "de": "Nemis tili",
-    "uz": "O'zbek tili",
-    "ru": "Rus tili",
-    "en": "Ingliz tili"
+    "cn": "Xitoy",
+    "de": "Nemis",
+    "uz": "O'zbekiston",
+    "ru": "Rossiya",
+    "en": "Angliya"
   }
 }
