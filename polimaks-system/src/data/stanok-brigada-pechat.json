@@ -1,0 +1,12 @@
+[
+  {
+    "id": "brigada-pechat-1",
+    "name": "Pechat Alpha",
+    "leader": "Otabek Nurmatov",
+    "people": [
+      { "id": "bp-1", "name": "Otabek Nurmatov", "position": "Shift lead" },
+      { "id": "bp-2", "name": "Dilshod Karimov", "position": "Press operator" },
+      { "id": "bp-3", "name": "Murod Saipov", "position": "Helper" }
+    ]
+  }
+]

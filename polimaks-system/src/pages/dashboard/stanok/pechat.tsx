@@ -287,8 +287,8 @@ export default function PechatPage() {
             deleteDialog.onTrue();
           }
         }}
-        onOpenBrigada={() => navigate(paths.dashboard.stanok.brigada)}
-        onOpenMaterials={() => navigate(paths.dashboard.stanok.materials)}
+        onOpenBrigada={() => menuItem && navigate(paths.dashboard.stanok.brigadaPechat(menuItem.id))}
+        onOpenMaterials={() => navigate(paths.dashboard.stanok.materialsPechat)}
         labels={{
           edit: t('pechatPage.edit'),
           delete: t('pechatPage.delete'),

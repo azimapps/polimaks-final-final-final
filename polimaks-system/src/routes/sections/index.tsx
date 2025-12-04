@@ -32,8 +32,12 @@ const StanokIndexPage = lazy(() => import('src/pages/dashboard/stanok'));
 const PechatPage = lazy(() => import('src/pages/dashboard/stanok/pechat'));
 const ReskaPage = lazy(() => import('src/pages/dashboard/stanok/reska'));
 const LaminatsiyaPage = lazy(() => import('src/pages/dashboard/stanok/laminatsiya'));
-const BrigadaPage = lazy(() => import('src/pages/dashboard/stanok/brigada'));
-const MaterialsPage = lazy(() => import('src/pages/dashboard/stanok/materials'));
+const BrigadaPechatPage = lazy(() => import('src/pages/dashboard/stanok/brigada-pechat'));
+const BrigadaReskaPage = lazy(() => import('src/pages/dashboard/stanok/brigada-reska'));
+const BrigadaLaminatsiyaPage = lazy(() => import('src/pages/dashboard/stanok/brigada-laminatsiya'));
+const MaterialsPechatPage = lazy(() => import('src/pages/dashboard/stanok/materials-pechat'));
+const MaterialsReskaPage = lazy(() => import('src/pages/dashboard/stanok/materials-reska'));
+const MaterialsLaminatsiyaPage = lazy(() => import('src/pages/dashboard/stanok/materials-laminatsiya'));
 // ----------------------------------------------------------------------
 
 function SuspenseOutlet() {
@@ -83,8 +87,12 @@ export const routesSection: RouteObject[] = [
           { path: 'pechat', element: <PechatPage /> },
           { path: 'reska', element: <ReskaPage /> },
           { path: 'laminatsiya', element: <LaminatsiyaPage /> },
-          { path: 'brigada', element: <BrigadaPage /> },
-          { path: 'materials', element: <MaterialsPage /> },
+          { path: 'pechat/:machineId/brigada', element: <BrigadaPechatPage /> },
+          { path: 'reska/:machineId/brigada', element: <BrigadaReskaPage /> },
+          { path: 'laminatsiya/:machineId/brigada', element: <BrigadaLaminatsiyaPage /> },
+          { path: 'materials-pechat', element: <MaterialsPechatPage /> },
+          { path: 'materials-reska', element: <MaterialsReskaPage /> },
+          { path: 'materials-laminatsiya', element: <MaterialsLaminatsiyaPage /> },
         ],
       },
     ],

@@ -12,6 +12,28 @@
     },
     "cta": "Boshlash uchun yon menyudan bo'limni tanlang."
   },
+  "brigadaPage": {
+    "title": "Brigadalar / guruhlar",
+    "subtitle": "Smena guruhlari, odamlar va ularning yetakchisini boshqaring. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "name": "Guruh nomi",
+    "people": "Odamlar",
+    "peopleEmpty": "Hali odamlar qo'shilmagan.",
+    "personName": "To'liq ism",
+    "personPosition": "Lavozim",
+    "addPerson": "Odam qo'shish",
+    "leader": "Yetakchi",
+    "leaderHint": "Yetakchini ro'yxatdagi odamlar orasidan tanlang.",
+    "unnamed": "Nomlanmagan",
+    "add": "Guruh qo'shish",
+    "edit": "Guruhni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu guruhni o'chirishni xohlaysizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha guruhlar yo'q.",
+    "actions": "Amallar"
+  },
   "pechatPage": {
     "title": "Bosma stanoklari",
     "subtitle": "Har bir stanok uchun davlat kodi va nomi. Hozircha ma'lumotlar lokal (TODO: API ulash).",
@@ -99,5 +121,39 @@
     "uz": "O'zbekiston",
     "ru": "Rossiya",
     "en": "Angliya"
+  },
+  "reskaPage": {
+    "title": "Kesish stanoklari",
+    "subtitle": "Har bir stanok uchun davlat kodi va nomi. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "languageCode": "Davlat",
+    "name": "Stanok nomi",
+    "add": "Reska qo'shish",
+    "edit": "Reskani tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "actions": "Amallar",
+    "brigada": "Brigada / guruhlar",
+    "materials": "Mahsulotlar",
+    "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha stanoklar yo'q."
+  },
+  "laminatsiyaPage": {
+    "title": "Laminatsiya stanoklari",
+    "subtitle": "Har bir stanok uchun davlat kodi va nomi. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "languageCode": "Davlat",
+    "name": "Stanok nomi",
+    "add": "Laminatsiya qo'shish",
+    "edit": "Laminatsiyani tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "actions": "Amallar",
+    "brigada": "Brigada / guruhlar",
+    "materials": "Mahsulotlar",
+    "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha stanoklar yo'q."
   }
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "brigada-laminatsiya-1",
+    "name": "Laminatsiya Alpha",
+    "leader": "Ismoil Saidov",
+    "people": [
+      { "id": "bl-1", "name": "Ismoil Saidov", "position": "Shift lead" },
+      { "id": "bl-2", "name": "Malika Sodikova", "position": "Lamination operator" },
+      { "id": "bl-3", "name": "Javlonbek Ergashev", "position": "Helper" }
+    ]
+  }
+]

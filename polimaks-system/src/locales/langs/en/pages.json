@@ -12,6 +12,28 @@
     },
     "cta": "Pick a section from the sidebar to get started."
   },
+  "brigadaPage": {
+    "title": "Brigades / groups",
+    "subtitle": "Manage shift groups, people, and their leader. Data is local for now (TODO: connect API).",
+    "name": "Group name",
+    "people": "People",
+    "peopleEmpty": "No people added yet.",
+    "personName": "Full name",
+    "personPosition": "Position",
+    "addPerson": "Add person",
+    "leader": "Leader",
+    "leaderHint": "Pick someone from the list as the leader.",
+    "unnamed": "Unnamed",
+    "add": "Add group",
+    "edit": "Edit group",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this group?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No groups yet.",
+    "actions": "Actions"
+  },
   "pechatPage": {
     "title": "Printing machines",
     "subtitle": "Manage country codes and names for each press. Data is local for now (TODO: connect API).",
@@ -99,5 +121,39 @@
     "uz": "Uzbekistan",
     "ru": "Russia",
     "en": "United Kingdom"
+  },
+  "reskaPage": {
+    "title": "Cutting machines",
+    "subtitle": "Manage country codes and names for each cutter. Data is local for now (TODO: connect API).",
+    "languageCode": "Country",
+    "name": "Machine name",
+    "add": "Add cutter",
+    "edit": "Edit cutter",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "actions": "Actions",
+    "brigada": "Brigade / groups",
+    "materials": "Materials",
+    "deleteConfirm": "Delete this machine?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No cutting machines yet."
+  },
+  "laminatsiyaPage": {
+    "title": "Lamination machines",
+    "subtitle": "Manage country codes and names for each laminator. Data is local for now (TODO: connect API).",
+    "languageCode": "Country",
+    "name": "Machine name",
+    "add": "Add laminator",
+    "edit": "Edit laminator",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "actions": "Actions",
+    "brigada": "Brigade / groups",
+    "materials": "Materials",
+    "deleteConfirm": "Delete this machine?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No lamination machines yet."
   }
 }

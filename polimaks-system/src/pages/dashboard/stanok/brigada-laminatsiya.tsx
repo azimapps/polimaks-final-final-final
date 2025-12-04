@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { useParams } from 'react-router';
 import { useMemo, useState } from 'react';
 import { useBoolean } from 'minimal-shared/hooks';
 
@@ -27,7 +28,7 @@ import TableContainer from '@mui/material/TableContainer';
 
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
-import data from 'src/data/stanok-brigada.json';
+import data from 'src/data/stanok-brigada-laminatsiya.json';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -44,16 +45,19 @@ type Group = {
   people: Person[];
 };
 
-const STORAGE_KEY = 'stanok-brigada';
+const STORAGE_KEY = 'stanok-brigada-laminatsiya';
 
-export default function BrigadaPage() {
+export default function BrigadaLaminatsiyaPage() {
   const { t } = useTranslate('pages');
+  const { machineId } = useParams();
 
-  const title = `${t('brigadaPage.title')} | ${CONFIG.appName}`;
+  const storageKey = machineId ? `${STORAGE_KEY}-${machineId}` : STORAGE_KEY;
+
+  const title = `${t('brigadaPage.title')} - ${t('laminatsiyaPage.title')} | ${CONFIG.appName}`;
 
   const initialData = useMemo<Group[]>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         try {
           return JSON.parse(stored) as Group[];
@@ -62,8 +66,8 @@ export default function BrigadaPage() {
         }
       }
     }
-    return data as Group[];
-  }, []);
+    return machineId ? [] : (data as Group[]);
+  }, [machineId, storageKey]);
 
   const [items, setItems] = useState<Group[]>(initialData);
   const [editing, setEditing] = useState<Group | null>(null);
@@ -82,7 +86,7 @@ export default function BrigadaPage() {
     setItems((prev) => {
       const next = updater(prev);
       if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        localStorage.setItem(storageKey, JSON.stringify(next));
       }
       return next;
     });
@@ -165,7 +169,9 @@ export default function BrigadaPage() {
         <Stack spacing={3}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <Box>
-              <Typography variant="h4">{t('brigadaPage.title')}</Typography>
+              <Typography variant="h4">
+                {t('brigadaPage.title')} ({t('laminatsiyaPage.title')})
+              </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
                 {t('brigadaPage.subtitle')}
               </Typography>
@@ -273,7 +279,12 @@ export default function BrigadaPage() {
 
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="subtitle2">{t('brigadaPage.people')}</Typography>
-              <Button size="small" variant="outlined" onClick={addPerson} startIcon={<Iconify icon="solar:add-circle-bold" />}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={addPerson}
+                startIcon={<Iconify icon="solar:add-circle-bold" />}
+              >
                 {t('brigadaPage.addPerson')}
               </Button>
             </Stack>

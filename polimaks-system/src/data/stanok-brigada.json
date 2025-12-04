@@ -1,0 +1,21 @@
+[
+  {
+    "id": "brigada-1",
+    "name": "Alpha shift",
+    "leader": "Otabek Nurmatov",
+    "people": [
+      { "id": "p-1", "name": "Otabek Nurmatov", "position": "Shift lead" },
+      { "id": "p-2", "name": "Dilshod Karimov", "position": "Press operator" },
+      { "id": "p-3", "name": "Murod Saipov", "position": "Helper" }
+    ]
+  },
+  {
+    "id": "brigada-2",
+    "name": "Beta shift",
+    "leader": "Gulnora Karimova",
+    "people": [
+      { "id": "p-4", "name": "Gulnora Karimova", "position": "Shift lead" },
+      { "id": "p-5", "name": "Akmal Rakhimov", "position": "Cutter operator" }
+    ]
+  }
+]
