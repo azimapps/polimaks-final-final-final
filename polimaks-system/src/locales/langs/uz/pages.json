@@ -1,0 +1,115 @@
+{
+  "home": {
+    "title": "Polimaks boshqaruv markazi",
+    "subtitle": "Ombor va sexdagi ishlarni bir xil panelda kuzating.",
+    "inventoryCard": {
+      "title": "Ombor oqimlari",
+      "body": "Materiallar, chiqindilar va tayyor mahsulotlar bir joyda."
+    },
+    "machinesCard": {
+      "title": "Stanoklar",
+      "body": "Bosma, kesish va laminatsiya topshiriqlari."
+    },
+    "cta": "Boshlash uchun yon menyudan bo'limni tanlang."
+  },
+  "pechatPage": {
+    "title": "Bosma stanoklari",
+    "subtitle": "Har bir stanok uchun til kodi va nom. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "languageCode": "Til kodi",
+    "name": "Nomi",
+    "search": "Kod yoki nom bo'yicha qidirish",
+    "add": "Stanok qo'shish",
+    "edit": "Stanokni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha stanoklar yo'q."
+  },
+  "placeholder": {
+    "title": "Bo'sh sahifa",
+    "description": "Jarayon aniq bo'lgach, bu yerga jadval, forma yoki grafik qo'shishingiz mumkin."
+  },
+  "inventory": {
+    "title": "Ombor",
+    "subtitle": "Materiallar, chiqit va tayyor mahsulotlarni nazorat qiling.",
+    "items": {
+      "plyonka": {
+        "title": "Plyonka",
+        "description": "Plyonka rulonlari va zaxira darajasi."
+      },
+      "kraska": {
+        "title": "Kraska",
+        "description": "Qattiq kraska zaxirasi."
+      },
+      "suyuq_kraska": {
+        "title": "Suyuq kraska",
+        "description": "Suyuq kraska va aralashmalar."
+      },
+      "razvaritel": {
+        "title": "Razvaritel",
+        "description": "Erituvchi va suyultiruvchilar mavjudligi."
+      },
+      "silindir": {
+        "title": "Silindir",
+        "description": "Silindrlar zaxirasi va tayyorligi."
+      },
+      "kley": {
+        "title": "Kley",
+        "description": "Kley va yopishtiruvchi materiallar."
+      },
+      "zapchastlar": {
+        "title": "Zapchastlar",
+        "description": "Uskuna uchun ehtiyot qismlar."
+      },
+      "otxot": {
+        "title": "Otxot",
+        "description": "Brak va chiqitlar hisoboti."
+      },
+      "tayyor_mahsulotlar": {
+        "title": "Tayyor mahsulotlar",
+        "description": "Jo'natishga tayyor mahsulotlar."
+      }
+    }
+  },
+  "machines": {
+    "title": "Stanok",
+    "subtitle": "Sexdagi vazifalar va stanok ishlari.",
+    "items": {
+      "pechat": {
+        "title": "Pechat",
+        "description": "Bosma mashinalaridagi buyurtmalar."
+      },
+      "reska": {
+        "title": "Reska",
+        "description": "Kesish jadvali va vazifalar."
+      },
+      "laminatsiya": {
+        "title": "Laminatsiya",
+        "description": "Laminatsiya navbati va holati."
+      }
+    }
+  },
+  "pechatPage": {
+    "title": "Bosma stanoklari",
+    "subtitle": "Har bir stanok uchun til kodi va nom. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "languageCode": "Til kodi",
+    "name": "Nomi",
+    "add": "Stanok qo'shish",
+    "edit": "Stanokni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha stanoklar yo'q."
+  },
+  "languages": {
+    "cn": "Xitoy tili",
+    "de": "Nemis tili",
+    "uz": "O'zbek tili",
+    "ru": "Rus tili",
+    "en": "Ingliz tili"
+  }
+}

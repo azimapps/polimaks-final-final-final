@@ -1,0 +1,7 @@
+[
+  { "id": "pechat-1", "language_code": "uz", "name": "Bosma stanogi 1" },
+  { "id": "pechat-2", "language_code": "ru", "name": "Bosma stanogi 2" },
+  { "id": "pechat-3", "language_code": "en", "name": "Bosma stanogi 3" },
+  { "id": "pechat-4", "language_code": "de", "name": "Bosma stanogi 4" },
+  { "id": "pechat-5", "language_code": "cn", "name": "Bosma stanogi 5" }
+]

@@ -1,0 +1,115 @@
+{
+  "home": {
+    "title": "Polimaks control center",
+    "subtitle": "Keep warehouse stock and shop floor tasks in one clean dashboard.",
+    "inventoryCard": {
+      "title": "Warehouse flows",
+      "body": "Materials, waste, and finished goods in one place."
+    },
+    "machinesCard": {
+      "title": "Machine room",
+      "body": "Track printing, cutting, and lamination tasks."
+    },
+    "cta": "Pick a section from the sidebar to get started."
+  },
+  "pechatPage": {
+    "title": "Printing machines",
+    "subtitle": "Manage language codes and names for each press. Data is local for now (TODO: connect API).",
+    "languageCode": "Language code",
+    "name": "Name",
+    "search": "Search by code or name",
+    "add": "Add machine",
+    "edit": "Edit machine",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this machine?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No printing machines yet."
+  },
+  "placeholder": {
+    "title": "Blank workspace",
+    "description": "This screen is ready for your data. Add tables, forms, or charts once the workflow is defined."
+  },
+  "inventory": {
+    "title": "Warehouse",
+    "subtitle": "Follow materials, waste, and finished products.",
+    "items": {
+      "plyonka": {
+        "title": "Film rolls",
+        "description": "Film rolls and related stock levels."
+      },
+      "kraska": {
+        "title": "Paint",
+        "description": "Solid paint inventory."
+      },
+      "suyuq_kraska": {
+        "title": "Liquid paint",
+        "description": "Liquid paint and mixtures."
+      },
+      "razvaritel": {
+        "title": "Thinner",
+        "description": "Thinners and solvents on hand."
+      },
+      "silindir": {
+        "title": "Cylinders",
+        "description": "Cylinder stock and readiness."
+      },
+      "kley": {
+        "title": "Glue",
+        "description": "Glue and adhesive materials."
+      },
+      "zapchastlar": {
+        "title": "Spare parts",
+        "description": "Spare parts for equipment."
+      },
+      "otxot": {
+        "title": "Waste",
+        "description": "Scrap and waste tracking."
+      },
+      "tayyor_mahsulotlar": {
+        "title": "Finished goods",
+        "description": "Finished goods prepared for shipment."
+      }
+    }
+  },
+  "machines": {
+    "title": "Machines",
+    "subtitle": "Shop floor jobs and machine runs.",
+    "items": {
+      "pechat": {
+        "title": "Printing",
+        "description": "Printing press work orders."
+      },
+      "reska": {
+        "title": "Cutting",
+        "description": "Cutting schedules and tasks."
+      },
+      "laminatsiya": {
+        "title": "Lamination",
+        "description": "Lamination queue and status."
+      }
+    }
+  },
+  "pechatPage": {
+    "title": "Printing machines",
+    "subtitle": "Manage language codes and names for each press. Data is local for now (TODO: connect API).",
+    "languageCode": "Language code",
+    "name": "Name",
+    "add": "Add machine",
+    "edit": "Edit machine",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this machine?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No printing machines yet."
+  },
+  "languages": {
+    "cn": "Chinese",
+    "de": "German",
+    "uz": "Uzbek",
+    "ru": "Russian",
+    "en": "English"
+  }
+}
