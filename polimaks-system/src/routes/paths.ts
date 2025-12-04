@@ -27,6 +27,8 @@ export const paths = {
       pechat: '/stanok/pechat',
       reska: '/stanok/reska',
       laminatsiya: '/stanok/laminatsiya',
+      brigada: '/stanok/brigada',
+      materials: '/stanok/materials',
     },
     user: {
       root: `/user`,

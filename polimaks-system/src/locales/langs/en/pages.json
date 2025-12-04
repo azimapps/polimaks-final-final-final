@@ -25,7 +25,9 @@
     "actions": "Actions",
     "deleteConfirm": "Delete this machine?",
     "deleteHint": "You can add it back later.",
-    "empty": "No printing machines yet."
+    "empty": "No printing machines yet.",
+    "brigada": "Brigade / groups",
+    "materials": "Materials"
   },
   "placeholder": {
     "title": "Blank workspace",

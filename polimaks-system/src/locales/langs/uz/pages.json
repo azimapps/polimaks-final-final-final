@@ -25,7 +25,9 @@
     "actions": "Amallar",
     "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
-    "empty": "Hozircha stanoklar yo'q."
+    "empty": "Hozircha stanoklar yo'q.",
+    "brigada": "Brigada / guruhlar",
+    "materials": "Mahsulotlar"
   },
   "placeholder": {
     "title": "Bo'sh sahifa",

@@ -1,12 +1,12 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -30,6 +30,7 @@ import { FlagIcon } from 'src/components/flag-icon';
 import { Iconify } from 'src/components/iconify';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
+import { paths } from 'src/routes/paths';
 import data from 'src/data/stanok-pechat.json';
 
 type Machine = {
@@ -50,6 +51,7 @@ const LANGUAGE_OPTIONS = [
 
 export default function PechatPage() {
   const { t } = useTranslate('pages');
+  const navigate = useNavigate();
 
   const title = `${t('pechatPage.title')} | ${CONFIG.appName}`;
 
@@ -192,18 +194,10 @@ export default function PechatPage() {
                     items.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell>
-                          <Stack direction="row" spacing={1.5} alignItems="center">
-                            <FlagIcon
-                              code={getCountryCode(item.language_code)}
-                              sx={{ width: 38, height: 26, borderRadius: 0.75 }}
-                            />
-                            <Chip
-                              label={item.language_code.toUpperCase()}
-                              color="primary"
-                              variant="outlined"
-                              sx={{ fontWeight: 700, fontSize: 14, py: 0.25 }}
-                            />
-                          </Stack>
+                          <FlagIcon
+                            code={getCountryCode(item.language_code)}
+                            sx={{ width: 42, height: 28, borderRadius: 0.75 }}
+                          />
                         </TableCell>
                         <TableCell>
                           <Typography variant="subtitle2">{item.name}</Typography>
@@ -238,9 +232,7 @@ export default function PechatPage() {
                 <MenuItem key={option.code} value={option.code}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <FlagIcon code={option.country} sx={{ width: 38, height: 26, borderRadius: 0.75 }} />
-                    <Typography variant="subtitle2">
-                      {t(option.labelKey)} ({option.code.toUpperCase()})
-                    </Typography>
+                    <Typography variant="subtitle2">{t(option.labelKey)}</Typography>
                   </Stack>
                 </MenuItem>
               ))}
@@ -295,7 +287,14 @@ export default function PechatPage() {
             deleteDialog.onTrue();
           }
         }}
-        labels={{ edit: t('pechatPage.edit'), delete: t('pechatPage.delete') }}
+        onOpenBrigada={() => navigate(paths.dashboard.stanok.brigada)}
+        onOpenMaterials={() => navigate(paths.dashboard.stanok.materials)}
+        labels={{
+          edit: t('pechatPage.edit'),
+          delete: t('pechatPage.delete'),
+          brigada: t('pechatPage.brigada'),
+          materials: t('pechatPage.materials'),
+        }}
       />
     </>
   );
@@ -307,12 +306,41 @@ type ActionsMenuProps = {
   onClose: VoidFunction;
   onEdit: VoidFunction;
   onDelete: VoidFunction;
-  labels: { edit: string; delete: string };
+  onOpenBrigada: VoidFunction;
+  onOpenMaterials: VoidFunction;
+  labels: { edit: string; delete: string; brigada: string; materials: string };
 };
 
-function ActionsMenu({ anchorEl, open, onClose, onEdit, onDelete, labels }: ActionsMenuProps) {
+function ActionsMenu({
+  anchorEl,
+  open,
+  onClose,
+  onEdit,
+  onDelete,
+  onOpenBrigada,
+  onOpenMaterials,
+  labels,
+}: ActionsMenuProps) {
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
+      <MenuItem
+        onClick={() => {
+          onOpenBrigada();
+          onClose();
+        }}
+      >
+        <Iconify icon="solar:users-group-rounded-bold" width={18} height={18} style={{ marginRight: 8 }} />
+        {labels.brigada}
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          onOpenMaterials();
+          onClose();
+        }}
+      >
+        <Iconify icon="solar:archive-minimalistic-bold" width={18} height={18} style={{ marginRight: 8 }} />
+        {labels.materials}
+      </MenuItem>
       <MenuItem
         onClick={() => {
           onEdit();

@@ -32,6 +32,8 @@ const StanokIndexPage = lazy(() => import('src/pages/dashboard/stanok'));
 const PechatPage = lazy(() => import('src/pages/dashboard/stanok/pechat'));
 const ReskaPage = lazy(() => import('src/pages/dashboard/stanok/reska'));
 const LaminatsiyaPage = lazy(() => import('src/pages/dashboard/stanok/laminatsiya'));
+const BrigadaPage = lazy(() => import('src/pages/dashboard/stanok/brigada'));
+const MaterialsPage = lazy(() => import('src/pages/dashboard/stanok/materials'));
 // ----------------------------------------------------------------------
 
 function SuspenseOutlet() {
@@ -81,6 +83,8 @@ export const routesSection: RouteObject[] = [
           { path: 'pechat', element: <PechatPage /> },
           { path: 'reska', element: <ReskaPage /> },
           { path: 'laminatsiya', element: <LaminatsiyaPage /> },
+          { path: 'brigada', element: <BrigadaPage /> },
+          { path: 'materials', element: <MaterialsPage /> },
         ],
       },
     ],
