@@ -91,20 +91,6 @@
       }
     }
   },
-  "pechatPage": {
-    "title": "Printing machines",
-    "subtitle": "Manage language codes and names for each press. Data is local for now (TODO: connect API).",
-    "languageCode": "Language code",
-    "name": "Name",
-    "add": "Add machine",
-    "edit": "Edit machine",
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "deleteConfirm": "Delete this machine?",
-    "deleteHint": "You can add it back later.",
-    "empty": "No printing machines yet."
-  },
   "languages": {
     "cn": "Chinese",
     "de": "German",
