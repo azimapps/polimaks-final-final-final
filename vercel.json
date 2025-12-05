@@ -1,0 +1,11 @@
+{
+  "installCommand": "cd polimaks-system && npm install",
+  "buildCommand": "cd polimaks-system && npm run build",
+  "outputDirectory": "polimaks-system/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
