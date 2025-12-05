@@ -174,6 +174,36 @@
       "eur": "EUR"
     }
   },
+  "suyuqKraskaPage": {
+    "title": "Liquid paint",
+    "subtitle": "Track liquid paint colors, pricing, and warehouse stock. Data is local for now (TODO: connect API).",
+    "color": "Color",
+    "colorName": "Color name",
+    "colorHex": "Color code",
+    "totalKg": "Total in warehouse (kg)",
+    "price": "Price per kg",
+    "pricePerKg": "Price per kg",
+    "priceCurrency": "Currency",
+    "seriya": "Seriya number",
+    "description": "Description",
+    "kg": "kg",
+    "add": "Add liquid paint",
+    "edit": "Edit liquid paint",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this entry?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No entries yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "languages": {
     "cn": "China",
     "de": "Germany",

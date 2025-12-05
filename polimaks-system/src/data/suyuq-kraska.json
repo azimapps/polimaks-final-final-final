@@ -1,0 +1,22 @@
+[
+  {
+    "id": "suyuq-kraska-1",
+    "colorName": "Yashil",
+    "colorHex": "#2e7d32",
+    "totalKg": 520,
+    "pricePerKg": 2.35,
+    "priceCurrency": "USD",
+    "seriyaNumber": "SKR-GRN-2401",
+    "description": "Liquid green paint, high coverage."
+  },
+  {
+    "id": "suyuq-kraska-2",
+    "colorName": "Sariq",
+    "colorHex": "#fdd835",
+    "totalKg": 410,
+    "pricePerKg": 2.15,
+    "priceCurrency": "EUR",
+    "seriyaNumber": "SKR-YLW-2402",
+    "description": "Liquid yellow paint, fast drying."
+  }
+]
