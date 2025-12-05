@@ -251,6 +251,8 @@
     "pricePerKg": "Цена за кг",
     "priceCurrency": "Валюта",
     "seriya": "Серия",
+    "marka": "Марка",
+    "receivedDate": "Дата прихода",
     "description": "Описание",
     "kg": "кг",
     "add": "Добавить краску",
@@ -263,6 +265,7 @@
     "empty": "Записей пока нет.",
     "actions": "Действия",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
+    "totalPrice": "Общая сумма",
     "currency": {
       "uzs": "UZS",
       "usd": "USD",

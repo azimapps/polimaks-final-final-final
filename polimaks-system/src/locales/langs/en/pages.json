@@ -251,6 +251,8 @@
     "pricePerKg": "Price per kg",
     "priceCurrency": "Currency",
     "seriya": "Seriya number",
+    "marka": "Marka",
+    "receivedDate": "Received date",
     "description": "Description",
     "kg": "kg",
     "add": "Add paint",
@@ -263,6 +265,7 @@
     "empty": "No paint entries yet.",
     "actions": "Actions",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "totalPrice": "Total price",
     "currency": {
       "uzs": "UZS",
       "usd": "USD",
