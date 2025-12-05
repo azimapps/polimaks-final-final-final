@@ -40,9 +40,13 @@ type PlyonkaItem = {
   category: CategoryKey;
   subcategory: string;
   totalKg: number;
+  thickness: number;
+  width: number;
   pricePerKg: number;
   priceCurrency: Currency;
   seriyaNumber: string;
+  createdDate: string;
+  admin: string;
   description: string;
 };
 
@@ -55,6 +59,34 @@ const CATEGORIES: Record<CategoryKey, string[]> = {
 
 const STORAGE_KEY = 'ombor-plyonka';
 
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const normalizeItems = (items: (Partial<PlyonkaItem> & { id?: string })[]): PlyonkaItem[] =>
+  items.map((item, index) => {
+    const currency: Currency = ['UZS', 'USD', 'RUB', 'EUR'].includes(
+      item.priceCurrency as Currency
+    )
+      ? (item.priceCurrency as Currency)
+      : 'UZS';
+
+    return {
+      id: item.id || `plyonka-${index}`,
+      category: (item.category as CategoryKey) || 'BOPP',
+      subcategory: item.subcategory || CATEGORIES.BOPP[0],
+      totalKg: typeof item.totalKg === 'number' ? item.totalKg : Number(item.totalKg) || 0,
+      thickness:
+        typeof item.thickness === 'number' ? item.thickness : Number(item.thickness) || 0,
+      width: typeof item.width === 'number' ? item.width : Number(item.width) || 0,
+      pricePerKg:
+        typeof item.pricePerKg === 'number' ? item.pricePerKg : Number(item.pricePerKg) || 0,
+      priceCurrency: currency,
+      seriyaNumber: item.seriyaNumber || '',
+      createdDate: item.createdDate || todayISO(),
+      admin: item.admin || '',
+      description: item.description || '',
+    };
+  });
+
 export default function PlyonkaPage() {
   const { t } = useTranslate('pages');
 
@@ -65,13 +97,13 @@ export default function PlyonkaPage() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as PlyonkaItem[];
+          return normalizeItems(JSON.parse(stored) as PlyonkaItem[]);
         } catch {
           // ignore corrupted data
         }
       }
     }
-    return seedData as PlyonkaItem[];
+    return normalizeItems(seedData as PlyonkaItem[]);
   }, []);
 
   const [items, setItems] = useState<PlyonkaItem[]>(initialData);
@@ -80,14 +112,23 @@ export default function PlyonkaPage() {
   const [menuItem, setMenuItem] = useState<PlyonkaItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PlyonkaItem | null>(null);
   const [form, setForm] = useState<
-    Omit<PlyonkaItem, 'id' | 'totalKg' | 'pricePerKg'> & { totalKg: string; pricePerKg: string }
+    Omit<PlyonkaItem, 'id' | 'totalKg' | 'pricePerKg' | 'thickness' | 'width'> & {
+      totalKg: string;
+      pricePerKg: string;
+      thickness: string;
+      width: string;
+    }
   >({
     category: 'BOPP',
     subcategory: CATEGORIES.BOPP[0],
     totalKg: '',
+    thickness: '',
+    width: '',
     pricePerKg: '',
     priceCurrency: 'UZS',
     seriyaNumber: '',
+    createdDate: todayISO(),
+    admin: '',
     description: '',
   });
 
@@ -110,9 +151,13 @@ export default function PlyonkaPage() {
       category: 'BOPP',
       subcategory: CATEGORIES.BOPP[0],
       totalKg: '',
+      thickness: '',
+      width: '',
       pricePerKg: '',
       priceCurrency: 'UZS',
       seriyaNumber: '',
+      createdDate: todayISO(),
+      admin: '',
       description: '',
     });
     dialog.onTrue();
@@ -124,9 +169,13 @@ export default function PlyonkaPage() {
       category: item.category,
       subcategory: item.subcategory,
       totalKg: item.totalKg ? String(item.totalKg) : '',
+      thickness: item.thickness ? String(item.thickness) : '',
+      width: item.width ? String(item.width) : '',
       pricePerKg: item.pricePerKg ? String(item.pricePerKg) : '',
       priceCurrency: item.priceCurrency,
       seriyaNumber: item.seriyaNumber,
+      createdDate: item.createdDate || todayISO(),
+      admin: item.admin || '',
       description: item.description,
     });
     dialog.onTrue();
@@ -134,11 +183,17 @@ export default function PlyonkaPage() {
 
   const handleSave = () => {
     const totalKgNum = parseFloat(form.totalKg) || 0;
+    const thicknessNum = parseFloat(form.thickness) || 0;
+    const widthNum = parseFloat(form.width) || 0;
     const pricePerKgNum = parseFloat(form.pricePerKg) || 0;
     const payload: PlyonkaItem = {
       id: editing ? editing.id : uuidv4(),
       ...form,
+      admin: form.admin.trim(),
+      createdDate: form.createdDate || todayISO(),
       totalKg: totalKgNum,
+      thickness: thicknessNum,
+      width: widthNum,
       pricePerKg: pricePerKgNum,
     };
 
@@ -178,8 +233,12 @@ export default function PlyonkaPage() {
     form.category &&
     form.subcategory &&
     parseFloat(form.totalKg) > 0 &&
+    parseFloat(form.thickness) > 0 &&
+    parseFloat(form.width) > 0 &&
     parseFloat(form.pricePerKg) > 0 &&
-    form.seriyaNumber.trim();
+    form.seriyaNumber.trim() &&
+    form.admin.trim() &&
+    form.createdDate;
 
   const currencyLabel = (code: Currency) => {
     switch (code) {
@@ -217,16 +276,47 @@ export default function PlyonkaPage() {
 
           <Card>
             <TableContainer>
-              <Table size="medium">
+              <Table
+                size="medium"
+                sx={{
+                  minWidth: 1500,
+                  '& th, & td': { py: 1.75, px: 1.5 },
+                }}
+              >
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ width: 160 }}>{t('plyonkaPage.category')}</TableCell>
-                    <TableCell sx={{ width: 180 }}>{t('plyonkaPage.subcategory')}</TableCell>
-                    <TableCell sx={{ width: 140 }}>{t('plyonkaPage.totalKg')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('plyonkaPage.price')}</TableCell>
-                    <TableCell sx={{ width: 140 }}>{t('plyonkaPage.seriya')}</TableCell>
-                    <TableCell>{t('plyonkaPage.description')}</TableCell>
-                    <TableCell align="right" sx={{ width: 100 }}>
+                    <TableCell sx={{ minWidth: 170, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.category')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 200, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.subcategory')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.totalKg')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.thickness')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.width')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 200, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.price')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 200, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.totalPrice')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.seriya')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.receivedDate')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.admin')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 260 }}>{t('plyonkaPage.description')}</TableCell>
+                    <TableCell align="right" sx={{ width: 120 }}>
                       {t('plyonkaPage.actions')}
                     </TableCell>
                   </TableRow>
@@ -234,7 +324,7 @@ export default function PlyonkaPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7}>
+                      <TableCell colSpan={12}>
                         <Box
                           sx={{
                             py: 6,
@@ -272,11 +362,35 @@ export default function PlyonkaPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
+                            {item.thickness.toLocaleString()} {t('plyonkaPage.microns')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {item.width.toLocaleString()} {t('plyonkaPage.mm')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
                             {item.pricePerKg.toLocaleString()} {currencyLabel(item.priceCurrency)}
                           </Typography>
                         </TableCell>
                         <TableCell>
+                          <Typography variant="body2">
+                            {(item.totalKg * item.pricePerKg).toLocaleString()}{' '}
+                            {currencyLabel(item.priceCurrency)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.admin || '—'}
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -347,6 +461,26 @@ export default function PlyonkaPage() {
                 <TextField
                   fullWidth
                   type="number"
+                  label={t('plyonkaPage.thickness')}
+                  value={form.thickness}
+                  onChange={(e) => setForm((prev) => ({ ...prev, thickness: e.target.value }))}
+                  inputProps={{ min: 0, step: '0.01', placeholder: t('plyonkaPage.thickness') }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label={t('plyonkaPage.width')}
+                  value={form.width}
+                  onChange={(e) => setForm((prev) => ({ ...prev, width: e.target.value }))}
+                  inputProps={{ min: 0, step: '0.01', placeholder: t('plyonkaPage.width') }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  fullWidth
+                  type="number"
                   label={t('plyonkaPage.pricePerKg')}
                   value={form.pricePerKg}
                   onChange={(e) => setForm((prev) => ({ ...prev, pricePerKg: e.target.value }))}
@@ -373,11 +507,31 @@ export default function PlyonkaPage() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
+                  type="date"
+                  label={t('plyonkaPage.receivedDate')}
+                  value={form.createdDate}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
+                  }
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
                   label={t('plyonkaPage.seriya')}
                   value={form.seriyaNumber}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, seriyaNumber: e.target.value }))
                   }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label={t('plyonkaPage.admin')}
+                  value={form.admin}
+                  onChange={(e) => setForm((prev) => ({ ...prev, admin: e.target.value }))}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>

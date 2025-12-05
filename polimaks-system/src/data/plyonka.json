@@ -4,9 +4,13 @@
     "category": "BOPP",
     "subcategory": "prazrachniy",
     "totalKg": 1200,
+    "thickness": 25,
+    "width": 1200,
     "pricePerKg": 1.25,
     "priceCurrency": "USD",
     "seriyaNumber": "BOPP-2401-A",
+    "createdDate": "2025-02-01",
+    "admin": "Logistics",
     "description": "Transparent BOPP roll, standard width."
   },
   {
@@ -14,9 +18,13 @@
     "category": "PET",
     "subcategory": "metal",
     "totalKg": 800,
+    "thickness": 19,
+    "width": 1000,
     "pricePerKg": 1.8,
     "priceCurrency": "EUR",
     "seriyaNumber": "PET-M-2402",
+    "createdDate": "2025-02-05",
+    "admin": "Warehouse",
     "description": "Metalized PET roll."
   }
 ]
