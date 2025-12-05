@@ -5,6 +5,7 @@
     "totalKg": 320,
     "pricePerKg": 0.25,
     "priceCurrency": "USD",
+    "createdDate": "2025-02-23",
     "description": "Plastik chiqindilar."
   },
   {
@@ -13,6 +14,7 @@
     "totalKg": 180,
     "pricePerKg": 0.12,
     "priceCurrency": "EUR",
+    "createdDate": "2025-02-24",
     "description": "Qog'oz va karton chiqindisi."
   }
 ]

@@ -167,6 +167,8 @@
     "pricePerKg": "1 kg narxi",
     "priceCurrency": "Valyuta",
     "description": "Izoh",
+    "receivedDate": "Kelib tushgan sana",
+    "totalPrice": "Jami qiymat",
     "kg": "kg",
     "add": "Otxot qo'shish",
     "edit": "Otxotni tahrirlash",

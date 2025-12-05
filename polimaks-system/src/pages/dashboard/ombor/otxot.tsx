@@ -39,10 +39,25 @@ type OtxotItem = {
   totalKg: number;
   pricePerKg: number;
   priceCurrency: Currency;
+  createdDate: string;
   description: string;
 };
 
 const STORAGE_KEY = 'ombor-otxot';
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const normalizeItems = (items: (Partial<OtxotItem> & { id?: string })[]): OtxotItem[] =>
+  items.map((item, index) => ({
+    id: item.id || `otxot-${index}`,
+    title: item.title || '',
+    totalKg: typeof item.totalKg === 'number' ? item.totalKg : Number(item.totalKg) || 0,
+    pricePerKg:
+      typeof item.pricePerKg === 'number' ? item.pricePerKg : Number(item.pricePerKg) || 0,
+    priceCurrency: (item.priceCurrency as Currency) || 'UZS',
+    createdDate: item.createdDate || todayISO(),
+    description: item.description || '',
+  }));
 
 export default function OtxotPage() {
   const { t } = useTranslate('pages');
@@ -54,13 +69,13 @@ export default function OtxotPage() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as OtxotItem[];
+          return normalizeItems(JSON.parse(stored) as OtxotItem[]);
         } catch {
           // ignore corrupted data
         }
       }
     }
-    return seedData as OtxotItem[];
+    return normalizeItems(seedData as OtxotItem[]);
   }, []);
 
   const [items, setItems] = useState<OtxotItem[]>(initialData);
@@ -68,11 +83,14 @@ export default function OtxotPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<OtxotItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<OtxotItem | null>(null);
-  const [form, setForm] = useState<Omit<OtxotItem, 'id' | 'pricePerKg' | 'totalKg'> & { pricePerKg: string; totalKg: string }>({
+  const [form, setForm] = useState<
+    Omit<OtxotItem, 'id' | 'pricePerKg' | 'totalKg'> & { pricePerKg: string; totalKg: string }
+  >({
     title: '',
     totalKg: '',
     pricePerKg: '',
     priceCurrency: 'UZS',
+    createdDate: todayISO(),
     description: '',
   });
 
@@ -91,7 +109,14 @@ export default function OtxotPage() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ title: '', totalKg: '', pricePerKg: '', priceCurrency: 'UZS', description: '' });
+    setForm({
+      title: '',
+      totalKg: '',
+      pricePerKg: '',
+      priceCurrency: 'UZS',
+      createdDate: todayISO(),
+      description: '',
+    });
     dialog.onTrue();
   };
 
@@ -102,6 +127,7 @@ export default function OtxotPage() {
       totalKg: item.totalKg ? String(item.totalKg) : '',
       pricePerKg: item.pricePerKg ? String(item.pricePerKg) : '',
       priceCurrency: item.priceCurrency,
+      createdDate: item.createdDate || todayISO(),
       description: item.description,
     });
     dialog.onTrue();
@@ -116,6 +142,7 @@ export default function OtxotPage() {
       totalKg: totalNum,
       pricePerKg: priceNum,
       priceCurrency: form.priceCurrency,
+      createdDate: form.createdDate || todayISO(),
       description: form.description,
     };
 
@@ -146,7 +173,11 @@ export default function OtxotPage() {
     setMenuItem(null);
   };
 
-  const canSave = form.title.trim() && parseFloat(form.totalKg) > 0 && parseFloat(form.pricePerKg) > 0;
+  const canSave =
+    form.title.trim() &&
+    parseFloat(form.totalKg) > 0 &&
+    parseFloat(form.pricePerKg) > 0 &&
+    form.createdDate;
 
   const currencyLabel = (code: Currency) => {
     switch (code) {
@@ -184,13 +215,21 @@ export default function OtxotPage() {
 
           <Card>
             <TableContainer>
-              <Table size="medium">
+              <Table
+                size="medium"
+                sx={{
+                  minWidth: 1100,
+                  '& th, & td': { py: 1.5, px: 1.25 },
+                }}
+              >
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ width: 220 }}>{t('otxotPage.titleLabel')}</TableCell>
                     <TableCell sx={{ width: 160 }}>{t('otxotPage.totalKg')}</TableCell>
                     <TableCell sx={{ width: 200 }}>{t('otxotPage.price')}</TableCell>
-                    <TableCell>{t('otxotPage.description')}</TableCell>
+                    <TableCell sx={{ width: 200 }}>{t('otxotPage.totalPrice')}</TableCell>
+                    <TableCell sx={{ width: 180 }}>{t('otxotPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 260 }}>{t('otxotPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 100 }}>
                       {t('otxotPage.actions')}
                     </TableCell>
@@ -199,7 +238,7 @@ export default function OtxotPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5}>
+                      <TableCell colSpan={7}>
                         <Box
                           sx={{
                             py: 6,
@@ -236,7 +275,25 @@ export default function OtxotPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          <Typography variant="body2">
+                            {(item.totalKg * item.pricePerKg).toLocaleString()}{' '}
+                            {currencyLabel(item.priceCurrency)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {item.description || '—'}
                           </Typography>
                         </TableCell>
@@ -270,6 +327,16 @@ export default function OtxotPage() {
               value={form.totalKg}
               onChange={(e) => setForm((prev) => ({ ...prev, totalKg: e.target.value }))}
               inputProps={{ min: 0, step: '0.01', placeholder: t('otxotPage.totalKg') }}
+            />
+            <TextField
+              fullWidth
+              type="date"
+              label={t('otxotPage.receivedDate')}
+              value={form.createdDate}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
+              }
+              InputLabelProps={{ shrink: true }}
             />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
               <TextField

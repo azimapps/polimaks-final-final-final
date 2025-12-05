@@ -140,6 +140,8 @@
     "pricePerKg": "Цена за кг",
     "priceCurrency": "Валюта",
     "description": "Описание",
+    "receivedDate": "Дата прихода",
+    "totalPrice": "Общая сумма",
     "kg": "кг",
     "add": "Добавить отход",
     "edit": "Редактировать отход",

@@ -167,6 +167,8 @@
     "pricePerKg": "1 кг нархи",
     "priceCurrency": "Валюта",
     "description": "Изоҳ",
+    "receivedDate": "Келиб тушган сана",
+    "totalPrice": "Жами қиймат",
     "kg": "кг",
     "add": "Отход қўшиш",
     "edit": "Отходни таҳрирлаш",

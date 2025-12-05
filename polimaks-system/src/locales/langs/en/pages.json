@@ -140,6 +140,8 @@
     "pricePerKg": "Price per kg",
     "priceCurrency": "Currency",
     "description": "Description",
+    "receivedDate": "Received date",
+    "totalPrice": "Total price",
     "kg": "kg",
     "add": "Add waste",
     "edit": "Edit waste",
