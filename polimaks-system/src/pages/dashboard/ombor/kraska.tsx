@@ -239,18 +239,24 @@ export default function KraskaPage() {
 
           <Card>
             <TableContainer>
-              <Table size="medium">
+              <Table
+                size="medium"
+                sx={{
+                  minWidth: 1400,
+                  '& th, & td': { py: 1.75, px: 1.5 },
+                }}
+              >
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ width: 220 }}>{t('kraskaPage.color')}</TableCell>
-                    <TableCell sx={{ width: 140 }}>{t('kraskaPage.totalKg')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('kraskaPage.price')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('kraskaPage.totalPrice')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('kraskaPage.seriya')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('kraskaPage.marka')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('kraskaPage.receivedDate')}</TableCell>
-                    <TableCell>{t('kraskaPage.description')}</TableCell>
-                    <TableCell align="right" sx={{ width: 100 }}>
+                    <TableCell sx={{ minWidth: 220 }}>{t('kraskaPage.color')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('kraskaPage.totalKg')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.price')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.totalPrice')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.seriya')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.marka')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 320 }}>{t('kraskaPage.description')}</TableCell>
+                    <TableCell align="right" sx={{ width: 120 }}>
                       {t('kraskaPage.actions')}
                     </TableCell>
                   </TableRow>
@@ -327,7 +333,16 @@ export default function KraskaPage() {
                           <Typography variant="body2">{item.createdDate}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {item.description || '—'}
                           </Typography>
                         </TableCell>

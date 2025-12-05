@@ -382,7 +382,7 @@ export default function PlyonkaPage() {
                     <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
                       {t('plyonkaPage.admin')}
                     </TableCell>
-                    <TableCell sx={{ minWidth: 260 }}>{t('plyonkaPage.description')}</TableCell>
+                    <TableCell sx={{ minWidth: 320 }}>{t('plyonkaPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('plyonkaPage.actions')}
                     </TableCell>
@@ -460,7 +460,16 @@ export default function PlyonkaPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {item.description || '—'}
                           </Typography>
                         </TableCell>

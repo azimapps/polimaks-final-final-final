@@ -42,10 +42,29 @@ type SuyuqKraskaItem = {
   pricePerKg: number;
   priceCurrency: Currency;
   seriyaNumber: string;
+  marka: string;
+  createdDate: string;
   description: string;
 };
 
 const STORAGE_KEY = 'ombor-suyuq-kraska';
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const normalizeItems = (items: (Partial<SuyuqKraskaItem> & { id?: string })[]): SuyuqKraskaItem[] =>
+  items.map((item, index) => ({
+    id: item.id || `suyuq-kraska-${index}`,
+    colorName: item.colorName || '',
+    colorHex: item.colorHex || '#000000',
+    totalKg: typeof item.totalKg === 'number' ? item.totalKg : Number(item.totalKg) || 0,
+    pricePerKg:
+      typeof item.pricePerKg === 'number' ? item.pricePerKg : Number(item.pricePerKg) || 0,
+    priceCurrency: (item.priceCurrency as Currency) || 'UZS',
+    seriyaNumber: item.seriyaNumber || '',
+    marka: item.marka || '',
+    createdDate: item.createdDate || todayISO(),
+    description: item.description || '',
+  }));
 
 export default function SuyuqKraskaPage() {
   const { t } = useTranslate('pages');
@@ -57,13 +76,13 @@ export default function SuyuqKraskaPage() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as SuyuqKraskaItem[];
+          return normalizeItems(JSON.parse(stored) as SuyuqKraskaItem[]);
         } catch {
           // ignore corrupted data
         }
       }
     }
-    return seedData as SuyuqKraskaItem[];
+    return normalizeItems(seedData as SuyuqKraskaItem[]);
   }, []);
 
   const [items, setItems] = useState<SuyuqKraskaItem[]>(initialData);
@@ -72,7 +91,10 @@ export default function SuyuqKraskaPage() {
   const [menuItem, setMenuItem] = useState<SuyuqKraskaItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SuyuqKraskaItem | null>(null);
   const [form, setForm] = useState<
-    Omit<SuyuqKraskaItem, 'id' | 'totalKg' | 'pricePerKg'> & { totalKg: string; pricePerKg: string }
+    Omit<SuyuqKraskaItem, 'id' | 'totalKg' | 'pricePerKg'> & {
+      totalKg: string;
+      pricePerKg: string;
+    }
   >({
     colorName: '',
     colorHex: '#6a1b9a',
@@ -80,6 +102,8 @@ export default function SuyuqKraskaPage() {
     pricePerKg: '',
     priceCurrency: 'UZS',
     seriyaNumber: '',
+    marka: '',
+    createdDate: todayISO(),
     description: '',
   });
 
@@ -105,6 +129,8 @@ export default function SuyuqKraskaPage() {
       pricePerKg: '',
       priceCurrency: 'UZS',
       seriyaNumber: '',
+      marka: '',
+      createdDate: todayISO(),
       description: '',
     });
     dialog.onTrue();
@@ -119,6 +145,8 @@ export default function SuyuqKraskaPage() {
       pricePerKg: item.pricePerKg ? String(item.pricePerKg) : '',
       priceCurrency: item.priceCurrency,
       seriyaNumber: item.seriyaNumber,
+      marka: item.marka || '',
+      createdDate: item.createdDate || todayISO(),
       description: item.description,
     });
     dialog.onTrue();
@@ -135,6 +163,8 @@ export default function SuyuqKraskaPage() {
       pricePerKg: pricePerKgNum,
       priceCurrency: form.priceCurrency,
       seriyaNumber: form.seriyaNumber.trim(),
+      marka: form.marka.trim(),
+      createdDate: form.createdDate || todayISO(),
       description: form.description,
     };
 
@@ -169,7 +199,9 @@ export default function SuyuqKraskaPage() {
     form.colorName.trim() &&
     parseFloat(form.totalKg) > 0 &&
     parseFloat(form.pricePerKg) > 0 &&
-    form.seriyaNumber.trim();
+    form.seriyaNumber.trim() &&
+    form.marka.trim() &&
+    form.createdDate;
 
   const currencyLabel = (code: Currency) => {
     switch (code) {
@@ -207,15 +239,24 @@ export default function SuyuqKraskaPage() {
 
           <Card>
             <TableContainer>
-              <Table size="medium">
+              <Table
+                size="medium"
+                sx={{
+                  minWidth: 1400,
+                  '& th, & td': { py: 1.75, px: 1.5 },
+                }}
+              >
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ width: 220 }}>{t('suyuqKraskaPage.color')}</TableCell>
-                    <TableCell sx={{ width: 140 }}>{t('suyuqKraskaPage.totalKg')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('suyuqKraskaPage.price')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('suyuqKraskaPage.seriya')}</TableCell>
-                    <TableCell>{t('suyuqKraskaPage.description')}</TableCell>
-                    <TableCell align="right" sx={{ width: 100 }}>
+                    <TableCell sx={{ minWidth: 220 }}>{t('suyuqKraskaPage.color')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('suyuqKraskaPage.totalKg')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('suyuqKraskaPage.price')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('suyuqKraskaPage.totalPrice')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.seriya')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.marka')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 320 }}>{t('suyuqKraskaPage.description')}</TableCell>
+                    <TableCell align="right" sx={{ width: 120 }}>
                       {t('suyuqKraskaPage.actions')}
                     </TableCell>
                   </TableRow>
@@ -223,7 +264,7 @@ export default function SuyuqKraskaPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={9}>
                         <Box
                           sx={{
                             py: 6,
@@ -277,10 +318,31 @@ export default function SuyuqKraskaPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
+                          <Typography variant="body2">
+                            {(item.totalKg * item.pricePerKg).toLocaleString()}{' '}
+                            {currencyLabel(item.priceCurrency)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          <Typography variant="body2">{item.marka || '—'}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {item.description || '—'}
                           </Typography>
                         </TableCell>
@@ -367,6 +429,26 @@ export default function SuyuqKraskaPage() {
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, seriyaNumber: e.target.value }))
                   }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label={t('suyuqKraskaPage.marka')}
+                  value={form.marka}
+                  onChange={(e) => setForm((prev) => ({ ...prev, marka: e.target.value }))}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label={t('suyuqKraskaPage.receivedDate')}
+                  value={form.createdDate}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
+                  }
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
