@@ -132,7 +132,20 @@
       },
       "worker": {
         "title": "Ishchilar",
-        "description": "Sex va sahnadagi xodimlar."
+        "description": "Sex va sahnadagi xodimlar.",
+        "name": "To'liq ism",
+        "phone": "Telefon (UZ)",
+        "phoneHint": "9 raqam kiriting. Format: (##) ###-##-##",
+        "descriptionLabel": "Tavsif",
+        "add": "Ishchi qo'shish",
+        "edit": "Ishchini tahrirlash",
+        "save": "Saqlash",
+        "cancel": "Bekor qilish",
+        "delete": "O'chirish",
+        "deleteConfirm": "Ushbu ishchini o'chirishni xohlaysizmi?",
+        "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+        "empty": "Hozircha ishchilar yo'q.",
+        "actions": "Amallar"
       },
       "accountant": {
         "title": "Buxgalterlar",

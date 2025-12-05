@@ -132,7 +132,20 @@
       },
       "worker": {
         "title": "Workers",
-        "description": "Shop floor and on-site workforce."
+        "description": "Shop floor and on-site workforce.",
+        "name": "Full name",
+        "phone": "Phone (UZ)",
+        "phoneHint": "Enter a 9-digit UZ number. Format: (##) ###-##-##",
+        "descriptionLabel": "Description",
+        "add": "Add worker",
+        "edit": "Edit worker",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this worker?",
+        "deleteHint": "You can add them back later.",
+        "empty": "No workers yet.",
+        "actions": "Actions"
       },
       "accountant": {
         "title": "Accountants",

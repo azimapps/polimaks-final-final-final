@@ -1,0 +1,14 @@
+[
+  {
+    "id": "worker-1",
+    "name": "Jasur Ahmedov",
+    "phone": "901234567",
+    "description": "Senior machine operator"
+  },
+  {
+    "id": "worker-2",
+    "name": "Malika Sodiqova",
+    "phone": "935551212",
+    "description": "Warehouse coordinator"
+  }
+]

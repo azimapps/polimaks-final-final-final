@@ -2,11 +2,10 @@
   {
     "id": "brigada-reska-1",
     "name": "Reska Alpha",
-    "leader": "Gulnora Karimova",
+    "leader": "worker-2",
     "people": [
-      { "id": "br-1", "name": "Gulnora Karimova", "position": "Shift lead" },
-      { "id": "br-2", "name": "Akmal Rakhimov", "position": "Cutter operator" },
-      { "id": "br-3", "name": "Azizbek Mavlonov", "position": "Helper" }
+      { "id": "br-1", "workerId": "worker-2", "position": "Shift lead" },
+      { "id": "br-2", "workerId": "worker-1", "position": "Cutter operator" }
     ]
   }
 ]

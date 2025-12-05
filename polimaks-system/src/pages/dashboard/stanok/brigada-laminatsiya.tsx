@@ -1,51 +1,62 @@
+/* eslint-disable perfectionist/sort-imports */
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router';
 import { useMemo, useState } from 'react';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Grid from '@mui/material/Grid';
-import Menu from '@mui/material/Menu';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import TableRow from '@mui/material/TableRow';
+import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import DialogTitle from '@mui/material/DialogTitle';
+import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import data from 'src/data/stanok-brigada-laminatsiya.json';
+import workerSeed from 'src/data/staff-workers.json';
 
 import { Iconify } from 'src/components/iconify';
 
 type Person = {
   id: string;
-  name: string;
+  workerId: string;
   position: string;
 };
 
 type Group = {
   id: string;
   name: string;
-  leader: string;
+  leader: string; // workerId
   people: Person[];
 };
 
+type Worker = {
+  id: string;
+  name: string;
+  phone: string;
+  description?: string;
+};
+
 const STORAGE_KEY = 'stanok-brigada-laminatsiya';
+const WORKER_STORAGE_KEY = 'staff-workers';
 
 export default function BrigadaLaminatsiyaPage() {
   const { t } = useTranslate('pages');
@@ -55,18 +66,68 @@ export default function BrigadaLaminatsiyaPage() {
 
   const title = `${t('brigadaPage.title')} - ${t('laminatsiyaPage.title')} | ${CONFIG.appName}`;
 
-  const initialData = useMemo<Group[]>(() => {
+  const workers = useMemo<Worker[]>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(storageKey);
+      const stored = localStorage.getItem(WORKER_STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as Group[];
+          return JSON.parse(stored) as Worker[];
         } catch {
           // ignore corrupted data
         }
       }
     }
-    return machineId ? [] : (data as Group[]);
+    return workerSeed as Worker[];
+  }, []);
+
+  const workerMap = useMemo(() => {
+    const map = new Map<string, Worker>();
+    workers.forEach((w) => map.set(w.id, w));
+    return map;
+  }, [workers]);
+
+  const formatPhone = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 9);
+    const part1 = digits.slice(0, 2);
+    const part2 = digits.slice(2, 5);
+    const part3 = digits.slice(5, 7);
+    const part4 = digits.slice(7, 9);
+    let formatted = '';
+    if (part1) formatted = `(${part1}`;
+    if (part1.length === 2) formatted += ')';
+    if (part2) formatted += ` ${part2}`;
+    if (part3) formatted += `-${part3}`;
+    if (part4) formatted += `-${part4}`;
+    return formatted.trim();
+  };
+
+  const normalizeGroup = (group: any): Group => {
+    const people: Person[] = (group.people ?? []).map((p: any, idx: number) => ({
+      id: p.id ?? `person-${idx}`,
+      workerId: p.workerId ?? '',
+      position: p.position ?? '',
+    }));
+    const leader = group.leader ?? people[0]?.workerId ?? '';
+    return {
+      id: group.id ?? uuidv4(),
+      name: group.name ?? '',
+      leader,
+      people,
+    };
+  };
+
+  const initialData = useMemo<Group[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          return (JSON.parse(stored) as any[]).map(normalizeGroup);
+        } catch {
+          // ignore corrupted data
+        }
+      }
+    }
+    return machineId ? [] : (data as any[]).map(normalizeGroup);
   }, [machineId, storageKey]);
 
   const [items, setItems] = useState<Group[]>(initialData);
@@ -105,7 +166,7 @@ export default function BrigadaLaminatsiyaPage() {
   };
 
   const handleSave = () => {
-    const leader = form.leader || form.people[0]?.name || '';
+    const leader = form.leader || form.people[0]?.workerId || '';
     const payload = { ...form, leader };
 
     if (editing) {
@@ -138,11 +199,11 @@ export default function BrigadaLaminatsiyaPage() {
   const addPerson = () => {
     setForm((prev) => ({
       ...prev,
-      people: [...prev.people, { id: uuidv4(), name: '', position: '' }],
+      people: [...prev.people, { id: uuidv4(), workerId: '', position: '' }],
     }));
   };
 
-  const updatePerson = (personId: string, field: 'name' | 'position', value: string) => {
+  const updatePerson = (personId: string, field: 'workerId' | 'position', value: string) => {
     setForm((prev) => ({
       ...prev,
       people: prev.people.map((p) => (p.id === personId ? { ...p, [field]: value } : p)),
@@ -152,14 +213,15 @@ export default function BrigadaLaminatsiyaPage() {
   const removePerson = (personId: string) => {
     setForm((prev) => {
       const nextPeople = prev.people.filter((p) => p.id !== personId);
-      const nextLeader = nextPeople.find((p) => p.name === prev.leader)?.name
+      const nextLeader = nextPeople.find((p) => p.workerId === prev.leader)?.workerId
         ? prev.leader
-        : nextPeople[0]?.name || '';
+        : nextPeople[0]?.workerId || '';
       return { ...prev, people: nextPeople, leader: nextLeader };
     });
   };
 
-  const canSave = form.name.trim() && form.people.every((p) => p.name.trim() && p.position.trim());
+  const canSave =
+    form.name.trim() && form.people.length > 0 && form.people.every((p) => p.workerId && p.position.trim());
 
   return (
     <>
@@ -225,29 +287,47 @@ export default function BrigadaLaminatsiyaPage() {
                         </TableCell>
                         <TableCell>
                           <Stack spacing={0.75}>
-                            {item.people.map((person) => (
-                              <Stack
-                                key={person.id}
-                                direction="row"
-                                spacing={1}
-                                alignItems="center"
-                                sx={{ typography: 'body2' }}
-                              >
-                                <Iconify icon="solar:user-rounded-bold" width={16} height={16} />
-                                <Typography variant="subtitle2">{person.name}</Typography>
-                                {person.name === item.leader && (
-                                  <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: 'warning.main' }}>
-                                    <Iconify icon="solar:flag-bold" width={14} height={14} />
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'warning.main' }}>
-                                      {t('brigadaPage.leader')}
+                            {item.people.map((person) => {
+                              const worker = workerMap.get(person.workerId);
+                              return (
+                                <Stack
+                                  key={person.id}
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                  sx={{ typography: 'body2', flexWrap: 'wrap', rowGap: 0.5 }}
+                                >
+                                  <Iconify icon="solar:user-rounded-bold" width={16} height={16} />
+                                  <Typography variant="subtitle2">
+                                    {worker?.name || t('brigadaPage.unnamed')}
+                                  </Typography>
+                                  {person.workerId === item.leader && (
+                                    <Stack
+                                      direction="row"
+                                      spacing={0.5}
+                                      alignItems="center"
+                                      sx={{ color: 'warning.main' }}
+                                    >
+                                      <Iconify icon="solar:flag-bold" width={14} height={14} />
+                                      <Typography
+                                        variant="caption"
+                                        sx={{ fontWeight: 700, color: 'warning.main' }}
+                                      >
+                                        {t('brigadaPage.leader')}
+                                      </Typography>
+                                    </Stack>
+                                  )}
+                                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    · {person.position}
+                                  </Typography>
+                                  {worker?.phone && (
+                                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                                      {formatPhone(worker.phone)}
                                     </Typography>
-                                  </Stack>
-                                )}
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                  · {person.position}
-                                </Typography>
-                              </Stack>
-                            ))}
+                                  )}
+                                </Stack>
+                              );
+                            })}
                           </Stack>
                         </TableCell>
                         <TableCell align="right">
@@ -300,11 +380,21 @@ export default function BrigadaLaminatsiyaPage() {
               {form.people.map((person) => (
                 <Grid container spacing={1} key={person.id} alignItems="center">
                   <Grid size={{ xs: 12, sm: 5 }}>
-                    <TextField
-                      label={t('brigadaPage.personName')}
-                      value={person.name}
-                      onChange={(e) => updatePerson(person.id, 'name', e.target.value)}
-                      fullWidth
+                    <Autocomplete
+                      options={workers}
+                      getOptionLabel={(option) =>
+                        `${option.name}${option.phone ? ` (${formatPhone(option.phone)})` : ''}`
+                      }
+                      isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                      value={workers.find((w) => w.id === person.workerId) || null}
+                      onChange={(_, value) => updatePerson(person.id, 'workerId', value?.id || '')}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={t('brigadaPage.personName')}
+                          placeholder={t('brigadaPage.unnamed')}
+                        />
+                      )}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 5 }}>
@@ -332,11 +422,14 @@ export default function BrigadaLaminatsiyaPage() {
               helperText={t('brigadaPage.leaderHint')}
               disabled={form.people.length === 0}
             >
-              {form.people.map((person) => (
-                <MenuItem key={person.id} value={person.name}>
-                  {person.name || t('brigadaPage.unnamed')}
-                </MenuItem>
-              ))}
+              {form.people.map((person) => {
+                const worker = workerMap.get(person.workerId);
+                return (
+                  <MenuItem key={person.id} value={person.workerId}>
+                    {worker?.name || t('brigadaPage.unnamed')}
+                  </MenuItem>
+                );
+              })}
             </TextField>
           </Stack>
           <Divider sx={{ my: 2 }} />
