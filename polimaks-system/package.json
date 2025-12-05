@@ -97,7 +97,6 @@
     "react-apexcharts": "^1.7.0",
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
-    "react-google-recaptcha-v3": "^1.10.1",
     "react-hook-form": "^7.55.0",
     "react-i18next": "^15.4.1",
     "react-map-gl": "^8.0.2",

@@ -2,7 +2,6 @@ import type { RouteObject } from 'react-router';
 
 import { Outlet } from 'react-router';
 import { lazy, Suspense } from 'react';
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 import { AuthCenteredLayout } from 'src/layouts/auth-centered';
 
@@ -36,16 +35,11 @@ export const authDemoRoutes: RouteObject[] = [
   {
     path: '',
     element: (
-      <GoogleReCaptchaProvider
-        reCaptchaKey={import.meta.env.VITE_RECAPTCHA_KEY}
-        scriptProps={{ async: true, defer: true, appendTo: 'head' }}
-      >
-        <GuestGuard>
-          <Suspense fallback={<SplashScreen />}>
-            <Outlet />
-          </Suspense>
-        </GuestGuard>
-      </GoogleReCaptchaProvider>
+      <GuestGuard>
+        <Suspense fallback={<SplashScreen />}>
+          <Outlet />
+        </Suspense>
+      </GuestGuard>
     ),
     children: [authCentered],
   },

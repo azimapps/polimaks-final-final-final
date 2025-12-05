@@ -12,7 +12,7 @@ import { setSession } from './utils';
 export type SignInParams = {
   email?: string;
   password: string;
-  captchaToken: string;
+  captchaToken?: string;
   phone?: string;
 };
 
@@ -30,7 +30,9 @@ export const useSignIn = () => {
   const { checkUserSession } = useAuthContext();
   const { isPending, mutateAsync } = useMutation({
     mutationFn: (value: SignInParams) =>
-      axiosInstance.post('users/login', value).then(() => checkUserSession?.()),
+      axiosInstance
+        .post('users/login', { ...value, captchaToken: value.captchaToken ?? '' })
+        .then(() => checkUserSession?.()),
     onSuccess: () => {
       toast.success('Hush kelibsiz', { position: 'top-center' });
     },

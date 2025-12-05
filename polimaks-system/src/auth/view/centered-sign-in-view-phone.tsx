@@ -2,7 +2,6 @@ import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { useBoolean } from 'minimal-shared/hooks';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -32,7 +31,6 @@ export const SignInSchema = zod.object({
 // ----------------------------------------------------------------------
 
 export function CenteredSignInViewPhone() {
-  const { executeRecaptcha } = useGoogleReCaptcha();
   const showPassword = useBoolean();
   const { isPending, mutateAsync } = useSignIn();
   const defaultValues: SignInSchemaType = {
@@ -47,14 +45,7 @@ export function CenteredSignInViewPhone() {
 
   const { handleSubmit } = methods;
 
-  const onSubmit = handleSubmit(async (data) => {
-    if (!executeRecaptcha) return null;
-    const token = await executeRecaptcha('form_submit');
-    return await mutateAsync({
-      ...data,
-      captchaToken: token,
-    });
-  });
+  const onSubmit = handleSubmit(async (data) => mutateAsync(data));
 
   const renderForm = () => (
     <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
