@@ -1,0 +1,22 @@
+[
+  {
+    "id": "plyonka-1",
+    "category": "BOPP",
+    "subcategory": "prazrachniy",
+    "totalKg": 1200,
+    "pricePerKg": 1.25,
+    "priceCurrency": "USD",
+    "seriyaNumber": "BOPP-2401-A",
+    "description": "Transparent BOPP roll, standard width."
+  },
+  {
+    "id": "plyonka-2",
+    "category": "PET",
+    "subcategory": "metal",
+    "totalKg": 800,
+    "pricePerKg": 1.8,
+    "priceCurrency": "EUR",
+    "seriyaNumber": "PET-M-2402",
+    "description": "Metalized PET roll."
+  }
+]

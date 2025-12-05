@@ -97,6 +97,35 @@
       }
     }
   },
+  "plyonkaPage": {
+    "title": "Film rolls",
+    "subtitle": "Track BOPP/CPP/PE/PET categories, pricing, and warehouse stock. Data is local for now (TODO: connect API).",
+    "category": "Category",
+    "subcategory": "Subcategory",
+    "totalKg": "Total in warehouse (kg)",
+    "price": "Price per kg",
+    "pricePerKg": "Price per kg",
+    "priceCurrency": "Currency",
+    "seriya": "Seriya number",
+    "description": "Description",
+    "kg": "kg",
+    "add": "Add roll",
+    "edit": "Edit roll",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this roll?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No rolls yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "machines": {
     "title": "Machines",
     "subtitle": "Shop floor jobs and machine runs.",
