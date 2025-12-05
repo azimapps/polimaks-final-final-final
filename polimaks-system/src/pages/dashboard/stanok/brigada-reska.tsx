@@ -189,7 +189,6 @@ export default function BrigadaReskaPage() {
                   <TableRow>
                     <TableCell sx={{ width: 240 }}>{t('brigadaPage.name')}</TableCell>
                     <TableCell>{t('brigadaPage.people')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('brigadaPage.leader')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('brigadaPage.actions')}
                     </TableCell>
@@ -198,7 +197,7 @@ export default function BrigadaReskaPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4}>
+                      <TableCell colSpan={3}>
                         <Box
                           sx={{
                             py: 6,
@@ -236,17 +235,19 @@ export default function BrigadaReskaPage() {
                               >
                                 <Iconify icon="solar:user-rounded-bold" width={16} height={16} />
                                 <Typography variant="subtitle2">{person.name}</Typography>
+                                {person.name === item.leader && (
+                                  <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: 'warning.main' }}>
+                                    <Iconify icon="solar:flag-bold" width={14} height={14} />
+                                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                                      {t('brigadaPage.leader')}
+                                    </Typography>
+                                  </Stack>
+                                )}
                                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                   · {person.position}
                                 </Typography>
                               </Stack>
                             ))}
-                          </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Iconify icon="solar:medal-ribbons-star-bold" width={18} height={18} />
-                            <Typography variant="subtitle2">{item.leader || '-'}</Typography>
                           </Stack>
                         </TableCell>
                         <TableCell align="right">
@@ -405,7 +406,7 @@ function ActionsMenu({ anchorEl, open, onClose, onEdit, onDelete, labels }: Acti
           onClose();
         }}
       >
-        <Iconify icon="eva:edit-2-fill" width={18} height={18} style={{ marginRight: 8 }} />
+        <Iconify icon="solar:pen-bold" width={18} height={18} style={{ marginRight: 8 }} />
         {labels.edit}
       </MenuItem>
       <MenuItem

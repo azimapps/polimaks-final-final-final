@@ -340,7 +340,7 @@ function ActionsMenu({
           onClose();
         }}
       >
-        <Iconify icon="solar:archive-minimalistic-bold" width={18} height={18} style={{ marginRight: 8 }} />
+        <Iconify icon="solar:list-bold" width={18} height={18} style={{ marginRight: 8 }} />
         {labels.materials}
       </MenuItem>
       <MenuItem
@@ -349,7 +349,7 @@ function ActionsMenu({
           onClose();
         }}
       >
-        <Iconify icon="eva:edit-2-fill" width={18} height={18} style={{ marginRight: 8 }} />
+        <Iconify icon="solar:pen-bold" width={18} height={18} style={{ marginRight: 8 }} />
         {labels.edit}
       </MenuItem>
       <MenuItem

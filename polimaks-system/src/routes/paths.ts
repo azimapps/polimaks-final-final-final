@@ -22,6 +22,13 @@ export const paths = {
       otxot: '/ombor/otxot',
       tayyorMahsulotlar: '/ombor/tayyor-mahsulotlar',
     },
+    staff: {
+      root: '/staff',
+      crm: '/staff/crm',
+      worker: '/staff/worker',
+      accountant: '/staff/accountant',
+      planner: '/staff/planner',
+    },
     stanok: {
       root: '/stanok',
       pechat: '/stanok/pechat',

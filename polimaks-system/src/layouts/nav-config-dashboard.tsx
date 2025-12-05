@@ -18,6 +18,7 @@ const icon = (name: string) => (
 const ICONS = {
   inventory: icon('ic-analytics'),
   machine: icon('ic-odd'),
+  staff: icon('ic-user'),
 };
 
 // ----------------------------------------------------------------------
@@ -56,6 +57,17 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('pechat'), path: paths.dashboard.stanok.pechat },
               { title: t('reska'), path: paths.dashboard.stanok.reska },
               { title: t('laminatsiya'), path: paths.dashboard.stanok.laminatsiya },
+            ],
+          },
+          {
+            title: t('staff'),
+            path: paths.dashboard.staff.root,
+            icon: ICONS.staff,
+            children: [
+              { title: t('staff_crm'), path: paths.dashboard.staff.crm },
+              { title: t('staff_worker'), path: paths.dashboard.staff.worker },
+              { title: t('staff_accountant'), path: paths.dashboard.staff.accountant },
+              { title: t('staff_planner'), path: paths.dashboard.staff.planner },
             ],
           },
         ],

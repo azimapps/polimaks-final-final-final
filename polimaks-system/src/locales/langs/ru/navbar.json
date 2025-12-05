@@ -20,5 +20,10 @@
   "tayyor_mahsulotlar": "Готовая продукция",
   "pechat": "Печать",
   "reska": "Резка",
-  "laminatsiya": "Ламинация"
+  "laminatsiya": "Ламинация",
+  "staff": "Персонал",
+  "staff_crm": "CRM",
+  "staff_worker": "Рабочие",
+  "staff_accountant": "Бухгалтеры",
+  "staff_planner": "Планировщики"
 }

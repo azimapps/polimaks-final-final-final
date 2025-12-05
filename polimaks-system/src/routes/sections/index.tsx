@@ -38,6 +38,10 @@ const BrigadaLaminatsiyaPage = lazy(() => import('src/pages/dashboard/stanok/bri
 const MaterialsPechatPage = lazy(() => import('src/pages/dashboard/stanok/materials-pechat'));
 const MaterialsReskaPage = lazy(() => import('src/pages/dashboard/stanok/materials-reska'));
 const MaterialsLaminatsiyaPage = lazy(() => import('src/pages/dashboard/stanok/materials-laminatsiya'));
+const StaffCrmPage = lazy(() => import('src/pages/dashboard/staff/crm'));
+const StaffWorkerPage = lazy(() => import('src/pages/dashboard/staff/worker'));
+const StaffAccountantPage = lazy(() => import('src/pages/dashboard/staff/accountant'));
+const StaffPlannerPage = lazy(() => import('src/pages/dashboard/staff/planner'));
 // ----------------------------------------------------------------------
 
 function SuspenseOutlet() {
@@ -93,6 +97,16 @@ export const routesSection: RouteObject[] = [
           { path: 'materials-pechat', element: <MaterialsPechatPage /> },
           { path: 'materials-reska', element: <MaterialsReskaPage /> },
           { path: 'materials-laminatsiya', element: <MaterialsLaminatsiyaPage /> },
+        ],
+      },
+      {
+        path: 'staff',
+        children: [
+          { index: true, element: <StaffCrmPage /> },
+          { path: 'crm', element: <StaffCrmPage /> },
+          { path: 'worker', element: <StaffWorkerPage /> },
+          { path: 'accountant', element: <StaffAccountantPage /> },
+          { path: 'planner', element: <StaffPlannerPage /> },
         ],
       },
     ],

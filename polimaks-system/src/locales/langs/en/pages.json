@@ -122,6 +122,28 @@
     "ru": "Russia",
     "en": "United Kingdom"
   },
+  "staff": {
+    "title": "Staff",
+    "subtitle": "Manage CRM, shop floor workers, accounting, and planning teams.",
+    "items": {
+      "crm": {
+        "title": "CRM",
+        "description": "Customer touchpoints, leads, and account owners."
+      },
+      "worker": {
+        "title": "Workers",
+        "description": "Shop floor and on-site workforce."
+      },
+      "accountant": {
+        "title": "Accountants",
+        "description": "Finance and bookkeeping staff."
+      },
+      "planner": {
+        "title": "Planners",
+        "description": "Production and schedule planners."
+      }
+    }
+  },
   "reskaPage": {
     "title": "Cutting machines",
     "subtitle": "Manage country codes and names for each cutter. Data is local for now (TODO: connect API).",

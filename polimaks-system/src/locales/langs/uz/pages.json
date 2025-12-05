@@ -122,6 +122,28 @@
     "ru": "Rossiya",
     "en": "Angliya"
   },
+  "staff": {
+    "title": "Xodimlar",
+    "subtitle": "CRM, ishchilar, buxgalteriya va rejalashtirish jamoalarini boshqaring.",
+    "items": {
+      "crm": {
+        "title": "CRM",
+        "description": "Mijozlar bilan aloqa, lidlar va akkaunt egalari."
+      },
+      "worker": {
+        "title": "Ishchilar",
+        "description": "Sex va sahnadagi xodimlar."
+      },
+      "accountant": {
+        "title": "Buxgalterlar",
+        "description": "Moliya va buxgalteriya hisobi."
+      },
+      "planner": {
+        "title": "Rejalashtiruvchilar",
+        "description": "Ishlab chiqarish va grafik rejalari."
+      }
+    }
+  },
   "reskaPage": {
     "title": "Kesish stanoklari",
     "subtitle": "Har bir stanok uchun davlat kodi va nomi. Hozircha ma'lumotlar lokal (TODO: API ulash).",
