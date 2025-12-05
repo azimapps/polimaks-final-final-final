@@ -132,7 +132,7 @@
       },
       "worker": {
         "title": "Ishchilar",
-        "description": "Sex va sahnadagi xodimlar.",
+        "description": "Ishlab chiqarish va maydondagi xodimlar.",
         "name": "To'liq ism",
         "phone": "Telefon (UZ)",
         "phoneHint": "9 raqam kiriting. Format: (##) ###-##-##",
