@@ -1,0 +1,22 @@
+[
+  {
+    "id": "kraska-1",
+    "colorName": "Qizil",
+    "colorHex": "#e53935",
+    "totalKg": 450,
+    "pricePerKg": 2.1,
+    "priceCurrency": "USD",
+    "seriyaNumber": "KRS-RED-2401",
+    "description": "Red base paint, medium opacity."
+  },
+  {
+    "id": "kraska-2",
+    "colorName": "Ko'k",
+    "colorHex": "#1e88e5",
+    "totalKg": 320,
+    "pricePerKg": 1.95,
+    "priceCurrency": "EUR",
+    "seriyaNumber": "KRS-BLU-2402",
+    "description": "Blue paint, high gloss."
+  }
+]

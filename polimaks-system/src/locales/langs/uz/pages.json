@@ -144,6 +144,36 @@
       }
     }
   },
+  "kraskaPage": {
+    "title": "Kraska",
+    "subtitle": "Ranglar, narx va ombor qoldiqlarini yuriting. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "color": "Rang",
+    "colorName": "Rang nomi",
+    "colorHex": "Rang kodi",
+    "totalKg": "Omborda (kg)",
+    "price": "1 kg narxi",
+    "pricePerKg": "1 kg narxi",
+    "priceCurrency": "Valyuta",
+    "seriya": "Seriya raqami",
+    "description": "Izoh",
+    "kg": "kg",
+    "add": "Kraska qo'shish",
+    "edit": "Kraskani tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu yozuvni o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha yozuvlar yo'q.",
+    "actions": "Amallar",
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "currency": {
+      "uzs": "SO'M",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "languages": {
     "cn": "Xitoy",
     "de": "Nemis",
