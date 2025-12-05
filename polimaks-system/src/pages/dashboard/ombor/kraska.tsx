@@ -44,6 +44,7 @@ type KraskaItem = {
   seriyaNumber: string;
   marka: string;
   createdDate: string;
+  supplier: string;
   description: string;
 };
 
@@ -63,6 +64,7 @@ const normalizeItems = (items: (Partial<KraskaItem> & { id?: string })[]): Krask
     seriyaNumber: item.seriyaNumber || '',
     marka: item.marka || '',
     createdDate: item.createdDate || todayISO(),
+    supplier: item.supplier || '',
     description: item.description || '',
   }));
 
@@ -104,6 +106,7 @@ export default function KraskaPage() {
     seriyaNumber: '',
     marka: '',
     createdDate: todayISO(),
+    supplier: '',
     description: '',
   });
 
@@ -147,6 +150,7 @@ export default function KraskaPage() {
       seriyaNumber: item.seriyaNumber,
       marka: item.marka || '',
       createdDate: item.createdDate || todayISO(),
+      supplier: item.supplier || '',
       description: item.description,
     });
     dialog.onTrue();
@@ -165,6 +169,7 @@ export default function KraskaPage() {
       seriyaNumber: form.seriyaNumber.trim(),
       marka: form.marka.trim(),
       createdDate: form.createdDate || todayISO(),
+      supplier: form.supplier.trim(),
       description: form.description,
     };
 
@@ -201,6 +206,7 @@ export default function KraskaPage() {
     parseFloat(form.pricePerKg) > 0 &&
     form.seriyaNumber.trim() &&
     form.marka.trim() &&
+    form.supplier.trim() &&
     form.createdDate;
 
   const currencyLabel = (code: Currency) => {
@@ -255,6 +261,7 @@ export default function KraskaPage() {
                     <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.marka')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 320 }}>{t('kraskaPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('kraskaPage.actions')}
@@ -264,7 +271,7 @@ export default function KraskaPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9}>
+                      <TableCell colSpan={10}>
                         <Box
                           sx={{
                             py: 6,
@@ -331,6 +338,11 @@ export default function KraskaPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.supplier || '—'}
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography
@@ -449,6 +461,14 @@ export default function KraskaPage() {
                     setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
                   }
                   InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label={t('kraskaPage.supplier')}
+                  value={form.supplier}
+                  onChange={(e) => setForm((prev) => ({ ...prev, supplier: e.target.value }))}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>

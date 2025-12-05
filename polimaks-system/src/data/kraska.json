@@ -9,6 +9,7 @@
     "seriyaNumber": "KRS-RED-2401",
     "marka": "Akzo",
     "createdDate": "2025-02-10",
+    "supplier": "AkzoNobel",
     "description": "Red base paint, medium opacity."
   },
   {
@@ -21,6 +22,7 @@
     "seriyaNumber": "KRS-BLU-2402",
     "marka": "BASF",
     "createdDate": "2025-02-12",
+    "supplier": "BASF",
     "description": "Blue paint, high gloss."
   }
 ]

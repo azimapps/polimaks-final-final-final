@@ -44,6 +44,7 @@ type SuyuqKraskaItem = {
   seriyaNumber: string;
   marka: string;
   createdDate: string;
+  supplier: string;
   description: string;
 };
 
@@ -63,6 +64,7 @@ const normalizeItems = (items: (Partial<SuyuqKraskaItem> & { id?: string })[]): 
     seriyaNumber: item.seriyaNumber || '',
     marka: item.marka || '',
     createdDate: item.createdDate || todayISO(),
+    supplier: item.supplier || '',
     description: item.description || '',
   }));
 
@@ -104,6 +106,7 @@ export default function SuyuqKraskaPage() {
     seriyaNumber: '',
     marka: '',
     createdDate: todayISO(),
+    supplier: '',
     description: '',
   });
 
@@ -147,6 +150,7 @@ export default function SuyuqKraskaPage() {
       seriyaNumber: item.seriyaNumber,
       marka: item.marka || '',
       createdDate: item.createdDate || todayISO(),
+      supplier: item.supplier || '',
       description: item.description,
     });
     dialog.onTrue();
@@ -165,6 +169,7 @@ export default function SuyuqKraskaPage() {
       seriyaNumber: form.seriyaNumber.trim(),
       marka: form.marka.trim(),
       createdDate: form.createdDate || todayISO(),
+      supplier: form.supplier.trim(),
       description: form.description,
     };
 
@@ -201,6 +206,7 @@ export default function SuyuqKraskaPage() {
     parseFloat(form.pricePerKg) > 0 &&
     form.seriyaNumber.trim() &&
     form.marka.trim() &&
+    form.supplier.trim() &&
     form.createdDate;
 
   const currencyLabel = (code: Currency) => {
@@ -255,6 +261,7 @@ export default function SuyuqKraskaPage() {
                     <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.marka')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('suyuqKraskaPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 320 }}>{t('suyuqKraskaPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('suyuqKraskaPage.actions')}
@@ -264,7 +271,7 @@ export default function SuyuqKraskaPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9}>
+                      <TableCell colSpan={10}>
                         <Box
                           sx={{
                             py: 6,
@@ -331,6 +338,11 @@ export default function SuyuqKraskaPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.supplier || '—'}
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography
@@ -449,6 +461,14 @@ export default function SuyuqKraskaPage() {
                     setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
                   }
                   InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label={t('suyuqKraskaPage.supplier')}
+                  value={form.supplier}
+                  onChange={(e) => setForm((prev) => ({ ...prev, supplier: e.target.value }))}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>

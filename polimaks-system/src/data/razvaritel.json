@@ -6,6 +6,7 @@
     "pricePerLiter": 1.6,
     "priceCurrency": "USD",
     "seriyaNumber": "EAF-2401",
+    "supplier": "ACME Chemicals",
     "createdDate": "2025-02-18",
     "description": "EAF thinner, standard mix."
   },
@@ -16,6 +17,7 @@
     "pricePerLiter": 1.45,
     "priceCurrency": "EUR",
     "seriyaNumber": "ETL-2402",
+    "supplier": "EuroSolvent",
     "createdDate": "2025-02-20",
     "description": "Etilin solvent, fast dry."
   }

@@ -9,6 +9,7 @@
     "seriyaNumber": "SKR-GRN-2401",
     "marka": "Akzo",
     "createdDate": "2025-02-14",
+    "supplier": "AkzoNobel",
     "description": "Liquid green paint, high coverage."
   },
   {
@@ -21,6 +22,7 @@
     "seriyaNumber": "SKR-YLW-2402",
     "marka": "BASF",
     "createdDate": "2025-02-16",
+    "supplier": "BASF",
     "description": "Liquid yellow paint, fast drying."
   }
 ]
