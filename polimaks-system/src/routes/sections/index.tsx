@@ -42,6 +42,11 @@ const StaffCrmPage = lazy(() => import('src/pages/dashboard/staff/crm'));
 const StaffWorkerPage = lazy(() => import('src/pages/dashboard/staff/worker'));
 const StaffAccountantPage = lazy(() => import('src/pages/dashboard/staff/accountant'));
 const StaffPlannerPage = lazy(() => import('src/pages/dashboard/staff/planner'));
+const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
+const ClientsTransactionsPage = lazy(
+  () => import('src/pages/dashboard/clients/transactions')
+);
+const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
 // ----------------------------------------------------------------------
 
 function SuspenseOutlet() {
@@ -107,6 +112,14 @@ export const routesSection: RouteObject[] = [
           { path: 'worker', element: <StaffWorkerPage /> },
           { path: 'accountant', element: <StaffAccountantPage /> },
           { path: 'planner', element: <StaffPlannerPage /> },
+        ],
+      },
+      {
+        path: 'clients',
+        children: [
+          { index: true, element: <ClientsPage /> },
+          { path: 'transactions', element: <ClientsTransactionsPage /> },
+          { path: 'materials', element: <ClientsMaterialsPage /> },
         ],
       },
     ],

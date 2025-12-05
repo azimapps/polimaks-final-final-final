@@ -29,6 +29,12 @@ export const paths = {
       accountant: '/staff/accountant',
       planner: '/staff/planner',
     },
+    clients: {
+      root: '/clients',
+      clients: '/clients',
+      transactions: '/clients/transactions',
+      materials: '/clients/materials',
+    },
     stanok: {
       root: '/stanok',
       pechat: '/stanok/pechat',

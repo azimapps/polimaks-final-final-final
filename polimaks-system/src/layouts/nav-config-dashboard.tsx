@@ -19,6 +19,7 @@ const ICONS = {
   inventory: icon('ic-analytics'),
   machine: icon('ic-odd'),
   staff: icon('ic-user'),
+  clients: icon('ic-analytics'),
 };
 
 // ----------------------------------------------------------------------
@@ -68,6 +69,16 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('staff_worker'), path: paths.dashboard.staff.worker },
               { title: t('staff_accountant'), path: paths.dashboard.staff.accountant },
               { title: t('staff_planner'), path: paths.dashboard.staff.planner },
+            ],
+          },
+          {
+            title: t('clients'),
+            path: paths.dashboard.clients.root,
+            icon: ICONS.clients,
+            children: [
+              { title: t('clients_clients'), path: paths.dashboard.clients.clients },
+              { title: t('clients_transactions'), path: paths.dashboard.clients.transactions },
+              { title: t('clients_materials'), path: paths.dashboard.clients.materials },
             ],
           },
         ],

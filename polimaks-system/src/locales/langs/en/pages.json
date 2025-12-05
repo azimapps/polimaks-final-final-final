@@ -190,5 +190,23 @@
     "deleteConfirm": "Delete this machine?",
     "deleteHint": "You can add it back later.",
     "empty": "No lamination machines yet."
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "Manage customers, their transactions, and tolling materials.",
+    "items": {
+      "clients": {
+        "title": "Clients",
+        "description": "Customer list and profiles."
+      },
+      "transactions": {
+        "title": "Transactions",
+        "description": "Oldi-berdi deals and balances."
+      },
+      "materials": {
+        "title": "Tolling materials",
+        "description": "Materials clients leave with you (davalilik)."
+      }
+    }
   }
 }

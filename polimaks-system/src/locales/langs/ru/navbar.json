@@ -25,5 +25,9 @@
   "staff_crm": "CRM",
   "staff_worker": "Рабочие",
   "staff_accountant": "Бухгалтеры",
-  "staff_planner": "Планировщики"
+  "staff_planner": "Планировщики",
+  "clients": "Клиенты",
+  "clients_clients": "Клиенты",
+  "clients_transactions": "Сделки",
+  "clients_materials": "Давальческое сырьё"
 }

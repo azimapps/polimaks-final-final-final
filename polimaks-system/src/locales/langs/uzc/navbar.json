@@ -25,5 +25,9 @@
   "staff_crm": "CRM",
   "staff_worker": "Ишчилар",
   "staff_accountant": "Бухгалтерлар",
-  "staff_planner": "Режалаштирувчилар"
+  "staff_planner": "Режалаштирувчилар",
+  "clients": "Клиентлар",
+  "clients_clients": "Клиентлар",
+  "clients_transactions": "Олди-берди",
+  "clients_materials": "Давалдилик материаллар"
 }

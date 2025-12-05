@@ -190,5 +190,23 @@
     "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha stanoklar yo'q."
+  },
+  "clients": {
+    "title": "Klientlar",
+    "subtitle": "Klientlar, oldi-berdi va davaldilik materiallarini boshqaring.",
+    "items": {
+      "clients": {
+        "title": "Klientlar",
+        "description": "Klientlar ro'yxati va profilari."
+      },
+      "transactions": {
+        "title": "Oldi-berdi",
+        "description": "Bitimlar va hisob-kitoblar."
+      },
+      "materials": {
+        "title": "Davaldilik materiallari",
+        "description": "Klientlar tashlab ketgan mahsulot va xomashyo."
+      }
+    }
   }
 }

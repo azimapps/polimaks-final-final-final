@@ -25,5 +25,9 @@
   "staff_crm": "CRM",
   "staff_worker": "Workers",
   "staff_accountant": "Accountants",
-  "staff_planner": "Planners"
+  "staff_planner": "Planners",
+  "clients": "Clients",
+  "clients_clients": "Clients",
+  "clients_transactions": "Transactions",
+  "clients_materials": "Tolling materials"
 }
