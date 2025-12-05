@@ -97,6 +97,30 @@
       }
     }
   },
+  "zapchastlarPage": {
+    "title": "Zapchastlar",
+    "subtitle": "Zapchastlar, narx va izohlarni yuriting. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "titleLabel": "Nomi",
+    "price": "Narx",
+    "priceCurrency": "Valyuta",
+    "description": "Izoh",
+    "add": "Zapchast qo'shish",
+    "edit": "Zapchastni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu zapchastni o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha zapchastlar yo'q.",
+    "actions": "Amallar",
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "currency": {
+      "uzs": "SO'M",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "plyonkaPage": {
     "title": "Plyonka",
     "subtitle": "BOPP/CPP/PE/PET kategoriyalari, narx va ombor qoldiqlarini kuzating. Hozircha ma'lumotlar lokal (TODO: API ulash).",

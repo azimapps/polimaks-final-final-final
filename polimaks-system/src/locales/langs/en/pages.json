@@ -97,6 +97,30 @@
       }
     }
   },
+  "zapchastlarPage": {
+    "title": "Spare parts",
+    "subtitle": "Track parts, price, and notes. Data is local for now (TODO: connect API).",
+    "titleLabel": "Title",
+    "price": "Price",
+    "priceCurrency": "Currency",
+    "description": "Description",
+    "add": "Add part",
+    "edit": "Edit part",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this part?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No parts yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "plyonkaPage": {
     "title": "Film rolls",
     "subtitle": "Track BOPP/CPP/PE/PET categories, pricing, and warehouse stock. Data is local for now (TODO: connect API).",

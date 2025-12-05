@@ -1,0 +1,16 @@
+[
+  {
+    "id": "zp-1",
+    "title": "Rolik podshipnik",
+    "price": 250,
+    "priceCurrency": "USD",
+    "description": "Roller bearing for press unit."
+  },
+  {
+    "id": "zp-2",
+    "title": "Sensor moduĺi",
+    "price": 180,
+    "priceCurrency": "EUR",
+    "description": "Optical sensor replacement."
+  }
+]
