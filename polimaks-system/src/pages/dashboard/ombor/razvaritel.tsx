@@ -43,10 +43,28 @@ type RazvaritelItem = {
   pricePerLiter: number;
   priceCurrency: Currency;
   seriyaNumber: string;
+  createdDate: string;
   description: string;
 };
 
 const STORAGE_KEY = 'ombor-razvaritel';
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const normalizeItems = (items: (Partial<RazvaritelItem> & { id?: string })[]): RazvaritelItem[] =>
+  items.map((item, index) => ({
+    id: item.id || `razvaritel-${index}`,
+    type: (item.type as RazvaritelType) || 'eaf',
+    totalLiter: typeof item.totalLiter === 'number' ? item.totalLiter : Number(item.totalLiter) || 0,
+    pricePerLiter:
+      typeof item.pricePerLiter === 'number'
+        ? item.pricePerLiter
+        : Number(item.pricePerLiter) || 0,
+    priceCurrency: (item.priceCurrency as Currency) || 'UZS',
+    seriyaNumber: item.seriyaNumber || '',
+    createdDate: item.createdDate || todayISO(),
+    description: item.description || '',
+  }));
 
 export default function RazvaritelPage() {
   const { t } = useTranslate('pages');
@@ -58,13 +76,13 @@ export default function RazvaritelPage() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as RazvaritelItem[];
+          return normalizeItems(JSON.parse(stored) as RazvaritelItem[]);
         } catch {
           // ignore corrupted data
         }
       }
     }
-    return seedData as RazvaritelItem[];
+    return normalizeItems(seedData as RazvaritelItem[]);
   }, []);
 
   const [items, setItems] = useState<RazvaritelItem[]>(initialData);
@@ -83,6 +101,7 @@ export default function RazvaritelPage() {
     pricePerLiter: '',
     priceCurrency: 'UZS',
     seriyaNumber: '',
+    createdDate: todayISO(),
     description: '',
   });
 
@@ -107,6 +126,7 @@ export default function RazvaritelPage() {
       pricePerLiter: '',
       priceCurrency: 'UZS',
       seriyaNumber: '',
+      createdDate: todayISO(),
       description: '',
     });
     dialog.onTrue();
@@ -120,6 +140,7 @@ export default function RazvaritelPage() {
       pricePerLiter: item.pricePerLiter ? String(item.pricePerLiter) : '',
       priceCurrency: item.priceCurrency,
       seriyaNumber: item.seriyaNumber,
+      createdDate: item.createdDate || todayISO(),
       description: item.description,
     });
     dialog.onTrue();
@@ -135,6 +156,7 @@ export default function RazvaritelPage() {
       pricePerLiter: priceNum,
       priceCurrency: form.priceCurrency,
       seriyaNumber: form.seriyaNumber.trim(),
+      createdDate: form.createdDate || todayISO(),
       description: form.description,
     };
 
@@ -168,7 +190,8 @@ export default function RazvaritelPage() {
   const canSave =
     parseFloat(form.totalLiter) > 0 &&
     parseFloat(form.pricePerLiter) > 0 &&
-    form.seriyaNumber.trim();
+    form.seriyaNumber.trim() &&
+    form.createdDate;
 
   const currencyLabel = (code: Currency) => {
     switch (code) {
@@ -206,15 +229,23 @@ export default function RazvaritelPage() {
 
           <Card>
             <TableContainer>
-              <Table size="medium">
+              <Table
+                size="medium"
+                sx={{
+                  minWidth: 1200,
+                  '& th, & td': { py: 1.5, px: 1.25 },
+                }}
+              >
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ width: 180 }}>{t('razvaritelPage.type')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('razvaritelPage.totalLiter')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('razvaritelPage.price')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('razvaritelPage.seriya')}</TableCell>
-                    <TableCell>{t('razvaritelPage.description')}</TableCell>
-                    <TableCell align="right" sx={{ width: 100 }}>
+                    <TableCell sx={{ minWidth: 180 }}>{t('razvaritelPage.type')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('razvaritelPage.totalLiter')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.price')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.totalPrice')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('razvaritelPage.seriya')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('razvaritelPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 260 }}>{t('razvaritelPage.description')}</TableCell>
+                    <TableCell align="right" sx={{ width: 120 }}>
                       {t('razvaritelPage.actions')}
                     </TableCell>
                   </TableRow>
@@ -222,7 +253,7 @@ export default function RazvaritelPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={8}>
                         <Box
                           sx={{
                             py: 6,
@@ -259,10 +290,28 @@ export default function RazvaritelPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
+                          <Typography variant="body2">
+                            {(item.totalLiter * item.pricePerLiter).toLocaleString()}{' '}
+                            {currencyLabel(item.priceCurrency)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {item.description || '—'}
                           </Typography>
                         </TableCell>
@@ -338,7 +387,7 @@ export default function RazvaritelPage() {
                   ))}
                 </TextField>
               </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label={t('razvaritelPage.seriya')}
@@ -346,6 +395,18 @@ export default function RazvaritelPage() {
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, seriyaNumber: e.target.value }))
                   }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label={t('razvaritelPage.receivedDate')}
+                  value={form.createdDate}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
+                  }
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>

@@ -2,15 +2,19 @@
   {
     "id": "zp-1",
     "title": "Rolik podshipnik",
+    "quantity": 24,
     "price": 250,
     "priceCurrency": "USD",
+    "createdDate": "2025-02-22",
     "description": "Roller bearing for press unit."
   },
   {
     "id": "zp-2",
     "title": "Sensor moduĺi",
+    "quantity": 12,
     "price": 180,
     "priceCurrency": "EUR",
+    "createdDate": "2025-02-24",
     "description": "Optical sensor replacement."
   }
 ]

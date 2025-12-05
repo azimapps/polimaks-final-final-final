@@ -36,12 +36,27 @@ type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
 type PartItem = {
   id: string;
   title: string;
+  quantity: number;
   price: number;
   priceCurrency: Currency;
+  createdDate: string;
   description: string;
 };
 
 const STORAGE_KEY = 'ombor-zapchastlar';
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const normalizeItems = (items: (Partial<PartItem> & { id?: string })[]): PartItem[] =>
+  items.map((item, index) => ({
+    id: item.id || `part-${index}`,
+    title: item.title || '',
+    quantity: typeof item.quantity === 'number' ? item.quantity : Number(item.quantity) || 0,
+    price: typeof item.price === 'number' ? item.price : Number(item.price) || 0,
+    priceCurrency: (item.priceCurrency as Currency) || 'UZS',
+    createdDate: item.createdDate || todayISO(),
+    description: item.description || '',
+  }));
 
 export default function ZapchastlarPage() {
   const { t } = useTranslate('pages');
@@ -52,13 +67,13 @@ export default function ZapchastlarPage() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as PartItem[];
+          return normalizeItems(JSON.parse(stored) as PartItem[]);
         } catch {
           // ignore corrupted data
         }
       }
     }
-    return seedData as PartItem[];
+    return normalizeItems(seedData as PartItem[]);
   }, []);
 
   const [items, setItems] = useState<PartItem[]>(initialData);
@@ -66,10 +81,14 @@ export default function ZapchastlarPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<PartItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PartItem | null>(null);
-  const [form, setForm] = useState<Omit<PartItem, 'id' | 'price'> & { price: string }>({
+  const [form, setForm] = useState<
+    Omit<PartItem, 'id' | 'price' | 'quantity'> & { price: string; quantity: string }
+  >({
     title: '',
+    quantity: '',
     price: '',
     priceCurrency: 'UZS',
+    createdDate: todayISO(),
     description: '',
   });
 
@@ -78,7 +97,7 @@ export default function ZapchastlarPage() {
 
   const setItemsAndPersist = (updater: (prev: PartItem[]) => PartItem[]) => {
     setItems((prev) => {
-      const next = updater(prev);
+      const next = normalizeItems(updater(prev));
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       }
@@ -88,7 +107,14 @@ export default function ZapchastlarPage() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ title: '', price: '', priceCurrency: 'UZS', description: '' });
+    setForm({
+      title: '',
+      quantity: '',
+      price: '',
+      priceCurrency: 'UZS',
+      createdDate: todayISO(),
+      description: '',
+    });
     dialog.onTrue();
   };
 
@@ -96,20 +122,25 @@ export default function ZapchastlarPage() {
     setEditing(item);
     setForm({
       title: item.title,
+      quantity: item.quantity ? String(item.quantity) : '',
       price: item.price ? String(item.price) : '',
       priceCurrency: item.priceCurrency,
+      createdDate: item.createdDate || todayISO(),
       description: item.description,
     });
     dialog.onTrue();
   };
 
   const handleSave = () => {
+    const quantityNum = parseFloat(form.quantity) || 0;
     const priceNum = parseFloat(form.price) || 0;
     const payload: PartItem = {
       id: editing ? editing.id : uuidv4(),
       title: form.title.trim(),
+      quantity: quantityNum,
       price: priceNum,
       priceCurrency: form.priceCurrency,
+      createdDate: form.createdDate || todayISO(),
       description: form.description,
     };
 
@@ -140,7 +171,11 @@ export default function ZapchastlarPage() {
     setMenuItem(null);
   };
 
-  const canSave = form.title.trim() && parseFloat(form.price) > 0;
+  const canSave =
+    form.title.trim() &&
+    parseFloat(form.price) > 0 &&
+    parseFloat(form.quantity) > 0 &&
+    form.createdDate;
 
   const currencyLabel = (code: Currency) => {
     switch (code) {
@@ -178,12 +213,21 @@ export default function ZapchastlarPage() {
 
           <Card>
             <TableContainer>
-              <Table size="medium">
+              <Table
+                size="medium"
+                sx={{
+                  minWidth: 1000,
+                  '& th, & td': { py: 1.5, px: 1.25 },
+                }}
+              >
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ width: 240 }}>{t('zapchastlarPage.titleLabel')}</TableCell>
+                    <TableCell sx={{ width: 140 }}>{t('zapchastlarPage.quantity')}</TableCell>
                     <TableCell sx={{ width: 200 }}>{t('zapchastlarPage.price')}</TableCell>
-                    <TableCell>{t('zapchastlarPage.description')}</TableCell>
+                    <TableCell sx={{ width: 200 }}>{t('zapchastlarPage.totalPrice')}</TableCell>
+                    <TableCell sx={{ width: 180 }}>{t('zapchastlarPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 260 }}>{t('zapchastlarPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 100 }}>
                       {t('zapchastlarPage.actions')}
                     </TableCell>
@@ -192,7 +236,7 @@ export default function ZapchastlarPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4}>
+                      <TableCell colSpan={6}>
                         <Box
                           sx={{
                             py: 6,
@@ -219,12 +263,33 @@ export default function ZapchastlarPage() {
                           <Typography variant="subtitle2">{item.title}</Typography>
                         </TableCell>
                         <TableCell>
+                          <Typography variant="body2">{item.quantity.toLocaleString()}</Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2">
                             {item.price.toLocaleString()} {currencyLabel(item.priceCurrency)}
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          <Typography variant="body2">
+                            {(item.quantity * item.price).toLocaleString()}{' '}
+                            {currencyLabel(item.priceCurrency)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {item.description || '—'}
                           </Typography>
                         </TableCell>
@@ -246,13 +311,31 @@ export default function ZapchastlarPage() {
       <Dialog open={dialog.value} onClose={dialog.onFalse} maxWidth="sm" fullWidth>
         <DialogTitle>{editing ? t('zapchastlarPage.edit') : t('zapchastlarPage.add')}</DialogTitle>
         <DialogContent dividers>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField
-              label={t('zapchastlarPage.titleLabel')}
-              value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-            />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <TextField
+                label={t('zapchastlarPage.titleLabel')}
+                value={form.title}
+                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+              />
+              <TextField
+                fullWidth
+                type="date"
+                label={t('zapchastlarPage.receivedDate')}
+                value={form.createdDate}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
+                }
+                InputLabelProps={{ shrink: true }}
+              />
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+              <TextField
+                fullWidth
+                type="number"
+                label={t('zapchastlarPage.quantity')}
+                value={form.quantity}
+                onChange={(e) => setForm((prev) => ({ ...prev, quantity: e.target.value }))}
+                inputProps={{ min: 0, step: '1', placeholder: t('zapchastlarPage.quantity') }}
+              />
               <TextField
                 fullWidth
                 type="number"

@@ -45,10 +45,13 @@ type SilindirItem = {
   usageLimit: number;
   price: number;
   priceCurrency: Currency;
+  createdDate: string;
   description: string;
 };
 
 const STORAGE_KEY = 'ombor-silindir';
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
 
 export default function SilindirPage() {
   const { t } = useTranslate('pages');
@@ -60,13 +63,21 @@ export default function SilindirPage() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as SilindirItem[];
+          return (JSON.parse(stored) as SilindirItem[]).map((item, index) => ({
+            ...item,
+            id: item.id || `silindir-${index}`,
+            createdDate: item.createdDate || todayISO(),
+          }));
         } catch {
           // ignore corrupted data
         }
       }
     }
-    return seedData as SilindirItem[];
+    return (seedData as SilindirItem[]).map((item, index) => ({
+      ...item,
+      id: item.id || `silindir-${index}`,
+      createdDate: item.createdDate || todayISO(),
+    }));
   }, []);
 
   const [items, setItems] = useState<SilindirItem[]>(initialData);
@@ -94,6 +105,7 @@ export default function SilindirPage() {
     usageLimit: '',
     price: '',
     priceCurrency: 'UZS',
+    createdDate: todayISO(),
     description: '',
   });
 
@@ -121,6 +133,7 @@ export default function SilindirPage() {
       usageLimit: '',
       price: '',
       priceCurrency: 'UZS',
+      createdDate: todayISO(),
       description: '',
     });
     dialog.onTrue();
@@ -137,6 +150,7 @@ export default function SilindirPage() {
       usageLimit: item.usageLimit ? String(item.usageLimit) : '',
       price: item.price ? String(item.price) : '',
       priceCurrency: item.priceCurrency,
+      createdDate: item.createdDate || todayISO(),
       description: item.description,
     });
     dialog.onTrue();
@@ -153,6 +167,7 @@ export default function SilindirPage() {
       usageLimit: parseFloat(form.usageLimit) || 0,
       price: parseFloat(form.price) || 0,
       priceCurrency: form.priceCurrency,
+      createdDate: form.createdDate || todayISO(),
       description: form.description,
     };
 
@@ -189,7 +204,8 @@ export default function SilindirPage() {
     parseFloat(form.diameter) > 0 &&
     parseFloat(form.usage) >= 0 &&
     parseFloat(form.usageLimit) > 0 &&
-    parseFloat(form.price) > 0;
+    parseFloat(form.price) > 0 &&
+    form.createdDate;
 
   const originLabel = (origin: Origin) => {
     switch (origin) {
@@ -238,17 +254,24 @@ export default function SilindirPage() {
 
           <Card>
             <TableContainer>
-              <Table size="medium">
+              <Table
+                size="medium"
+                sx={{
+                  minWidth: 1200,
+                  '& th, & td': { py: 1.5, px: 1.25 },
+                }}
+              >
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ width: 160 }}>{t('silindirPage.originLabel')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('silindirPage.length')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('silindirPage.diameter')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('silindirPage.usage')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('silindirPage.price')}</TableCell>
-                    <TableCell sx={{ width: 160 }}>{t('silindirPage.seriya')}</TableCell>
-                    <TableCell>{t('silindirPage.description')}</TableCell>
-                    <TableCell align="right" sx={{ width: 100 }}>
+                    <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.originLabel')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.length')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.diameter')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('silindirPage.usage')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('silindirPage.price')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('silindirPage.seriya')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('silindirPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 260 }}>{t('silindirPage.description')}</TableCell>
+                    <TableCell align="right" sx={{ width: 120 }}>
                       {t('silindirPage.actions')}
                     </TableCell>
                   </TableRow>
@@ -256,7 +279,7 @@ export default function SilindirPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7}>
+                      <TableCell colSpan={8}>
                         <Box
                           sx={{
                             py: 6,
@@ -307,7 +330,19 @@ export default function SilindirPage() {
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {item.description || '—'}
                           </Typography>
                         </TableCell>
@@ -417,7 +452,7 @@ export default function SilindirPage() {
                   ))}
                 </TextField>
               </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label={t('silindirPage.seriya')}
@@ -425,6 +460,18 @@ export default function SilindirPage() {
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, seriyaNumber: e.target.value }))
                   }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label={t('silindirPage.receivedDate')}
+                  value={form.createdDate}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, createdDate: e.target.value || todayISO() }))
+                  }
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
