@@ -121,6 +121,33 @@
       "eur": "EUR"
     }
   },
+  "otxotPage": {
+    "title": "Otxot",
+    "subtitle": "Chiqit / brak kilogrammi va kg narxi. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "titleLabel": "Nomi",
+    "totalKg": "Jami (kg)",
+    "price": "1 kg narxi",
+    "pricePerKg": "1 kg narxi",
+    "priceCurrency": "Valyuta",
+    "description": "Izoh",
+    "kg": "kg",
+    "add": "Otxot qo'shish",
+    "edit": "Otxotni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu yozuvni o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha yozuvlar yo'q.",
+    "actions": "Amallar",
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "currency": {
+      "uzs": "SO'M",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "plyonkaPage": {
     "title": "Plyonka",
     "subtitle": "BOPP/CPP/PE/PET kategoriyalari, narx va ombor qoldiqlarini kuzating. Hozircha ma'lumotlar lokal (TODO: API ulash).",

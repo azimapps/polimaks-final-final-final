@@ -97,6 +97,33 @@
       }
     }
   },
+  "otxotPage": {
+    "title": "Waste",
+    "subtitle": "Track waste/scrap weight and price per kg. Data is local for now (TODO: connect API).",
+    "titleLabel": "Title",
+    "totalKg": "Total (kg)",
+    "price": "Price per kg",
+    "pricePerKg": "Price per kg",
+    "priceCurrency": "Currency",
+    "description": "Description",
+    "kg": "kg",
+    "add": "Add waste",
+    "edit": "Edit waste",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this record?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No waste records yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "zapchastlarPage": {
     "title": "Spare parts",
     "subtitle": "Track parts, price, and notes. Data is local for now (TODO: connect API).",

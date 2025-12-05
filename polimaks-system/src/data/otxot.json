@@ -1,0 +1,18 @@
+[
+  {
+    "id": "otx-1",
+    "title": "Otxot plastmassa",
+    "totalKg": 320,
+    "pricePerKg": 0.25,
+    "priceCurrency": "USD",
+    "description": "Plastik chiqindilar."
+  },
+  {
+    "id": "otx-2",
+    "title": "Qog'oz chiqindi",
+    "totalKg": 180,
+    "pricePerKg": 0.12,
+    "priceCurrency": "EUR",
+    "description": "Qog'oz va karton chiqindisi."
+  }
+]
