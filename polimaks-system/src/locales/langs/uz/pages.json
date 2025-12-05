@@ -124,6 +124,41 @@
       "eur": "EUR"
     }
   },
+  "kleyPage": {
+    "title": "Kley",
+    "subtitle": "Kley partiyalari, og'irlik va narxlarini yetkazib beruvchilar bilan yuriting. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "receivedDate": "Kelib tushgan sana",
+    "supplier": "Yetkazib beruvchi korxona",
+    "numberIdentifier": "Raqami",
+    "type": "Tip",
+    "brand": "Kley markasi",
+    "name": "Nomi / izoh",
+    "barrels": "Bochka",
+    "netWeight": "Netto og'irligi",
+    "grossWeight": "Brutto og'irligi",
+    "totalNetWeight": "Jami netto",
+    "totalGrossWeight": "Jami brutto",
+    "price": "Narx",
+    "priceCurrency": "Valyuta",
+    "totalPrice": "Jami summa",
+    "kg": "kg",
+    "add": "Kley qo'shish",
+    "edit": "Kley tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu kley yozuvini o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha kley yozuvlari yo'q.",
+    "actions": "Amallar",
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "currency": {
+      "uzs": "SO'M",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "tayyorMahsulotlarPage": {
     "title": "Tayyor mahsulotlar",
     "subtitle": "Angren/Toshkent joylashuvi, vazn, metr va kg narxini yuriting. Hozircha ma'lumotlar lokal (TODO: API ulash).",

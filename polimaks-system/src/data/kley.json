@@ -1,0 +1,36 @@
+[
+  {
+    "id": "kley-1",
+    "receivedDate": "2025-02-15",
+    "numberIdentifier": "GL-2401-A",
+    "type": "PU",
+    "supplier": "Henkel",
+    "brand": "Loctite 406",
+    "name": "Fast bonding adhesive",
+    "barrels": 8,
+    "netWeight": 18,
+    "grossWeight": 20,
+    "totalNetWeight": 144,
+    "totalGrossWeight": 160,
+    "price": 3.5,
+    "priceCurrency": "USD",
+    "description": "Transparent PU glue for packaging lines."
+  },
+  {
+    "id": "kley-2",
+    "receivedDate": "2025-02-18",
+    "numberIdentifier": "GL-2401-B",
+    "type": "Water-based",
+    "supplier": "3M",
+    "brand": "Scotch-Weld 3792",
+    "name": "Hot melt glue sticks",
+    "barrels": 4,
+    "netWeight": 15,
+    "grossWeight": 17,
+    "totalNetWeight": 60,
+    "totalGrossWeight": 68,
+    "price": 2.8,
+    "priceCurrency": "EUR",
+    "description": "General purpose glue sticks."
+  }
+]

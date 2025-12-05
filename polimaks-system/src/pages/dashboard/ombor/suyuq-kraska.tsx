@@ -134,6 +134,7 @@ export default function SuyuqKraskaPage() {
       seriyaNumber: '',
       marka: '',
       createdDate: todayISO(),
+      supplier: '',
       description: '',
     });
     dialog.onTrue();

@@ -187,6 +187,41 @@
       "eur": "EUR"
     }
   },
+  "kleyPage": {
+    "title": "Клей",
+    "subtitle": "Учёт партий клея: веса, цена и поставщики. Данные локальные (TODO: подключить API).",
+    "receivedDate": "Дата прихода",
+    "supplier": "Поставщик",
+    "numberIdentifier": "Номер",
+    "type": "Тип",
+    "brand": "Марка клея",
+    "name": "Наименование / описание",
+    "barrels": "Бочки",
+    "netWeight": "Вес нетто",
+    "grossWeight": "Вес брутто",
+    "totalNetWeight": "Общий вес нетто",
+    "totalGrossWeight": "Общий вес брутто",
+    "price": "Цена",
+    "priceCurrency": "Валюта",
+    "totalPrice": "Сумма",
+    "kg": "кг",
+    "add": "Добавить клей",
+    "edit": "Редактировать клей",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "deleteConfirm": "Удалить эту запись?",
+    "deleteHint": "Вы сможете добавить её снова позже.",
+    "empty": "Пока нет записей.",
+    "actions": "Действия",
+    "localHint": "Данные сохраняются в браузере. Позже подключите API.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "plyonkaPage": {
     "title": "Плёнка",
     "subtitle": "Следите за категориями BOPP/CPP/PE/PET, ценами и остатками на складе. Данные локальные (TODO: подключить API).",

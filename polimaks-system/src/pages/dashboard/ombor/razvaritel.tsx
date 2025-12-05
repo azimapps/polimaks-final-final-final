@@ -113,7 +113,7 @@ export default function RazvaritelPage() {
 
   const setItemsAndPersist = (updater: (prev: RazvaritelItem[]) => RazvaritelItem[]) => {
     setItems((prev) => {
-      const next = updater(prev);
+      const next = normalizeItems(updater(prev));
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       }
@@ -130,6 +130,7 @@ export default function RazvaritelPage() {
       priceCurrency: 'UZS',
       seriyaNumber: '',
       createdDate: todayISO(),
+      supplier: '',
       description: '',
     });
     dialog.onTrue();
@@ -306,12 +307,12 @@ export default function RazvaritelPage() {
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
                         </TableCell>
                         <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
                             {item.supplier || '—'}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.createdDate}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography

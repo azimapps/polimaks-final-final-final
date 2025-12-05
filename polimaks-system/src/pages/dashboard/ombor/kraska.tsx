@@ -134,6 +134,7 @@ export default function KraskaPage() {
       seriyaNumber: '',
       marka: '',
       createdDate: todayISO(),
+      supplier: '',
       description: '',
     });
     dialog.onTrue();
