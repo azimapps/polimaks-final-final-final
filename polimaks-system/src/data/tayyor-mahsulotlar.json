@@ -1,0 +1,22 @@
+[
+  {
+    "id": "tm-1",
+    "location": "angren",
+    "title": "Pechat partiya 2401",
+    "totalKg": 950,
+    "totalMeter": 3200,
+    "pricePerKg": 1.75,
+    "priceCurrency": "USD",
+    "description": "Bosilgan mahsulotlar, tayyor jo'natmaga."
+  },
+  {
+    "id": "tm-2",
+    "location": "tashkent",
+    "title": "Laminatsiya partiya 2402",
+    "totalKg": 780,
+    "totalMeter": 2800,
+    "pricePerKg": 1.95,
+    "priceCurrency": "EUR",
+    "description": "Laminatsiyadan chiqqan tayyor mahsulot."
+  }
+]

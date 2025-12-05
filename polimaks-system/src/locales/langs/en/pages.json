@@ -97,6 +97,40 @@
       }
     }
   },
+  "tayyorMahsulotlarPage": {
+    "title": "Finished goods",
+    "subtitle": "Track finished goods by location, weight, meter, and price per kg. Data is local for now (TODO: connect API).",
+    "locationLabel": "Location",
+    "titleLabel": "Title",
+    "totalKg": "Total (kg)",
+    "totalMeter": "Total (meter)",
+    "price": "Price per kg",
+    "pricePerKg": "Price per kg",
+    "priceCurrency": "Currency",
+    "description": "Description",
+    "kg": "kg",
+    "meter": "m",
+    "add": "Add finished goods",
+    "edit": "Edit finished goods",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this record?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No records yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "location": {
+      "angren": "Angren",
+      "tashkent": "Tashkent"
+    },
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "otxotPage": {
     "title": "Waste",
     "subtitle": "Track waste/scrap weight and price per kg. Data is local for now (TODO: connect API).",
