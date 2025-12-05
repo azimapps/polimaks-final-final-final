@@ -204,6 +204,34 @@
       "eur": "EUR"
     }
   },
+  "razvaritelPage": {
+    "title": "Thinner",
+    "subtitle": "Track EAF, etilin, and metoksil thinners with pricing and stock. Data is local for now (TODO: connect API).",
+    "type": "Type",
+    "totalLiter": "Total in warehouse (L)",
+    "price": "Price per liter",
+    "pricePerLiter": "Price per liter",
+    "priceCurrency": "Currency",
+    "seriya": "Seriya number",
+    "description": "Description",
+    "liter": "L",
+    "add": "Add thinner",
+    "edit": "Edit thinner",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this entry?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No entries yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "languages": {
     "cn": "China",
     "de": "Germany",

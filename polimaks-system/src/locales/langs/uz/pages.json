@@ -204,6 +204,34 @@
       "eur": "EUR"
     }
   },
+  "razvaritelPage": {
+    "title": "Razvaritel",
+    "subtitle": "EAF, etilin, metoksil turlari, narx va ombor qoldiqlarini yuriting. Hozircha ma'lumotlar lokal (TODO: API ulash).",
+    "type": "Turi",
+    "totalLiter": "Omborda (L)",
+    "price": "1 litr narxi",
+    "pricePerLiter": "1 litr narxi",
+    "priceCurrency": "Valyuta",
+    "seriya": "Seriya raqami",
+    "description": "Izoh",
+    "liter": "l",
+    "add": "Razvaritel qo'shish",
+    "edit": "Razvaritelni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu yozuvni o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha yozuvlar yo'q.",
+    "actions": "Amallar",
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "currency": {
+      "uzs": "SO'M",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "languages": {
     "cn": "Xitoy",
     "de": "Nemis",

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "raz-1",
+    "type": "eaf",
+    "totalLiter": 300,
+    "pricePerLiter": 1.6,
+    "priceCurrency": "USD",
+    "seriyaNumber": "EAF-2401",
+    "description": "EAF thinner, standard mix."
+  },
+  {
+    "id": "raz-2",
+    "type": "etilin",
+    "totalLiter": 220,
+    "pricePerLiter": 1.45,
+    "priceCurrency": "EUR",
+    "seriyaNumber": "ETL-2402",
+    "description": "Etilin solvent, fast dry."
+  }
+]
