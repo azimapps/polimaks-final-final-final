@@ -232,6 +232,41 @@
       "eur": "EUR"
     }
   },
+  "silindirPage": {
+    "title": "Cylinders",
+    "subtitle": "Track cylinder origin (China/Germany), size, usage, and seriya. Data is local for now (TODO: connect API).",
+    "originLabel": "Origin",
+    "length": "Length",
+    "diameter": "Diameter",
+    "usage": "Usage / limit",
+    "usageLimit": "Usage limit",
+    "usageUnit": "uses",
+    "price": "Total price",
+    "priceCurrency": "Currency",
+    "seriya": "Seriya number",
+    "description": "Description",
+    "mm": "mm",
+    "add": "Add cylinder",
+    "edit": "Edit cylinder",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this entry?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No entries yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "origin": {
+      "china": "Chinese",
+      "germany": "German"
+    },
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
   "languages": {
     "cn": "China",
     "de": "Germany",
