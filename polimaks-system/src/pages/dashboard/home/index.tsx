@@ -35,7 +35,8 @@ export default function HomePage() {
         'kley',
         'zapchastlar',
         'otxot',
-        'tayyor_mahsulotlar',
+        'tayyor_mahsulotlar_tashkent',
+        'tayyor_mahsulotlar_angren',
       ],
     },
     {

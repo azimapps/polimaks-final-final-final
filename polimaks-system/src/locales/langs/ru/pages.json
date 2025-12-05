@@ -94,6 +94,14 @@
       "tayyor_mahsulotlar": {
         "title": "Готовая продукция",
         "description": "Готовая продукция, подготовленная к отгрузке."
+      },
+      "tayyor_mahsulotlar_tashkent": {
+        "title": "Готовая продукция (Ташкент)",
+        "description": "Готовая продукция на складе Ташкент."
+      },
+      "tayyor_mahsulotlar_angren": {
+        "title": "Готовая продукция (Ангрен)",
+        "description": "Готовая продукция на складе Ангрен."
       }
     }
   },
@@ -124,6 +132,78 @@
       "angren": "Ангрен",
       "tashkent": "Ташкент"
     },
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarTashkentPage": {
+    "title": "Готовая продукция (Ташкент)",
+    "subtitle": "Учёт готовой продукции на складе Ташкент.",
+    "receivedDate": "Дата прихода",
+    "supplier": "Поставщик",
+    "numberIdentifier": "Номер",
+    "type": "Тип",
+    "brand": "Марка клея",
+    "name": "Наименование / описание",
+    "description": "Описание",
+    "quantity": "К-во штук",
+    "netWeight": "Вес нетто",
+    "grossWeight": "Вес брутто",
+    "totalNetWeight": "Общий вес нетто",
+    "totalGrossWeight": "Общий вес брутто",
+    "price": "Цена",
+    "priceCurrency": "Валюта",
+    "totalPrice": "Сумма",
+    "kg": "кг",
+    "add": "Добавить запись",
+    "edit": "Редактировать запись",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "deleteConfirm": "Удалить эту запись?",
+    "deleteHint": "Вы сможете добавить её снова позже.",
+    "empty": "Записей пока нет.",
+    "actions": "Действия",
+    "localHint": "Данные сохраняются в браузере. Позже подключите API.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarAngrenPage": {
+    "title": "Готовая продукция (Ангрен)",
+    "subtitle": "Учёт готовой продукции на складе Ангрен.",
+    "receivedDate": "Дата прихода",
+    "supplier": "Поставщик",
+    "numberIdentifier": "Номер",
+    "type": "Тип",
+    "brand": "Марка клея",
+    "name": "Наименование / описание",
+    "description": "Описание",
+    "quantity": "К-во штук",
+    "netWeight": "Вес нетто",
+    "grossWeight": "Вес брутто",
+    "totalNetWeight": "Общий вес нетто",
+    "totalGrossWeight": "Общий вес брутто",
+    "price": "Цена",
+    "priceCurrency": "Валюта",
+    "totalPrice": "Сумма",
+    "kg": "кг",
+    "add": "Добавить запись",
+    "edit": "Редактировать запись",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "deleteConfirm": "Удалить эту запись?",
+    "deleteHint": "Вы сможете добавить её снова позже.",
+    "empty": "Записей пока нет.",
+    "actions": "Действия",
+    "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "currency": {
       "uzs": "UZS",
       "usd": "USD",

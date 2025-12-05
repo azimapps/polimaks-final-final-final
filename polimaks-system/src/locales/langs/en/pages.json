@@ -94,6 +94,14 @@
       "tayyor_mahsulotlar": {
         "title": "Finished goods",
         "description": "Finished goods prepared for shipment."
+      },
+      "tayyor_mahsulotlar_tashkent": {
+        "title": "Finished goods (Tashkent)",
+        "description": "Finished goods prepared in Tashkent."
+      },
+      "tayyor_mahsulotlar_angren": {
+        "title": "Finished goods (Angren)",
+        "description": "Finished goods prepared in Angren."
       }
     }
   },
@@ -124,6 +132,78 @@
       "angren": "Angren",
       "tashkent": "Tashkent"
     },
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarTashkentPage": {
+    "title": "Finished goods (Tashkent)",
+    "subtitle": "Manage finished goods batches in the Tashkent warehouse.",
+    "receivedDate": "Received date",
+    "supplier": "Supplier",
+    "numberIdentifier": "Number identifier",
+    "type": "Type",
+    "brand": "Glue brand",
+    "name": "Name / description",
+    "description": "Description",
+    "quantity": "Quantity",
+    "netWeight": "Net weight",
+    "grossWeight": "Gross weight",
+    "totalNetWeight": "Total net weight",
+    "totalGrossWeight": "Total gross weight",
+    "price": "Price",
+    "priceCurrency": "Currency",
+    "totalPrice": "Total",
+    "kg": "kg",
+    "add": "Add product",
+    "edit": "Edit product",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this record?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No records yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "currency": {
+      "uzs": "UZS",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarAngrenPage": {
+    "title": "Finished goods (Angren)",
+    "subtitle": "Manage finished goods batches in the Angren warehouse.",
+    "receivedDate": "Received date",
+    "supplier": "Supplier",
+    "numberIdentifier": "Number identifier",
+    "type": "Type",
+    "brand": "Glue brand",
+    "name": "Name / description",
+    "description": "Description",
+    "quantity": "Quantity",
+    "netWeight": "Net weight",
+    "grossWeight": "Gross weight",
+    "totalNetWeight": "Total net weight",
+    "totalGrossWeight": "Total gross weight",
+    "price": "Price",
+    "priceCurrency": "Currency",
+    "totalPrice": "Total",
+    "kg": "kg",
+    "add": "Add product",
+    "edit": "Edit product",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this record?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No records yet.",
+    "actions": "Actions",
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "currency": {
       "uzs": "UZS",
       "usd": "USD",

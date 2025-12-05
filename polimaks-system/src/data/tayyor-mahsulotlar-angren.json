@@ -1,0 +1,19 @@
+[
+  {
+    "id": "angren-1",
+    "receivedDate": "2025-02-12",
+    "numberIdentifier": "ANG-010",
+    "type": "Industrial film",
+    "supplier": "AngrenPoli",
+    "brand": "AP-Strong",
+    "name": "Heavy-duty wrap 50cm",
+    "quantity": 80,
+    "netWeight": 0.5,
+    "grossWeight": 0.55,
+    "totalNetWeight": 40,
+    "totalGrossWeight": 44,
+    "price": 2.1,
+    "priceCurrency": "EUR",
+    "description": "Thick wrap for pallets."
+  }
+]

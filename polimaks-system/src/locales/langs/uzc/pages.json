@@ -94,6 +94,14 @@
       "tayyor_mahsulotlar": {
         "title": "Тайёр маҳсулотлар",
         "description": "Жўнатишга тайёр маҳсулотлар."
+      },
+      "tayyor_mahsulotlar_tashkent": {
+        "title": "Тайёр маҳсулотлар (Тошкент)",
+        "description": "Тошкент омборидаги тайёр маҳсулотлар."
+      },
+      "tayyor_mahsulotlar_angren": {
+        "title": "Тайёр маҳсулотлар (Ангрен)",
+        "description": "Ангрен омборидаги тайёр маҳсулотлар."
       }
     }
   },
@@ -115,6 +123,78 @@
     "deleteConfirm": "Ушбу запчастни ўчирасизми?",
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча запчастлар йўқ.",
+    "actions": "Амаллар",
+    "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
+    "currency": {
+      "uzs": "СЎМ",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarTashkentPage": {
+    "title": "Тайёр маҳсулотлар (Тошкент)",
+    "subtitle": "Тошкент омборидаги тайёр маҳсулотлар ҳисобини юритинг.",
+    "receivedDate": "Келиб тушган сана",
+    "supplier": "Етказиб берувчи корхона",
+    "numberIdentifier": "Рақам",
+    "type": "Тип",
+    "brand": "Клей маркаси",
+    "name": "Номи / изоҳ",
+    "description": "Изоҳ",
+    "quantity": "К-во дона",
+    "netWeight": "Соф оғирлик (нетто)",
+    "grossWeight": "Брутто оғирлик",
+    "totalNetWeight": "Жами нетто",
+    "totalGrossWeight": "Жами брутто",
+    "price": "Нарх (бирлик)",
+    "priceCurrency": "Валюта",
+    "totalPrice": "Жами сумма",
+    "kg": "кг",
+    "add": "Маҳсулот қўшиш",
+    "edit": "Маҳсулотни таҳрирлаш",
+    "save": "Сақлаш",
+    "cancel": "Бекор қилиш",
+    "delete": "Ўчириш",
+    "deleteConfirm": "Ушбу ёзувни ўчирасизми?",
+    "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
+    "empty": "Ҳозирча ёзувлар йўқ.",
+    "actions": "Амаллар",
+    "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
+    "currency": {
+      "uzs": "СЎМ",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarAngrenPage": {
+    "title": "Тайёр маҳсулотлар (Ангрен)",
+    "subtitle": "Ангрен омборидаги тайёр маҳсулотлар ҳисобини юритинг.",
+    "receivedDate": "Келиб тушган сана",
+    "supplier": "Етказиб берувчи корхона",
+    "numberIdentifier": "Рақам",
+    "type": "Тип",
+    "brand": "Клей маркаси",
+    "name": "Номи / изоҳ",
+    "description": "Изоҳ",
+    "quantity": "К-во дона",
+    "netWeight": "Соф оғирлик (нетто)",
+    "grossWeight": "Брутто оғирлик",
+    "totalNetWeight": "Жами нетто",
+    "totalGrossWeight": "Жами брутто",
+    "price": "Нарх (бирлик)",
+    "priceCurrency": "Валюта",
+    "totalPrice": "Жами сумма",
+    "kg": "кг",
+    "add": "Маҳсулот қўшиш",
+    "edit": "Маҳсулотни таҳрирлаш",
+    "save": "Сақлаш",
+    "cancel": "Бекор қилиш",
+    "delete": "Ўчириш",
+    "deleteConfirm": "Ушбу ёзувни ўчирасизми?",
+    "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
+    "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {

@@ -44,10 +44,8 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('kley'), path: paths.dashboard.inventory.kley },
               { title: t('zapchastlar'), path: paths.dashboard.inventory.zapchastlar },
               { title: t('otxot'), path: paths.dashboard.inventory.otxot },
-              {
-                title: t('tayyor_mahsulotlar'),
-                path: paths.dashboard.inventory.tayyorMahsulotlar,
-              },
+              { title: t('tayyor_mahsulotlar_tashkent'), path: paths.dashboard.inventory.tayyorMahsulotlarTashkent },
+              { title: t('tayyor_mahsulotlar_angren'), path: paths.dashboard.inventory.tayyorMahsulotlarAngren },
             ],
           },
           {

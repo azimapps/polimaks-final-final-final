@@ -20,7 +20,8 @@ export const paths = {
       kley: '/ombor/kley',
       zapchastlar: '/ombor/zapchastlar',
       otxot: '/ombor/otxot',
-      tayyorMahsulotlar: '/ombor/tayyor-mahsulotlar',
+      tayyorMahsulotlarTashkent: '/ombor/tayyor-mahsulotlar-tashkent',
+      tayyorMahsulotlarAngren: '/ombor/tayyor-mahsulotlar-angren',
     },
     staff: {
       root: '/staff',

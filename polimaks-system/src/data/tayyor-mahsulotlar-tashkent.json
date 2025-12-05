@@ -1,0 +1,19 @@
+[
+  {
+    "id": "tashkent-1",
+    "receivedDate": "2025-02-10",
+    "numberIdentifier": "TSH-001",
+    "type": "Food wrap",
+    "supplier": "LocalPack",
+    "brand": "TashPack",
+    "name": "Transparent roll 30cm",
+    "quantity": 120,
+    "netWeight": 0.3,
+    "grossWeight": 0.35,
+    "totalNetWeight": 36,
+    "totalGrossWeight": 42,
+    "price": 1.4,
+    "priceCurrency": "USD",
+    "description": "Standard household wrap rolls."
+  }
+]

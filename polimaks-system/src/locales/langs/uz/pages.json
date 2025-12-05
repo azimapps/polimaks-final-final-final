@@ -94,6 +94,14 @@
       "tayyor_mahsulotlar": {
         "title": "Tayyor mahsulotlar",
         "description": "Jo'natishga tayyor mahsulotlar."
+      },
+      "tayyor_mahsulotlar_tashkent": {
+        "title": "Tayyor mahsulotlar (Toshkent)",
+        "description": "Toshkent omboridagi tayyor mahsulotlar."
+      },
+      "tayyor_mahsulotlar_angren": {
+        "title": "Tayyor mahsulotlar (Angren)",
+        "description": "Angrendagi tayyor mahsulotlar."
       }
     }
   },
@@ -115,6 +123,78 @@
     "deleteConfirm": "Ushbu zapchastni o'chirasizmi?",
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha zapchastlar yo'q.",
+    "actions": "Amallar",
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "currency": {
+      "uzs": "SO'M",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarTashkentPage": {
+    "title": "Tayyor mahsulotlar (Toshkent)",
+    "subtitle": "Toshkent omboridagi tayyor mahsulotlarni yuriting.",
+    "receivedDate": "Kelib tushgan sana",
+    "supplier": "Yetkazib beruvchi korxona",
+    "numberIdentifier": "Raqam",
+    "type": "Tip",
+    "brand": "Kley markasi",
+    "name": "Nomi / izoh",
+    "description": "Izoh",
+    "quantity": "K-vo dona",
+    "netWeight": "Sof og'irlik (netto)",
+    "grossWeight": "Brutto og'irlik",
+    "totalNetWeight": "Umumiy netto",
+    "totalGrossWeight": "Umumiy brutto",
+    "price": "Narx (birlik)",
+    "priceCurrency": "Valyuta",
+    "totalPrice": "Jami summa",
+    "kg": "kg",
+    "add": "Mahsulot qo'shish",
+    "edit": "Mahsulotni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu yozuvni o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha yozuvlar yo'q.",
+    "actions": "Amallar",
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "currency": {
+      "uzs": "SO'M",
+      "usd": "USD",
+      "rub": "RUB",
+      "eur": "EUR"
+    }
+  },
+  "tayyorMahsulotlarAngrenPage": {
+    "title": "Tayyor mahsulotlar (Angren)",
+    "subtitle": "Angren omboridagi tayyor mahsulotlarni yuriting.",
+    "receivedDate": "Kelib tushgan sana",
+    "supplier": "Yetkazib beruvchi korxona",
+    "numberIdentifier": "Raqam",
+    "type": "Tip",
+    "brand": "Kley markasi",
+    "name": "Nomi / izoh",
+    "description": "Izoh",
+    "quantity": "K-vo dona",
+    "netWeight": "Sof og'irlik (netto)",
+    "grossWeight": "Brutto og'irlik",
+    "totalNetWeight": "Umumiy netto",
+    "totalGrossWeight": "Umumiy brutto",
+    "price": "Narx (birlik)",
+    "priceCurrency": "Valyuta",
+    "totalPrice": "Jami summa",
+    "kg": "kg",
+    "add": "Mahsulot qo'shish",
+    "edit": "Mahsulotni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu yozuvni o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
