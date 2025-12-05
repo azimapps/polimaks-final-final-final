@@ -92,6 +92,9 @@ export default function PlyonkaPage() {
 
   const title = `${t('inventory.items.plyonka.title')} | ${CONFIG.appName}`;
 
+  const allCategoryValue = 'all';
+  const allSubcategoryValue = 'all';
+
   const initialData = useMemo<PlyonkaItem[]>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -111,6 +114,10 @@ export default function PlyonkaPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<PlyonkaItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PlyonkaItem | null>(null);
+  const [filterCategory, setFilterCategory] = useState<CategoryKey | typeof allCategoryValue>(
+    allCategoryValue
+  );
+  const [filterSubcategory, setFilterSubcategory] = useState<string>(allSubcategoryValue);
   const [form, setForm] = useState<
     Omit<PlyonkaItem, 'id' | 'totalKg' | 'pricePerKg' | 'thickness' | 'width'> & {
       totalKg: string;
@@ -229,6 +236,30 @@ export default function PlyonkaPage() {
     setForm((prev) => ({ ...prev, category, subcategory: defaultSub }));
   };
 
+  const onFilterCategoryChange = (value: CategoryKey | typeof allCategoryValue) => {
+    setFilterCategory(value);
+    setFilterSubcategory(allSubcategoryValue);
+  };
+
+  const subcategoryFilterOptions = useMemo(() => {
+    if (filterCategory !== allCategoryValue) {
+      return CATEGORIES[filterCategory];
+    }
+    return [];
+  }, [filterCategory]);
+
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) => {
+        const matchCategory =
+          filterCategory === allCategoryValue ? true : item.category === filterCategory;
+        const matchSub =
+          filterSubcategory === allSubcategoryValue ? true : item.subcategory === filterSubcategory;
+        return matchCategory && matchSub;
+      }),
+    [filterCategory, filterSubcategory, items]
+  );
+
   const canSave =
     form.category &&
     form.subcategory &&
@@ -273,6 +304,42 @@ export default function PlyonkaPage() {
               {t('plyonkaPage.add')}
             </Button>
           </Stack>
+
+          <Card sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <TextField
+              select
+              size="small"
+              label={t('plyonkaPage.filterCategory')}
+              value={filterCategory}
+              onChange={(e) => onFilterCategoryChange(e.target.value as CategoryKey | typeof allCategoryValue)}
+              sx={{ minWidth: 220 }}
+            >
+              <MenuItem value={allCategoryValue}>{t('plyonkaPage.allCategories')}</MenuItem>
+              {(Object.keys(CATEGORIES) as CategoryKey[]).map((key) => (
+                <MenuItem key={key} value={key}>
+                  {key}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            {filterCategory !== allCategoryValue ? (
+              <TextField
+                select
+                size="small"
+                label={t('plyonkaPage.filterSubcategory')}
+                value={filterSubcategory}
+                onChange={(e) => setFilterSubcategory(e.target.value)}
+                sx={{ minWidth: 220 }}
+              >
+                <MenuItem value={allSubcategoryValue}>{t('plyonkaPage.allSubcategories')}</MenuItem>
+                {subcategoryFilterOptions.map((sub) => (
+                  <MenuItem key={sub} value={sub}>
+                    {sub}
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : null}
+          </Card>
 
           <Card>
             <TableContainer>
@@ -322,7 +389,7 @@ export default function PlyonkaPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {items.length === 0 ? (
+                  {filteredItems.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={12}>
                         <Box
@@ -345,7 +412,7 @@ export default function PlyonkaPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    items.map((item) => (
+                    filteredItems.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell>
                           <Typography variant="subtitle2">{item.category}</Typography>
