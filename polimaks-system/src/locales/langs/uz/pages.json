@@ -59,6 +59,10 @@
     "title": "Ombor",
     "subtitle": "Materiallar, chiqit va tayyor mahsulotlarni nazorat qiling.",
     "items": {
+      "analytics": {
+        "title": "Analitika",
+        "description": "Ombor bo'yicha grafiklar va ko'rsatkichlar."
+      },
       "plyonka": {
         "title": "Plyonka",
         "description": "Plyonka rulonlari va zaxira darajasi."
@@ -104,6 +108,44 @@
         "description": "Angrendagi tayyor mahsulotlar."
       }
     }
+  },
+  "inventoryAnalytics": {
+    "title": "Ombor analitikasi",
+    "subtitle": "Lokal ma'lumotlardan qurilgan tezkor grafiklar. Keyinroq API ulash mumkin.",
+    "cards": {
+      "value": "Taxminiy qiymat",
+      "valueHint": "Saqlangan narxlar bo'yicha yig'indi.",
+      "records": "Yozuvlar",
+      "recordsHint": "Barcha ombor ro'yxatlaridagi qatorlar soni.",
+      "categories": "Kategoriyalar",
+      "categoriesHint": "Faol ombor bo'limlari.",
+      "avgRecord": "O'rtacha qiymat / yozuv",
+      "avgRecordHint": "Umumiy qiymatni jami qatorlarga bo'lingan.",
+      "topCategory": "Eng qimmat kategoriya",
+      "topCategoryHint": "Tanlangan valyutaga o'tkazilganda eng katta qiymat."
+    },
+    "charts": {
+      "stockByCategory": "Kategoriyalar bo'yicha zaxira",
+      "valueShare": "Qiymat ulushi",
+      "recentChanges": "So'nggi qo'shimchalar"
+    },
+    "rateLoading": "Valyuta kurslari olinmoqda…",
+    "rateUpdated": "Kurslar yangilandi:",
+    "rateError": "Kurslarni olish imkoni bo'lmadi (keshlangan qiymatlar).",
+    "series": {
+      "stock": "Zaxira",
+      "value": "Qiymat",
+      "entries": "Kiritmalar"
+    },
+    "table": {
+      "title": "Kategoriya kesimida",
+      "category": "Kategoriya",
+      "amount": "Miqdor",
+      "unit": "O'lchov",
+      "value": "Taxminiy qiymat",
+      "records": "Yozuvlar"
+    },
+    "emptyLabel": "yo'q"
   },
   "zapchastlarPage": {
     "title": "Zapchastlar",

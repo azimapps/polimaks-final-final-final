@@ -12,6 +12,7 @@ export const paths = {
     root: '/',
     inventory: {
       root: '/ombor',
+      analytics: '/ombor/analytics',
       plyonka: '/ombor/plyonka',
       kraska: '/ombor/kraska',
       suyuqKraska: '/ombor/suyuq-kraska',

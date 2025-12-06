@@ -17,6 +17,7 @@ import { authDemoRoutes } from './auth';
 
 const HomePage = lazy(() => import('src/pages/dashboard/home'));
 const OmborIndexPage = lazy(() => import('src/pages/dashboard/ombor'));
+const InventoryAnalyticsPage = lazy(() => import('src/pages/dashboard/ombor/analytics'));
 const PlyonkaPage = lazy(() => import('src/pages/dashboard/ombor/plyonka'));
 const KraskaPage = lazy(() => import('src/pages/dashboard/ombor/kraska'));
 const SuyuqKraskaPage = lazy(() => import('src/pages/dashboard/ombor/suyuq-kraska'));
@@ -81,6 +82,7 @@ export const routesSection: RouteObject[] = [
         path: 'ombor',
         children: [
           { index: true, element: <OmborIndexPage /> },
+          { path: 'analytics', element: <InventoryAnalyticsPage /> },
           { path: 'plyonka', element: <PlyonkaPage /> },
           { path: 'kraska', element: <KraskaPage /> },
           { path: 'suyuq-kraska', element: <SuyuqKraskaPage /> },

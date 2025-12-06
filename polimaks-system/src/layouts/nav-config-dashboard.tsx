@@ -36,6 +36,7 @@ export const useNavData = (): NavSectionProps['data'] => {
             path: paths.dashboard.inventory.root,
             icon: ICONS.inventory,
             children: [
+              { title: t('inventory_analytics'), path: paths.dashboard.inventory.analytics },
               { title: t('plyonka'), path: paths.dashboard.inventory.plyonka },
               { title: t('kraska'), path: paths.dashboard.inventory.kraska },
               { title: t('suyuq_kraska'), path: paths.dashboard.inventory.suyuqKraska },

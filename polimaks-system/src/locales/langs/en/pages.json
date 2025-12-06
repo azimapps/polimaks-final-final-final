@@ -59,6 +59,10 @@
     "title": "Warehouse",
     "subtitle": "Follow materials, waste, and finished products.",
     "items": {
+      "analytics": {
+        "title": "Analytics",
+        "description": "Charts and KPIs built from warehouse data."
+      },
       "plyonka": {
         "title": "Film rolls",
         "description": "Film rolls and related stock levels."
@@ -104,6 +108,44 @@
         "description": "Finished goods prepared in Angren."
       }
     }
+  },
+  "inventoryAnalytics": {
+    "title": "Inventory analytics",
+    "subtitle": "Quick charts based on your local warehouse data. Connect the API when you are ready.",
+    "cards": {
+      "value": "Estimated value",
+      "valueHint": "Sum of item values using stored prices.",
+      "records": "Records saved",
+      "recordsHint": "Total rows across all warehouse lists.",
+      "categories": "Categories tracked",
+      "categoriesHint": "Active warehouse sub-sections.",
+      "avgRecord": "Avg value / record",
+      "avgRecordHint": "Total value divided by total rows.",
+      "topCategory": "Most valuable category",
+      "topCategoryHint": "Based on converted value in selected currency."
+    },
+    "charts": {
+      "stockByCategory": "Stock by category",
+      "valueShare": "Value share",
+      "recentChanges": "Recent additions"
+    },
+    "rateLoading": "Fetching live FX…",
+    "rateUpdated": "Rates updated:",
+    "rateError": "Live FX unavailable (using cached rates).",
+    "series": {
+      "stock": "Stock",
+      "value": "Value",
+      "entries": "Entries"
+    },
+    "table": {
+      "title": "Category breakdown",
+      "category": "Category",
+      "amount": "Amount",
+      "unit": "Unit",
+      "value": "Est. value",
+      "records": "Records"
+    },
+    "emptyLabel": "n/a"
   },
   "tayyorMahsulotlarPage": {
     "title": "Finished goods",
