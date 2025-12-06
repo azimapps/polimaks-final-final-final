@@ -33,10 +33,26 @@ import { useTranslate } from 'src/locales';
 import { paths } from 'src/routes/paths';
 import data from 'src/data/stanok-pechat.json';
 
+type Complaint = {
+  id: string;
+  message: string;
+  createdAt: string;
+  status: 'open' | 'resolved';
+  resolvedAt: string | null;
+};
+
+type MonthlyPlan = {
+  id: string;
+  month: string; // YYYY-MM
+  limitKg: number;
+};
+
 type Machine = {
   id: string;
   language_code: string;
   name: string;
+  complaints?: Complaint[];
+  monthlyPlans?: MonthlyPlan[];
 };
 
 const STORAGE_KEY = 'stanok-pechat';
@@ -55,19 +71,40 @@ export default function PechatPage() {
 
   const title = `${t('pechatPage.title')} | ${CONFIG.appName}`;
 
+  const currentMonth = useMemo(() => {
+    const now = new Date();
+    const m = (now.getMonth() + 1).toString().padStart(2, '0');
+    return `${now.getFullYear()}-${m}`;
+  }, []);
+
   const initialData = useMemo<Machine[]>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored) as Machine[];
+          const parsed = JSON.parse(stored) as Machine[];
+          return parsed.map((m) => ({
+            ...m,
+            complaints: (m.complaints ?? []).map((comp: any) => ({
+              id: comp.id ?? uuidv4(),
+              message: comp.message ?? '',
+              createdAt: comp.createdAt ?? new Date().toISOString(),
+              status: comp.status === 'resolved' ? 'resolved' : 'open',
+              resolvedAt: comp.resolvedAt ?? null,
+            })),
+            monthlyPlans: (m.monthlyPlans ?? []).map((plan: any) => ({
+              id: plan.id ?? uuidv4(),
+              month: plan.month ?? currentMonth,
+              limitKg: Number(plan.limitKg) || 0,
+            })),
+          }));
         } catch {
           // fall through to seed data
         }
       }
     }
-    return data as Machine[];
-  }, []);
+    return (data as Machine[]).map((m) => ({ ...m, complaints: [], monthlyPlans: [] }));
+  }, [currentMonth]);
 
   const [items, setItems] = useState<Machine[]>(initialData);
   const [editing, setEditing] = useState<Machine | null>(null);
@@ -104,9 +141,18 @@ export default function PechatPage() {
   const handleSave = () => {
     // TODO: replace with real API calls once backend is ready (persist to server)
     if (editing) {
-      setItemsAndPersist((prev) => prev.map((it) => (it.id === editing.id ? { ...it, ...form } : it)));
+      setItemsAndPersist((prev) =>
+        prev.map((it) =>
+          it.id === editing.id
+            ? { ...it, ...form, complaints: it.complaints ?? [], monthlyPlans: it.monthlyPlans ?? [] }
+            : it
+        )
+      );
     } else {
-      setItemsAndPersist((prev) => [...prev, { id: uuidv4(), ...form }]);
+      setItemsAndPersist((prev) => [
+        ...prev,
+        { id: uuidv4(), ...form, complaints: [], monthlyPlans: [] },
+      ]);
     }
     dialog.onFalse();
   };
@@ -287,6 +333,7 @@ export default function PechatPage() {
             deleteDialog.onTrue();
           }
         }}
+        onProfile={() => menuItem && navigate(paths.dashboard.stanok.pechatProfile(menuItem.id))}
         onOpenBrigada={() => menuItem && navigate(paths.dashboard.stanok.brigadaPechat(menuItem.id))}
         onOpenMaterials={() => navigate(paths.dashboard.stanok.materialsPechat)}
         labels={{
@@ -294,6 +341,7 @@ export default function PechatPage() {
           delete: t('pechatPage.delete'),
           brigada: t('pechatPage.brigada'),
           materials: t('pechatPage.materials'),
+          profile: t('pechatPage.profile'),
         }}
       />
     </>
@@ -305,10 +353,11 @@ type ActionsMenuProps = {
   open: boolean;
   onClose: VoidFunction;
   onEdit: VoidFunction;
+  onProfile: VoidFunction;
   onDelete: VoidFunction;
   onOpenBrigada: VoidFunction;
   onOpenMaterials: VoidFunction;
-  labels: { edit: string; delete: string; brigada: string; materials: string };
+  labels: { edit: string; delete: string; brigada: string; materials: string; profile: string };
 };
 
 function ActionsMenu({
@@ -319,6 +368,7 @@ function ActionsMenu({
   onDelete,
   onOpenBrigada,
   onOpenMaterials,
+  onProfile,
   labels,
 }: ActionsMenuProps) {
   return (
@@ -340,6 +390,15 @@ function ActionsMenu({
       >
         <Iconify icon="solar:list-bold" width={18} height={18} style={{ marginRight: 8 }} />
         {labels.materials}
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          onProfile();
+          onClose();
+        }}
+      >
+        <Iconify icon="solar:user-rounded-bold" width={18} height={18} style={{ marginRight: 8 }} />
+        {labels.profile}
       </MenuItem>
       <MenuItem
         onClick={() => {

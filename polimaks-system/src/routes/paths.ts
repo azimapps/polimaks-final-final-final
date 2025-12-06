@@ -33,6 +33,7 @@ export const paths = {
     },
     clients: {
       root: '/clients',
+      detail: (clientId: string) => `/clients/${clientId}`,
       clients: '/clients',
       transactions: '/clients/transactions',
       materials: '/clients/materials',
@@ -40,6 +41,7 @@ export const paths = {
     stanok: {
       root: '/stanok',
       pechat: '/stanok/pechat',
+      pechatProfile: (machineId: string) => `/stanok/pechat/${machineId}/profile`,
       reska: '/stanok/reska',
       laminatsiya: '/stanok/laminatsiya',
       brigadaPechat: (machineId: string) => `/stanok/pechat/${machineId}/brigada`,

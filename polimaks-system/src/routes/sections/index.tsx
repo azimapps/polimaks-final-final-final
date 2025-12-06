@@ -34,6 +34,7 @@ const TayyorMahsulotlarAngrenPage = lazy(
 );
 const StanokIndexPage = lazy(() => import('src/pages/dashboard/stanok'));
 const PechatPage = lazy(() => import('src/pages/dashboard/stanok/pechat'));
+const PechatProfilePage = lazy(() => import('src/pages/dashboard/stanok/pechat-profile'));
 const ReskaPage = lazy(() => import('src/pages/dashboard/stanok/reska'));
 const LaminatsiyaPage = lazy(() => import('src/pages/dashboard/stanok/laminatsiya'));
 const BrigadaPechatPage = lazy(() => import('src/pages/dashboard/stanok/brigada-pechat'));
@@ -51,6 +52,7 @@ const ClientsTransactionsPage = lazy(
   () => import('src/pages/dashboard/clients/transactions')
 );
 const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
+const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
 // ----------------------------------------------------------------------
 
 function SuspenseOutlet() {
@@ -100,6 +102,7 @@ export const routesSection: RouteObject[] = [
         children: [
           { index: true, element: <StanokIndexPage /> },
           { path: 'pechat', element: <PechatPage /> },
+          { path: 'pechat/:machineId/profile', element: <PechatProfilePage /> },
           { path: 'reska', element: <ReskaPage /> },
           { path: 'laminatsiya', element: <LaminatsiyaPage /> },
           { path: 'pechat/:machineId/brigada', element: <BrigadaPechatPage /> },
@@ -124,6 +127,7 @@ export const routesSection: RouteObject[] = [
         path: 'clients',
         children: [
           { index: true, element: <ClientsPage /> },
+          { path: ':clientId', element: <ClientDetailPage /> },
           { path: 'transactions', element: <ClientsTransactionsPage /> },
           { path: 'materials', element: <ClientsMaterialsPage /> },
         ],
