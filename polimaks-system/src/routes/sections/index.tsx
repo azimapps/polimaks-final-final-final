@@ -51,6 +51,9 @@ const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
 const ClientsTransactionsPage = lazy(
   () => import('src/pages/dashboard/clients/transactions')
 );
+const ClientTransactionsDetailPage = lazy(
+  () => import('src/pages/dashboard/clients/client-transactions')
+);
 const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
 // ----------------------------------------------------------------------
@@ -123,15 +126,16 @@ export const routesSection: RouteObject[] = [
           { path: 'planner', element: <StaffPlannerPage /> },
         ],
       },
-      {
-        path: 'clients',
-        children: [
-          { index: true, element: <ClientsPage /> },
-          { path: ':clientId', element: <ClientDetailPage /> },
-          { path: 'transactions', element: <ClientsTransactionsPage /> },
-          { path: 'materials', element: <ClientsMaterialsPage /> },
-        ],
-      },
+          {
+            path: 'clients',
+            children: [
+              { index: true, element: <ClientsPage /> },
+              { path: ':clientId', element: <ClientDetailPage /> },
+              { path: 'transactions', element: <ClientsTransactionsPage /> },
+              { path: 'transactions/:clientId', element: <ClientTransactionsDetailPage /> },
+              { path: 'materials', element: <ClientsMaterialsPage /> },
+            ],
+          },
     ],
   },
 

@@ -36,6 +36,7 @@ export const paths = {
       detail: (clientId: string) => `/clients/${clientId}`,
       clients: '/clients',
       transactions: '/clients/transactions',
+      transactionsClient: (clientId: string) => `/clients/transactions/${clientId}`,
       materials: '/clients/materials',
     },
     stanok: {

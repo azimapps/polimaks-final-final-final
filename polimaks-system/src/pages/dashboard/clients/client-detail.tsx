@@ -41,6 +41,12 @@ type Complaint = {
   resolvedAt: string | null;
 };
 
+type MonthlyPlan = {
+  id: string;
+  month: string;
+  limitKg: number;
+};
+
 type Client = {
   id: string;
   fullName: string;
