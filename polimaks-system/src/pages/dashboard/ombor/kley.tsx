@@ -40,7 +40,6 @@ type KleyItem = {
   numberIdentifier: string;
   type: string;
   supplier: string;
-  brand: string;
   name: string;
   barrels: number;
   netWeight: number;
@@ -63,7 +62,6 @@ const normalizeItems = (items: (Partial<KleyItem> & { id?: string })[]): KleyIte
     numberIdentifier: item.numberIdentifier || '',
     type: item.type || '',
     supplier: item.supplier || '',
-    brand: item.brand || '',
     name: item.name || '',
     barrels: typeof item.barrels === 'number' ? item.barrels : Number(item.barrels) || 0,
     netWeight: typeof item.netWeight === 'number' ? item.netWeight : Number(item.netWeight) || 0,
@@ -120,7 +118,6 @@ export default function KleyPage() {
     numberIdentifier: '',
     type: '',
     supplier: '',
-    brand: '',
     name: '',
     barrels: '',
     netWeight: '',
@@ -152,7 +149,6 @@ export default function KleyPage() {
       numberIdentifier: '',
       type: '',
       supplier: '',
-      brand: '',
       name: '',
       barrels: '',
       netWeight: '',
@@ -173,7 +169,6 @@ export default function KleyPage() {
       numberIdentifier: item.numberIdentifier,
       type: item.type,
       supplier: item.supplier,
-      brand: item.brand,
       name: item.name,
       barrels: item.barrels ? String(item.barrels) : '',
       netWeight: item.netWeight ? String(item.netWeight) : '',
@@ -201,7 +196,6 @@ export default function KleyPage() {
       numberIdentifier: form.numberIdentifier.trim(),
       type: form.type.trim(),
       supplier: form.supplier.trim(),
-      brand: form.brand.trim(),
       name: form.name.trim(),
       barrels: barrelsNum,
       netWeight: netWeightNum,
@@ -245,7 +239,6 @@ export default function KleyPage() {
     form.numberIdentifier.trim() &&
     form.type.trim() &&
     form.supplier.trim() &&
-    form.brand.trim() &&
     form.name.trim() &&
     parseFloat(form.barrels) > 0 &&
     parseFloat(form.totalNetWeight) > 0 &&
@@ -301,7 +294,6 @@ export default function KleyPage() {
                     <TableCell sx={{ minWidth: 160 }}>{t('kleyPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('kleyPage.numberIdentifier')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>{t('kleyPage.type')}</TableCell>
-                    <TableCell sx={{ minWidth: 140 }}>{t('kleyPage.brand')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('kleyPage.name')}</TableCell>
                     <TableCell sx={{ minWidth: 120 }}>{t('kleyPage.barrels')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>{t('kleyPage.netWeight')}</TableCell>
@@ -319,7 +311,7 @@ export default function KleyPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={14}>
+                      <TableCell colSpan={13}>
                         <Box
                           sx={{
                             py: 6,
@@ -355,9 +347,6 @@ export default function KleyPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.type}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.brand}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="subtitle2">{item.name}</Typography>
@@ -466,14 +455,6 @@ export default function KleyPage() {
                   label={t('kleyPage.type')}
                   value={form.type}
                   onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  fullWidth
-                  label={t('kleyPage.brand')}
-                  value={form.brand}
-                  onChange={(e) => setForm((prev) => ({ ...prev, brand: e.target.value }))}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
