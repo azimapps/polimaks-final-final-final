@@ -40,7 +40,7 @@ type ProductItem = {
   numberIdentifier: string;
   type: string;
   supplier: string;
-  brand: string;
+  client: string;
   name: string;
   quantity: number;
   netWeight: number;
@@ -63,7 +63,7 @@ const normalizeItems = (items: (Partial<ProductItem> & { id?: string })[]): Prod
     numberIdentifier: item.numberIdentifier || '',
     type: item.type || '',
     supplier: item.supplier || '',
-    brand: item.brand || '',
+    client: item.client || '',
     name: item.name || '',
     quantity: typeof item.quantity === 'number' ? item.quantity : Number(item.quantity) || 0,
     netWeight: typeof item.netWeight === 'number' ? item.netWeight : Number(item.netWeight) || 0,
@@ -120,7 +120,7 @@ export default function TayyorMahsulotlarTashkentPage() {
     numberIdentifier: '',
     type: '',
     supplier: '',
-    brand: '',
+    client: '',
     name: '',
     quantity: '',
     netWeight: '',
@@ -152,7 +152,7 @@ export default function TayyorMahsulotlarTashkentPage() {
       numberIdentifier: '',
       type: '',
       supplier: '',
-      brand: '',
+      client: '',
       name: '',
       quantity: '',
       netWeight: '',
@@ -173,7 +173,7 @@ export default function TayyorMahsulotlarTashkentPage() {
       numberIdentifier: item.numberIdentifier,
       type: item.type,
       supplier: item.supplier,
-      brand: item.brand,
+      client: item.client,
       name: item.name,
       quantity: item.quantity ? String(item.quantity) : '',
       netWeight: item.netWeight ? String(item.netWeight) : '',
@@ -201,7 +201,7 @@ export default function TayyorMahsulotlarTashkentPage() {
       numberIdentifier: form.numberIdentifier.trim(),
       type: form.type.trim(),
       supplier: form.supplier.trim(),
-      brand: form.brand.trim(),
+      client: form.client.trim(),
       name: form.name.trim(),
       quantity: quantityNum,
       netWeight: netWeightNum,
@@ -245,7 +245,7 @@ export default function TayyorMahsulotlarTashkentPage() {
     form.numberIdentifier.trim() &&
     form.type.trim() &&
     form.supplier.trim() &&
-    form.brand.trim() &&
+    form.client.trim() &&
     form.name.trim() &&
     parseFloat(form.quantity) > 0 &&
     parseFloat(form.netWeight) > 0 &&
@@ -299,11 +299,11 @@ export default function TayyorMahsulotlarTashkentPage() {
               >
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={{ minWidth: 140 }}>{t('tayyorMahsulotlarTashkentPage.client')}</TableCell>
                     <TableCell sx={{ minWidth: 150 }}>{t('tayyorMahsulotlarTashkentPage.receivedDate')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('tayyorMahsulotlarTashkentPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('tayyorMahsulotlarTashkentPage.numberIdentifier')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>{t('tayyorMahsulotlarTashkentPage.type')}</TableCell>
-                    <TableCell sx={{ minWidth: 140 }}>{t('tayyorMahsulotlarTashkentPage.brand')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('tayyorMahsulotlarTashkentPage.name')}</TableCell>
                     <TableCell sx={{ minWidth: 120 }}>{t('tayyorMahsulotlarTashkentPage.quantity')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>{t('tayyorMahsulotlarTashkentPage.netWeight')}</TableCell>
@@ -345,6 +345,9 @@ export default function TayyorMahsulotlarTashkentPage() {
                     items.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell>
+                          <Typography variant="body2">{item.client}</Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2">{item.receivedDate}</Typography>
                         </TableCell>
                         <TableCell>
@@ -357,9 +360,6 @@ export default function TayyorMahsulotlarTashkentPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.type}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.brand}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="subtitle2">{item.name}</Typography>
@@ -475,9 +475,9 @@ export default function TayyorMahsulotlarTashkentPage() {
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   fullWidth
-                  label={t('tayyorMahsulotlarTashkentPage.brand')}
-                  value={form.brand}
-                  onChange={(e) => setForm((prev) => ({ ...prev, brand: e.target.value }))}
+                  label={t('tayyorMahsulotlarTashkentPage.client')}
+                  value={form.client}
+                  onChange={(e) => setForm((prev) => ({ ...prev, client: e.target.value }))}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
