@@ -20,6 +20,7 @@ const ICONS = {
   machine: icon('ic-odd'),
   staff: icon('ic-user'),
   clients: icon('ic-analytics'),
+  buyurtmaPlanlashtirish: icon('ic-calendar'),
 };
 
 // ----------------------------------------------------------------------
@@ -80,6 +81,11 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('clients_materials'), path: paths.dashboard.clients.materials },
               { title: t('clients_order_book'), path: paths.dashboard.clients.orderBook },
             ],
+          },
+          {
+            title: t('buyurtma_planlashtirish'),
+            path: paths.dashboard.buyurtmaPlanlashtirish.root,
+            icon: ICONS.buyurtmaPlanlashtirish,
           },
         ],
       },

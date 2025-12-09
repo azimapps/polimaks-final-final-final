@@ -803,5 +803,9 @@
     "empty": "No orders yet.",
     "actions": "Actions",
     "localHint": "Data is saved in your browser for now; hook this up to your API later."
+  },
+  "buyurtmaPlanlashtirish": {
+    "title": "Order Planning",
+    "subtitle": "Plan and manage production orders and scheduling."
   }
 }

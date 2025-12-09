@@ -53,6 +53,9 @@ export const paths = {
       materialsReska: '/stanok/materials-reska',
       materialsLaminatsiya: '/stanok/materials-laminatsiya',
     },
+    buyurtmaPlanlashtirish: {
+      root: '/buyurtma-planlashtirish',
+    },
     user: {
       root: `/user`,
       list: `/user/list`,

@@ -804,5 +804,9 @@
     "empty": "Hozircha buyurtmalar yo'q.",
     "actions": "Amallar",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+  },
+  "buyurtmaPlanlashtirish": {
+    "title": "Buyurtma planlashtirish",
+    "subtitle": "Ishlab chiqarish buyurtmalarini rejalashtiring va boshqaring."
   }
 }

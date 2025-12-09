@@ -32,5 +32,6 @@
   "clients_clients": "Klientlar",
   "clients_transactions": "Oldi-berdi",
   "clients_materials": "Davaldilik materiallar",
-  "clients_order_book": "Buyurtma kitob"
+  "clients_order_book": "Buyurtma kitob",
+  "buyurtma_planlashtirish": "Buyurtma planlashtirish"
 }
