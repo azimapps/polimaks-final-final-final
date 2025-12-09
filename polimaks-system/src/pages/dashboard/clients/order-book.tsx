@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -30,6 +31,7 @@ import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
+import type { Client } from './clients';
 
 type Material = 'BOPP' | 'CPP' | 'PE' | 'PET';
 
@@ -37,10 +39,12 @@ type OrderBookItem = {
   id: string;
   date: string; // ISO date - order creation
   orderNumber: string;
-  client: string;
+  clientId: string;
+  clientName: string;
   title: string;
   quantityKg: number;
   material: Material;
+  subMaterial: string;
   filmThickness: number; // microns
   filmWidth: number; // mm
   cylinderLength: number; // mm
@@ -51,7 +55,15 @@ type OrderBookItem = {
 
 const MATERIALS: Material[] = ['BOPP', 'CPP', 'PE', 'PET'];
 
+const MATERIAL_CATEGORIES: Record<Material, string[]> = {
+  BOPP: ['prazrachniy', 'metal', 'jemchuk', 'jemchuk metal'],
+  CPP: ['prazrachniy', 'beliy', 'metal'],
+  PE: ['prazrachniy', 'beliy'],
+  PET: ['prazrachniy', 'metal', 'beliy'],
+};
+
 const STORAGE_KEY = 'clients-order-book';
+const CLIENTS_STORAGE_KEY = 'clients-main';
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -62,35 +74,42 @@ const generateOrderNumber = () => {
   return `ORD-${year}-${timestamp}`;
 };
 
-const normalizeItems = (items: (Partial<OrderBookItem> & { id?: string })[]): OrderBookItem[] =>
-  items.map((item, index) => ({
-    id: item.id || `order-${index}`,
-    date: item.date || todayISO(),
-    orderNumber: item.orderNumber || generateOrderNumber(),
-    client: item.client || '',
-    title: item.title || '',
-    quantityKg: typeof item.quantityKg === 'number' ? item.quantityKg : Number(item.quantityKg) || 0,
-    material: (item.material as Material) || 'BOPP',
-    filmThickness:
-      typeof item.filmThickness === 'number' ? item.filmThickness : Number(item.filmThickness) || 0,
-    filmWidth: typeof item.filmWidth === 'number' ? item.filmWidth : Number(item.filmWidth) || 0,
-    cylinderLength:
-      typeof item.cylinderLength === 'number' ? item.cylinderLength : Number(item.cylinderLength) || 0,
-    cylinderCount:
-      typeof item.cylinderCount === 'number' ? item.cylinderCount : Number(item.cylinderCount) || 0,
-    startDate: item.startDate || todayISO(),
-    endDate: item.endDate || todayISO(),
-  }));
+const normalizeItems = (items: (Partial<OrderBookItem> & { id?: string; client?: string })[]): OrderBookItem[] =>
+  items.map((item, index) => {
+    const material = (item.material as Material) || 'BOPP';
+    return {
+      id: item.id || `order-${index}`,
+      date: item.date || todayISO(),
+      orderNumber: item.orderNumber || generateOrderNumber(),
+      clientId: item.clientId || '',
+      clientName: item.clientName || (item as any).client || '',
+      title: item.title || '',
+      quantityKg: typeof item.quantityKg === 'number' ? item.quantityKg : Number(item.quantityKg) || 0,
+      material,
+      subMaterial: item.subMaterial || MATERIAL_CATEGORIES[material][0],
+      filmThickness:
+        typeof item.filmThickness === 'number' ? item.filmThickness : Number(item.filmThickness) || 0,
+      filmWidth: typeof item.filmWidth === 'number' ? item.filmWidth : Number(item.filmWidth) || 0,
+      cylinderLength:
+        typeof item.cylinderLength === 'number' ? item.cylinderLength : Number(item.cylinderLength) || 0,
+      cylinderCount:
+        typeof item.cylinderCount === 'number' ? item.cylinderCount : Number(item.cylinderCount) || 0,
+      startDate: item.startDate || todayISO(),
+      endDate: item.endDate || todayISO(),
+    };
+  });
 
 const seedData: OrderBookItem[] = [
   {
     id: 'order-1',
     date: '2024-12-01',
     orderNumber: 'ORD-2024-001',
-    client: 'PoliTex Group',
+    clientId: 'client-1',
+    clientName: 'PoliTex Group',
     title: 'Упаковочная пленка BOPP',
     quantityKg: 1500,
     material: 'BOPP',
+    subMaterial: 'prazrachniy',
     filmThickness: 20,
     filmWidth: 1000,
     cylinderLength: 320,
@@ -102,10 +121,12 @@ const seedData: OrderBookItem[] = [
     id: 'order-2',
     date: '2024-12-02',
     orderNumber: 'ORD-2024-002',
-    client: 'GreenPack LLC',
+    clientId: 'client-2',
+    clientName: 'GreenPack LLC',
     title: 'Прозрачная пленка CPP',
     quantityKg: 800,
     material: 'CPP',
+    subMaterial: 'beliy',
     filmThickness: 25,
     filmWidth: 800,
     cylinderLength: 280,
@@ -119,6 +140,35 @@ export default function ClientsOrderBookPage() {
   const { t } = useTranslate('pages');
 
   const title = `${t('clients.items.order_book.title')} | ${CONFIG.appName}`;
+
+  const availableClients = useMemo<Client[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(CLIENTS_STORAGE_KEY);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as Client[];
+          return parsed.map((c) => ({
+            ...c,
+            complaints: (c.complaints ?? []).map((comp: any) => ({
+              id: comp.id || '',
+              message: comp.message || '',
+              createdAt: comp.createdAt || new Date().toISOString(),
+              status: comp.status === 'resolved' ? 'resolved' : 'open',
+              resolvedAt: comp.resolvedAt || null,
+            })),
+            monthlyPlans: (c.monthlyPlans ?? []).map((plan: any) => ({
+              id: plan.id || '',
+              month: plan.month || '',
+              limitKg: Number(plan.limitKg) || 0,
+            })),
+          }));
+        } catch {
+          // ignore parsing errors
+        }
+      }
+    }
+    return [];
+  }, []);
 
   const initialData = useMemo<OrderBookItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -150,10 +200,12 @@ export default function ClientsOrderBookPage() {
   >({
     date: todayISO(),
     orderNumber: generateOrderNumber(),
-    client: '',
+    clientId: '',
+    clientName: '',
     title: '',
     quantityKg: '',
     material: 'BOPP',
+    subMaterial: MATERIAL_CATEGORIES.BOPP[0],
     filmThickness: '',
     filmWidth: '',
     cylinderLength: '',
@@ -161,6 +213,8 @@ export default function ClientsOrderBookPage() {
     startDate: todayISO(),
     endDate: todayISO(),
   });
+  
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
@@ -177,13 +231,16 @@ export default function ClientsOrderBookPage() {
 
   const openAdd = () => {
     setEditing(null);
+    setSelectedClient(null);
     setForm({
       date: todayISO(),
       orderNumber: generateOrderNumber(),
-      client: '',
+      clientId: '',
+      clientName: '',
       title: '',
       quantityKg: '',
       material: 'BOPP',
+      subMaterial: MATERIAL_CATEGORIES.BOPP[0],
       filmThickness: '',
       filmWidth: '',
       cylinderLength: '',
@@ -196,10 +253,13 @@ export default function ClientsOrderBookPage() {
 
   const openEdit = (item: OrderBookItem) => {
     setEditing(item);
+    const existingClient = availableClients.find(c => c.id === item.clientId);
+    setSelectedClient(existingClient || null);
     setForm({
       date: item.date || todayISO(),
       orderNumber: item.orderNumber,
-      client: item.client,
+      clientId: item.clientId,
+      clientName: item.clientName,
       title: item.title,
       quantityKg: item.quantityKg ? String(item.quantityKg) : '',
       material: item.material,
@@ -224,7 +284,8 @@ export default function ClientsOrderBookPage() {
       id: editing ? editing.id : uuidv4(),
       date: form.date || todayISO(),
       orderNumber: form.orderNumber.trim() || generateOrderNumber(),
-      client: form.client.trim(),
+      clientId: form.clientId,
+      clientName: form.clientName.trim(),
       title: form.title.trim(),
       quantityKg: quantityKgNum,
       material: form.material,
@@ -264,7 +325,7 @@ export default function ClientsOrderBookPage() {
   };
 
   const canSave =
-    form.client.trim() &&
+    form.clientName.trim() &&
     form.title.trim() &&
     parseFloat(form.quantityKg) > 0 &&
     parseFloat(form.filmThickness) > 0 &&
@@ -357,7 +418,7 @@ export default function ClientsOrderBookPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">{item.client}</Typography>
+                          <Typography variant="body2">{item.clientName}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="subtitle2">{item.title}</Typography>
@@ -438,11 +499,30 @@ export default function ClientsOrderBookPage() {
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
+                <Autocomplete
                   fullWidth
-                  label={t('orderBookPage.client')}
-                  value={form.client}
-                  onChange={(e) => setForm((prev) => ({ ...prev, client: e.target.value }))}
+                  options={availableClients}
+                  value={selectedClient}
+                  onChange={(event, newValue) => {
+                    setSelectedClient(newValue);
+                    setForm((prev) => ({ 
+                      ...prev, 
+                      clientId: newValue?.id || '',
+                      clientName: newValue ? `${newValue.fullName}${newValue.company ? ` (${newValue.company})` : ''}` : ''
+                    }));
+                  }}
+                  getOptionLabel={(option) => 
+                    `${option.fullName}${option.company ? ` (${option.company})` : ''}`
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={t('orderBookPage.client')}
+                      placeholder="Search clients..."
+                    />
+                  )}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  noOptionsText="No clients found. Add clients from the Clients page."
                 />
               </Grid>
 

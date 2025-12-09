@@ -5,7 +5,7 @@
     "numberIdentifier": "TSH-001",
     "type": "Food wrap",
     "supplier": "LocalPack",
-    "brand": "TashPack",
+    "client": "TashPack",
     "name": "Transparent roll 30cm",
     "quantity": 120,
     "netWeight": 0.3,
