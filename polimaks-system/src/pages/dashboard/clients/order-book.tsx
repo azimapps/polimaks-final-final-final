@@ -263,6 +263,7 @@ export default function ClientsOrderBookPage() {
       title: item.title,
       quantityKg: item.quantityKg ? String(item.quantityKg) : '',
       material: item.material,
+      subMaterial: item.subMaterial,
       filmThickness: item.filmThickness ? String(item.filmThickness) : '',
       filmWidth: item.filmWidth ? String(item.filmWidth) : '',
       cylinderLength: item.cylinderLength ? String(item.cylinderLength) : '',
@@ -289,6 +290,7 @@ export default function ClientsOrderBookPage() {
       title: form.title.trim(),
       quantityKg: quantityKgNum,
       material: form.material,
+      subMaterial: form.subMaterial,
       filmThickness: filmThicknessNum,
       filmWidth: filmWidthNum,
       cylinderLength: cylinderLengthNum,
@@ -324,9 +326,16 @@ export default function ClientsOrderBookPage() {
     setMenuItem(null);
   };
 
+  const onMaterialChange = (material: Material) => {
+    const defaultSubMaterial = MATERIAL_CATEGORIES[material][0];
+    setForm((prev) => ({ ...prev, material, subMaterial: defaultSubMaterial }));
+  };
+
   const canSave =
     form.clientName.trim() &&
     form.title.trim() &&
+    form.material &&
+    form.subMaterial &&
     parseFloat(form.quantityKg) > 0 &&
     parseFloat(form.filmThickness) > 0 &&
     parseFloat(form.filmWidth) > 0 &&
@@ -429,7 +438,9 @@ export default function ClientsOrderBookPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">{item.material}</Typography>
+                          <Typography variant="body2">
+                            {item.material} - {item.subMaterial}
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
@@ -551,11 +562,26 @@ export default function ClientsOrderBookPage() {
                   fullWidth
                   label={t('orderBookPage.material')}
                   value={form.material}
-                  onChange={(e) => setForm((prev) => ({ ...prev, material: e.target.value as Material }))}
+                  onChange={(e) => onMaterialChange(e.target.value as Material)}
                 >
                   {MATERIALS.map((material) => (
                     <MenuItem key={material} value={material}>
                       {material}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <TextField
+                  select
+                  fullWidth
+                  label={t('orderBookPage.subMaterial')}
+                  value={form.subMaterial}
+                  onChange={(e) => setForm((prev) => ({ ...prev, subMaterial: e.target.value }))}
+                >
+                  {MATERIAL_CATEGORIES[form.material].map((subMaterial) => (
+                    <MenuItem key={subMaterial} value={subMaterial}>
+                      {subMaterial}
                     </MenuItem>
                   ))}
                 </TextField>

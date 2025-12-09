@@ -783,6 +783,7 @@
     "orderTitle": "Номи",
     "quantityKg": "Миқдор (кг)",
     "material": "Материал",
+    "subMaterial": "Субматериал",
     "filmThickness": "Плёнка қалинлиги (мкм)",
     "filmWidth": "Плёнка кенглиги (мм)",
     "cylinderLength": "Силиндр узунлиги (мм)",

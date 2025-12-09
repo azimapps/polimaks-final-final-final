@@ -782,6 +782,7 @@
     "orderTitle": "Title",
     "quantityKg": "Quantity (kg)",
     "material": "Material",
+    "subMaterial": "Sub Material",
     "filmThickness": "Film thickness (μm)",
     "filmWidth": "Film width (mm)",
     "cylinderLength": "Cylinder length (mm)",

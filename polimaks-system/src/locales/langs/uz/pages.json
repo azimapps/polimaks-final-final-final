@@ -783,6 +783,7 @@
     "orderTitle": "Nomi",
     "quantityKg": "Miqdor (kg)",
     "material": "Material",
+    "subMaterial": "Submaterial",
     "filmThickness": "Plyonka qalinligi (mkm)",
     "filmWidth": "Plyonka kengligi (mm)",
     "cylinderLength": "Silindir uzunligi (mm)",

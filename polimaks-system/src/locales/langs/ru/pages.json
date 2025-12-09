@@ -783,6 +783,7 @@
     "orderTitle": "Название",
     "quantityKg": "Количество (кг)",
     "material": "Материал",
+    "subMaterial": "Подматериал",
     "filmThickness": "Толщина пленки (мкм)",
     "filmWidth": "Ширина пленки (мм)",
     "cylinderLength": "Длина цилиндра (мм)",
