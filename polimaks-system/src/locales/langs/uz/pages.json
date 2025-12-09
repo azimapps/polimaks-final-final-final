@@ -805,6 +805,10 @@
     "actions": "Amallar",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
   },
+  "ishlabChiqarish": {
+    "title": "Ishlab chiqarish",
+    "subtitle": "Ishlab chiqarish jarayonlari va ish oqimlarini boshqaring."
+  },
   "buyurtmaPlanlashtirish": {
     "title": "Buyurtma planlashtirish",
     "subtitle": "Ishlab chiqarish buyurtmalarini rejalashtiring va boshqaring."

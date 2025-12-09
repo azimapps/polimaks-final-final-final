@@ -20,6 +20,7 @@ const ICONS = {
   machine: icon('ic-odd'),
   staff: icon('ic-user'),
   clients: icon('ic-analytics'),
+  ishlabChiqarish: icon('ic-factory'),
   buyurtmaPlanlashtirish: icon('ic-calendar'),
 };
 
@@ -81,6 +82,11 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('clients_materials'), path: paths.dashboard.clients.materials },
               { title: t('clients_order_book'), path: paths.dashboard.clients.orderBook },
             ],
+          },
+          {
+            title: t('ishlab_chiqarish'),
+            path: paths.dashboard.ishlabChiqarish.root,
+            icon: ICONS.ishlabChiqarish,
           },
           {
             title: t('buyurtma_planlashtirish'),

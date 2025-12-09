@@ -804,6 +804,10 @@
     "actions": "Actions",
     "localHint": "Data is saved in your browser for now; hook this up to your API later."
   },
+  "ishlabChiqarish": {
+    "title": "Production",
+    "subtitle": "Manage production processes and workflows."
+  },
   "buyurtmaPlanlashtirish": {
     "title": "Order Planning",
     "subtitle": "Plan and manage production orders and scheduling."

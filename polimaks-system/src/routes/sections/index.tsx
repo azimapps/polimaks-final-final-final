@@ -57,6 +57,7 @@ const ClientTransactionsDetailPage = lazy(
 const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
 const ClientsOrderBookPage = lazy(() => import('src/pages/dashboard/clients/order-book'));
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
+const IshlabChiqarish = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/ishlab-chiqarish'));
 const BuyurtmaPlanlashtirish = lazy(() => import('src/pages/dashboard/buyurtma-planlashtirish/buyurtma-planlashtirish'));
 // ----------------------------------------------------------------------
 
@@ -138,6 +139,10 @@ export const routesSection: RouteObject[] = [
               { path: 'materials', element: <ClientsMaterialsPage /> },
               { path: 'order-book', element: <ClientsOrderBookPage /> },
             ],
+          },
+          {
+            path: 'ishlab-chiqarish',
+            element: <IshlabChiqarish />,
           },
           {
             path: 'buyurtma-planlashtirish',
