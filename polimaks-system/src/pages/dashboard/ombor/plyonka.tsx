@@ -352,6 +352,12 @@ export default function PlyonkaPage() {
               >
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.admin')}
+                    </TableCell>
+                    <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
+                      {t('plyonkaPage.receivedDate')}
+                    </TableCell>
                     <TableCell sx={{ minWidth: 170, whiteSpace: 'nowrap' }}>
                       {t('plyonkaPage.category')}
                     </TableCell>
@@ -375,12 +381,6 @@ export default function PlyonkaPage() {
                     </TableCell>
                     <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
                       {t('plyonkaPage.seriya')}
-                    </TableCell>
-                    <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
-                      {t('plyonkaPage.receivedDate')}
-                    </TableCell>
-                    <TableCell sx={{ minWidth: 180, whiteSpace: 'nowrap' }}>
-                      {t('plyonkaPage.admin')}
                     </TableCell>
                     <TableCell sx={{ minWidth: 320 }}>{t('plyonkaPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
@@ -414,6 +414,14 @@ export default function PlyonkaPage() {
                   ) : (
                     filteredItems.map((item) => (
                       <TableRow key={item.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.admin || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
                         <TableCell>
                           <Typography variant="subtitle2">{item.category}</Typography>
                         </TableCell>
@@ -450,14 +458,6 @@ export default function PlyonkaPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.createdDate}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                            {item.admin || '—'}
-                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography

@@ -245,13 +245,13 @@ export default function RazvaritelPage() {
               >
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.supplier')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('razvaritelPage.receivedDate')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('razvaritelPage.type')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('razvaritelPage.totalLiter')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.price')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.totalPrice')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('razvaritelPage.seriya')}</TableCell>
-                    <TableCell sx={{ minWidth: 180 }}>{t('razvaritelPage.receivedDate')}</TableCell>
-                    <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 260 }}>{t('razvaritelPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('razvaritelPage.actions')}
@@ -284,6 +284,14 @@ export default function RazvaritelPage() {
                   ) : (
                     items.map((item) => (
                       <TableRow key={item.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.supplier || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
                         <TableCell sx={{ textTransform: 'uppercase' }}>
                           <Typography variant="subtitle2">{item.type}</Typography>
                         </TableCell>
@@ -305,14 +313,6 @@ export default function RazvaritelPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.createdDate}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                            {item.supplier || '—'}
-                          </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography
