@@ -629,6 +629,10 @@
       "materials": {
         "title": "Davaldilik materiallari",
         "description": "Klientlar tashlab ketgan mahsulot va xomashyo."
+      },
+      "order_book": {
+        "title": "Buyurtma kitob",
+        "description": "Klientlar buyurtmalari va ularning holati."
       }
     }
   },

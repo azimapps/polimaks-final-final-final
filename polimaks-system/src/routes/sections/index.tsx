@@ -55,6 +55,7 @@ const ClientTransactionsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-transactions')
 );
 const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
+const ClientsOrderBookPage = lazy(() => import('src/pages/dashboard/clients/order-book'));
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
 // ----------------------------------------------------------------------
 
@@ -134,6 +135,7 @@ export const routesSection: RouteObject[] = [
               { path: 'transactions', element: <ClientsTransactionsPage /> },
               { path: 'transactions/:clientId', element: <ClientTransactionsDetailPage /> },
               { path: 'materials', element: <ClientsMaterialsPage /> },
+              { path: 'order-book', element: <ClientsOrderBookPage /> },
             ],
           },
     ],

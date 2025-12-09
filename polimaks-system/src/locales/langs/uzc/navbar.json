@@ -31,5 +31,6 @@
   "clients": "Клиентлар",
   "clients_clients": "Клиентлар",
   "clients_transactions": "Олди-берди",
-  "clients_materials": "Давалдилик материаллар"
+  "clients_materials": "Давалдилик материаллар",
+  "clients_order_book": "Буюртма китоб"
 }

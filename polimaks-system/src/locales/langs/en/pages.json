@@ -628,6 +628,10 @@
       "materials": {
         "title": "Tolling materials",
         "description": "Materials clients leave with you (davalilik)."
+      },
+      "order_book": {
+        "title": "Order book",
+        "description": "Client orders and their status."
       }
     }
   },
