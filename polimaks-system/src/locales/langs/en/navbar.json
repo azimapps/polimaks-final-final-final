@@ -34,5 +34,9 @@
   "clients_materials": "Tolling materials",
   "clients_order_book": "Order book",
   "ishlab_chiqarish": "Production",
+  "ishlab_chiqarish_rejalashtirish": "Production Planning",
+  "ishlab_chiqarish_nazorat": "Production Control",
+  "ishlab_chiqarish_hisobotlar": "Production Reports",
+  "ishlab_chiqarish_uskunalar": "Production Equipment",
   "buyurtma_planlashtirish": "Order Planning"
 }

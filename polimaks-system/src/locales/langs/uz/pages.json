@@ -807,10 +807,75 @@
   },
   "ishlabChiqarish": {
     "title": "Ishlab chiqarish",
-    "subtitle": "Ishlab chiqarish jarayonlari va ish oqimlarini boshqaring."
+    "subtitle": "Ishlab chiqarish jarayonlari va ish oqimlarini boshqaring.",
+    "items": {
+      "rejalashtirish": {
+        "title": "Ishlab chiqarish rejalashtirish",
+        "description": "Ishlab chiqarish jadvallarini va ish oqimlarini rejalashtiring."
+      },
+      "nazorat": {
+        "title": "Ishlab chiqarish nazorat",
+        "description": "Ishlab chiqarish jarayonlarini kuzating va nazorat qiling."
+      },
+      "hisobotlar": {
+        "title": "Ishlab chiqarish hisobotlar",
+        "description": "Ishlab chiqarish uchun hisobotlar va analitika yarating."
+      },
+      "uskunalar": {
+        "title": "Ishlab chiqarish uskunalar",
+        "description": "Ishlab chiqarish mashinalari va uskunalarini boshqaring."
+      }
+    }
   },
   "buyurtmaPlanlashtirish": {
     "title": "Buyurtma planlashtirish",
     "subtitle": "Ishlab chiqarish buyurtmalarini rejalashtiring va boshqaring."
+  },
+  "orderPlanPage": {
+    "title": "Buyurtma planlashtirish",
+    "subtitle": "Ishlab chiqarish buyurtmalari, material talablari va rejalashtirish boshqaruvi",
+    "add": "Buyurtma qo'shish",
+    "edit": "Buyurtmani tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "empty": "Hozircha buyurtmalar yo'q.",
+    "actions": "Amallar",
+    "date": "Sana",
+    "orderNumber": "Buyurtma raqami",
+    "client": "Mijoz",
+    "title": "Nomi",
+    "quantityKg": "Miqdori (kg)",
+    "material": "Material",
+    "subMaterial": "Qo'shimcha material",
+    "selectSubMaterial": "Qo'shimcha materialni tanlang",
+    "filmThickness": "Plyonka qalinligi",
+    "filmWidth": "Plyonka eni",
+    "cylinderLength": "Silindr uzunligi",
+    "cylinderCount": "Silindrlar soni",
+    "printingMachine": "Bosma mashinasi",
+    "selectMachine": "Mashinani tanlang",
+    "responsiblePerson": "Mas'ul shaxs",
+    "notes": "Izohlar",
+    "status": {
+      "planning": "Rejalashtirish",
+      "inProgress": "Jarayonda",
+      "completed": "Tugallangan",
+      "cancelled": "Bekor qilingan"
+    },
+    "kg": "kg",
+    "microns": "mkm",
+    "mm": "mm",
+    "pcs": "dona",
+    "importFromOrderBook": "Buyurtmalar Kitobidan Import",
+    "searchOrders": "Raqam, mijoz yoki sarlavha bo'yicha buyurtma qidirish...",
+    "ordersSelected": "buyurtma tanlandi",
+    "selectOrdersToImport": "Import qilish uchun buyurtmalarni tanlang",
+    "selectAll": "Barchasini tanlash",
+    "deselectAll": "Tanlovni bekor qilish",
+    "noOrdersInOrderBook": "Buyurtmalar Kitobida buyurtmalar topilmadi",
+    "noOrdersMatch": "Qidiruvga mos buyurtmalar yo'q",
+    "importHint": "Tanlangan buyurtmalar 'Rejalashtirish' statusida import qilinadi. Import qilgandan so'ng ularni tahrirlashingiz mumkin.",
+    "importSelected": "Tanlanganlarni Import qilish"
   }
 }

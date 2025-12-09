@@ -57,7 +57,11 @@ const ClientTransactionsDetailPage = lazy(
 const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
 const ClientsOrderBookPage = lazy(() => import('src/pages/dashboard/clients/order-book'));
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
-const IshlabChiqarish = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/ishlab-chiqarish'));
+const IshlabChiqarishIndexPage = lazy(() => import('src/pages/dashboard/ishlab-chiqarish'));
+const IshlabChiqarishRejalashtirish = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/rejalashtirish'));
+const IshlabChiqarishNazorat = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/nazorat'));
+const IshlabChiqarishHisobotlar = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/hisobotlar'));
+const IshlabChiqarishUskunalar = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/uskunalar'));
 const BuyurtmaPlanlashtirish = lazy(() => import('src/pages/dashboard/buyurtma-planlashtirish/buyurtma-planlashtirish'));
 // ----------------------------------------------------------------------
 
@@ -142,7 +146,13 @@ export const routesSection: RouteObject[] = [
           },
           {
             path: 'ishlab-chiqarish',
-            element: <IshlabChiqarish />,
+            children: [
+              { index: true, element: <IshlabChiqarishIndexPage /> },
+              { path: 'rejalashtirish', element: <IshlabChiqarishRejalashtirish /> },
+              { path: 'nazorat', element: <IshlabChiqarishNazorat /> },
+              { path: 'hisobotlar', element: <IshlabChiqarishHisobotlar /> },
+              { path: 'uskunalar', element: <IshlabChiqarishUskunalar /> },
+            ],
           },
           {
             path: 'buyurtma-planlashtirish',

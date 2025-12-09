@@ -15,13 +15,17 @@ const icon = (name: string) => (
   <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />
 );
 
+const componentIcon = (name: string) => (
+  <SvgColor src={`${CONFIG.assetsDir}/assets/icons/components/${name}.svg`} />
+);
+
 const ICONS = {
   inventory: icon('ic-analytics'),
   machine: icon('ic-odd'),
   staff: icon('ic-user'),
   clients: icon('ic-analytics'),
-  ishlabChiqarish: icon('ic-factory'),
-  buyurtmaPlanlashtirish: icon('ic-calendar'),
+  ishlabChiqarish: componentIcon('ic-extra-chart'),
+  buyurtmaPlanlashtirish: componentIcon('ic-progress'),
 };
 
 // ----------------------------------------------------------------------
@@ -87,6 +91,12 @@ export const useNavData = (): NavSectionProps['data'] => {
             title: t('ishlab_chiqarish'),
             path: paths.dashboard.ishlabChiqarish.root,
             icon: ICONS.ishlabChiqarish,
+            children: [
+              { title: t('ishlab_chiqarish_rejalashtirish'), path: paths.dashboard.ishlabChiqarish.rejalashtirish },
+              { title: t('ishlab_chiqarish_nazorat'), path: paths.dashboard.ishlabChiqarish.nazorat },
+              { title: t('ishlab_chiqarish_hisobotlar'), path: paths.dashboard.ishlabChiqarish.hisobotlar },
+              { title: t('ishlab_chiqarish_uskunalar'), path: paths.dashboard.ishlabChiqarish.uskunalar },
+            ],
           },
           {
             title: t('buyurtma_planlashtirish'),

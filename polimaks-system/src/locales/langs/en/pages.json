@@ -806,10 +806,75 @@
   },
   "ishlabChiqarish": {
     "title": "Production",
-    "subtitle": "Manage production processes and workflows."
+    "subtitle": "Manage production processes and workflows.",
+    "items": {
+      "rejalashtirish": {
+        "title": "Production Planning",
+        "description": "Plan production schedules and workflows."
+      },
+      "nazorat": {
+        "title": "Production Control",
+        "description": "Monitor and control production processes."
+      },
+      "hisobotlar": {
+        "title": "Production Reports",
+        "description": "Generate reports and analytics for production."
+      },
+      "uskunalar": {
+        "title": "Production Equipment",
+        "description": "Manage production machinery and equipment."
+      }
+    }
   },
   "buyurtmaPlanlashtirish": {
     "title": "Order Planning",
     "subtitle": "Plan and manage production orders and scheduling."
+  },
+  "orderPlanPage": {
+    "title": "Order Planning",
+    "subtitle": "Manage production orders, material requirements and scheduling",
+    "add": "Add Order",
+    "edit": "Edit Order",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "empty": "No orders yet.",
+    "actions": "Actions",
+    "date": "Date",
+    "orderNumber": "Order Number",
+    "client": "Client",
+    "title": "Title",
+    "quantityKg": "Quantity (kg)",
+    "material": "Material",
+    "subMaterial": "Sub Material",
+    "selectSubMaterial": "Select sub material",
+    "filmThickness": "Film Thickness",
+    "filmWidth": "Film Width",
+    "cylinderLength": "Cylinder Length",
+    "cylinderCount": "Number of Cylinders",
+    "printingMachine": "Printing Machine",
+    "selectMachine": "Select machine",
+    "responsiblePerson": "Responsible Person",
+    "notes": "Notes",
+    "status": {
+      "planning": "Planning",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "kg": "kg",
+    "microns": "μm",
+    "mm": "mm",
+    "pcs": "pcs",
+    "importFromOrderBook": "Import from Order Book",
+    "searchOrders": "Search orders by number, client, or title...",
+    "ordersSelected": "orders selected",
+    "selectOrdersToImport": "Select orders to import",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "noOrdersInOrderBook": "No orders found in Order Book",
+    "noOrdersMatch": "No orders match your search",
+    "importHint": "Selected orders will be imported with default status 'Planning'. You can edit them after import.",
+    "importSelected": "Import Selected"
   }
 }

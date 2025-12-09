@@ -34,5 +34,9 @@
   "clients_materials": "Давальческое сырьё",
   "clients_order_book": "Книга заказов",
   "ishlab_chiqarish": "Производство",
+  "ishlab_chiqarish_rejalashtirish": "Планирование производства",
+  "ishlab_chiqarish_nazorat": "Контроль производства",
+  "ishlab_chiqarish_hisobotlar": "Отчеты производства",
+  "ishlab_chiqarish_uskunalar": "Оборудование производства",
   "buyurtma_planlashtirish": "Планирование заказов"
 }

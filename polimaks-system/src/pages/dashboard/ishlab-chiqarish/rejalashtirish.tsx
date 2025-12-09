@@ -5,10 +5,10 @@ import { useTranslate } from 'src/locales';
 
 // ----------------------------------------------------------------------
 
-export default function IshlabChiqarish() {
+export default function IshlabChiqarishRejalashtirish() {
   const { t } = useTranslate('pages');
 
-  const title = `${t('ishlabChiqarish.title')} | ${CONFIG.appName}`;
+  const title = `${t('ishlabChiqarish.items.rejalashtirish.title')} | ${CONFIG.appName}`;
 
   return (
     <>
@@ -27,11 +27,11 @@ export default function IshlabChiqarish() {
           }}
         >
           <Typography variant="h3" gutterBottom>
-            {t('ishlabChiqarish.title')}
+            {t('ishlabChiqarish.items.rejalashtirish.title')}
           </Typography>
           
           <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-            {t('ishlabChiqarish.subtitle')}
+            {t('ishlabChiqarish.items.rejalashtirish.description')}
           </Typography>
 
           <Typography variant="body1" sx={{ color: 'text.disabled', mt: 2 }}>

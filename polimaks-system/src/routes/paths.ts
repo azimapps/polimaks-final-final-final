@@ -55,6 +55,10 @@ export const paths = {
     },
     ishlabChiqarish: {
       root: '/ishlab-chiqarish',
+      rejalashtirish: '/ishlab-chiqarish/rejalashtirish',
+      nazorat: '/ishlab-chiqarish/nazorat',
+      hisobotlar: '/ishlab-chiqarish/hisobotlar',
+      uskunalar: '/ishlab-chiqarish/uskunalar',
     },
     buyurtmaPlanlashtirish: {
       root: '/buyurtma-planlashtirish',
