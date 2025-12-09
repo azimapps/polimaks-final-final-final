@@ -255,12 +255,12 @@ export default function KraskaPage() {
               >
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.marka')}</TableCell>
                     <TableCell sx={{ minWidth: 220 }}>{t('kraskaPage.color')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('kraskaPage.totalKg')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.price')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.totalPrice')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.seriya')}</TableCell>
-                    <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.marka')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.receivedDate')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 320 }}>{t('kraskaPage.description')}</TableCell>
@@ -295,6 +295,9 @@ export default function KraskaPage() {
                   ) : (
                     items.map((item) => (
                       <TableRow key={item.id} hover>
+                        <TableCell>
+                          <Typography variant="body2">{item.marka || '—'}</Typography>
+                        </TableCell>
                         <TableCell>
                           <Stack direction="row" spacing={1} alignItems="center">
                             <Box
@@ -333,9 +336,6 @@ export default function KraskaPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.seriyaNumber}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.marka || '—'}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.createdDate}</Typography>
