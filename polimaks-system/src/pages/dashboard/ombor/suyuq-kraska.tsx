@@ -34,6 +34,7 @@ import { Iconify } from 'src/components/iconify';
 
 type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
 
+
 type SuyuqKraskaItem = {
   id: string;
   colorName: string;
