@@ -19,6 +19,7 @@ export type ClientTransaction = {
 
 export const CLIENTS_KEY = 'clients-main';
 export const TRANSACTIONS_KEY = 'clients-transactions';
+export const ORDER_BOOK_KEY = 'clients-order-book';
 
 export const CURRENCY_OPTIONS = ['UZS', 'USD', 'EUR', 'RUB'] as const;
 export const CURRENCY_RATES: Record<string, number> = {
@@ -65,7 +66,8 @@ export const readTransactions = (): ClientTransaction[] => {
     const normalized: ClientTransaction[] = parsed.map((entry: any) => ({
       id: entry.id ?? uuidv4(),
       clientId: entry.clientId ?? '',
-      type: entry.type === 'payment' ? 'payment' : 'promise',
+      // All manual entries are treated as payments now
+      type: 'payment',
       amount: Number(entry.amount) || 0,
       currency: (entry.currency ?? 'UZS').toString(),
       date: entry.date ?? new Date().toISOString().split('T')[0],
@@ -80,4 +82,60 @@ export const readTransactions = (): ClientTransaction[] => {
 export const persistTransactions = (transactions: ClientTransaction[]) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
+};
+
+type OrderBookItem = {
+  id?: string;
+  clientId?: string;
+  orderNumber?: string;
+  title?: string;
+  quantityKg?: number;
+  pricePerKg?: number;
+  priceCurrency?: string;
+  date?: string;
+};
+
+const toNumber = (value: unknown): number => (typeof value === 'number' ? value : Number(value) || 0);
+
+export const readOrderBookPromises = (): ClientTransaction[] => {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(ORDER_BOOK_KEY);
+  if (!stored) return [];
+  try {
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return [];
+
+    const normalized: ClientTransaction[] = parsed
+      .map((entry: OrderBookItem, index) => {
+        const clientId = entry.clientId ?? '';
+        const quantity = toNumber(entry.quantityKg);
+        const price = toNumber(entry.pricePerKg);
+        const amount = quantity * price;
+        if (!clientId || amount <= 0) return null;
+
+        const currency = (entry.priceCurrency ?? 'UZS').toString().toUpperCase();
+        const labelParts = [
+          entry.orderNumber ? `Order ${entry.orderNumber}` : null,
+          entry.title ? ` ${entry.title}` : null,
+        ]
+          .filter(Boolean)
+          .join(': ')
+          .trim();
+
+        return {
+          id: `orderbook-${entry.id ?? entry.orderNumber ?? index}`,
+          clientId,
+          type: 'promise' as TransactionType,
+          amount,
+          currency,
+          date: entry.date ?? new Date().toISOString().split('T')[0],
+          notes: labelParts || '',
+        };
+      })
+      .filter(Boolean) as ClientTransaction[];
+
+    return normalized;
+  } catch {
+    return [];
+  }
 };

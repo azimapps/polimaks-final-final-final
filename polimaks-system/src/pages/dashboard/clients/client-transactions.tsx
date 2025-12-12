@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 import { useParams, useNavigate } from 'react-router';
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 
 import {
   Box,
@@ -39,16 +39,13 @@ import {
   readTransactions,
   persistTransactions,
   convertToDisplayCurrency,
+  readOrderBookPromises,
+  ORDER_BOOK_KEY,
 } from './transactions-data';
 
-import type {
-  ClientSummary,
-  TransactionType,
-  ClientTransaction,
-} from './transactions-data';
+import type { ClientSummary, ClientTransaction } from './transactions-data';
 
 type TransactionForm = {
-  type: TransactionType;
   amount: string;
   currency: string;
   date: string;
@@ -73,7 +70,6 @@ const srOnlyStyles = {
 };
 
 const createDetailForm = (): TransactionForm => ({
-  type: 'promise',
   amount: '',
   currency: 'UZS',
   date: new Date().toISOString().split('T')[0],
@@ -87,6 +83,9 @@ export default function ClientTransactionsDetailPage() {
 
   const clients = useMemo<ClientSummary[]>(() => readClients(), []);
   const [transactions, setTransactions] = useState<ClientTransaction[]>(() => readTransactions());
+  const [orderPromises, setOrderPromises] = useState<ClientTransaction[]>(() =>
+    readOrderBookPromises()
+  );
   const transactionDialog = useBoolean();
   const [form, setForm] = useState<TransactionForm>(createDetailForm());
   const [displayCurrency, setDisplayCurrency] = useState<string>(CURRENCY_OPTIONS[0]);
@@ -97,8 +96,9 @@ export default function ClientTransactionsDetailPage() {
   );
 
   const clientTransactions = useMemo(
-    () => transactions.filter((tx) => tx.clientId === clientId),
-    [transactions, clientId]
+    () =>
+      [...transactions, ...orderPromises].filter((tx) => tx.clientId === clientId),
+    [transactions, orderPromises, clientId]
   );
 
   const currencies = useMemo(
@@ -176,7 +176,7 @@ export default function ClientTransactionsDetailPage() {
     const payload: ClientTransaction = {
       id: uuidv4(),
       clientId,
-      type: form.type,
+      type: 'payment',
       amount,
       currency: form.currency,
       date: form.date || new Date().toISOString().split('T')[0],
@@ -192,6 +192,17 @@ export default function ClientTransactionsDetailPage() {
     setForm(createDetailForm());
     transactionDialog.onFalse();
   }, [clientId, form, transactionDialog]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleStorage = (event: StorageEvent) => {
+      if (event?.key === ORDER_BOOK_KEY) {
+        setOrderPromises(readOrderBookPromises());
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   return (
     <>
@@ -401,18 +412,6 @@ export default function ClientTransactionsDetailPage() {
         <DialogTitle>{t('clientsTransactionsPage.addTransaction')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              select
-              fullWidth
-              label={t('clientsTransactionsPage.formType')}
-              value={form.type}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, type: event.target.value as TransactionType }))
-              }
-            >
-              <MenuItem value="promise">{t('clientsTransactionsPage.types.promise')}</MenuItem>
-              <MenuItem value="payment">{t('clientsTransactionsPage.types.payment')}</MenuItem>
-            </TextField>
             <TextField
               fullWidth
               type="number"

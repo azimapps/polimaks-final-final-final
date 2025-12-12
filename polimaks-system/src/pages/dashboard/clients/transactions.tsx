@@ -34,19 +34,20 @@ import { Iconify } from 'src/components/iconify';
 
 import {
   CLIENTS_KEY,
+  ORDER_BOOK_KEY,
   readClients,
   formatAmount,
   CURRENCY_OPTIONS,
   readTransactions,
   persistTransactions,
   convertToDisplayCurrency,
+  readOrderBookPromises,
 } from './transactions-data';
 
-import type { ClientSummary, TransactionType, ClientTransaction } from './transactions-data';
+import type { ClientSummary, ClientTransaction } from './transactions-data';
 
 type TransactionForm = {
   clientId: string;
-  type: TransactionType;
   amount: string;
   currency: string;
   date: string;
@@ -55,7 +56,6 @@ type TransactionForm = {
 
 const createEmptyForm = (clientId: string) => ({
   clientId,
-  type: 'promise' as TransactionType,
   amount: '',
   currency: 'UZS',
   date: new Date().toISOString().split('T')[0],
@@ -67,6 +67,9 @@ export default function ClientsTransactionsPage() {
 
   const [clients, setClients] = useState<ClientSummary[]>(() => readClients());
   const [transactions, setTransactions] = useState<ClientTransaction[]>(() => readTransactions());
+  const [orderPromises, setOrderPromises] = useState<ClientTransaction[]>(() =>
+    readOrderBookPromises()
+  );
   const [form, setForm] = useState<TransactionForm>(() => createEmptyForm(''));
   const [displayCurrency, setDisplayCurrency] = useState<string>(CURRENCY_OPTIONS[0]);
   const transactionDialog = useBoolean();
@@ -83,10 +86,18 @@ export default function ClientsTransactionsPage() {
       if (event?.key === CLIENTS_KEY) {
         setClients(readClients());
       }
+      if (event?.key === ORDER_BOOK_KEY) {
+        setOrderPromises(readOrderBookPromises());
+      }
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
+
+  const allTransactions = useMemo(
+    () => [...transactions, ...orderPromises],
+    [transactions, orderPromises]
+  );
 
   const addTransaction = useCallback(() => {
     const amount = Number(form.amount);
@@ -94,7 +105,7 @@ export default function ClientsTransactionsPage() {
     const payload: ClientTransaction = {
       id: uuidv4(),
       clientId: form.clientId,
-      type: form.type,
+      type: 'payment',
       amount,
       currency: form.currency.trim() || 'UZS',
       date: form.date || new Date().toISOString().split('T')[0],
@@ -128,7 +139,7 @@ export default function ClientsTransactionsPage() {
       promiseMap.set(client.id, 0);
     });
 
-    transactions.forEach((tx) => {
+    allTransactions.forEach((tx) => {
       if (!tx.clientId) return;
       const paid = paidMap.get(tx.clientId) ?? 0;
       const promise = promiseMap.get(tx.clientId) ?? 0;
@@ -178,7 +189,7 @@ export default function ClientsTransactionsPage() {
         status,
       };
     });
-  }, [clients, transactions, displayCurrency, t]);
+  }, [clients, allTransactions, displayCurrency, t]);
 
   const pageTitle = `${t('clientsTransactionsPage.title')} | ${CONFIG.appName}`;
 
@@ -339,18 +350,6 @@ export default function ClientsTransactionsPage() {
                   {client.fullName || client.id}
                 </MenuItem>
               ))}
-            </TextField>
-            <TextField
-              select
-              fullWidth
-              label={t('clientsTransactionsPage.formType')}
-              value={form.type}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, type: event.target.value as TransactionType }))
-              }
-            >
-              <MenuItem value="promise">{t('clientsTransactionsPage.types.promise')}</MenuItem>
-              <MenuItem value="payment">{t('clientsTransactionsPage.types.payment')}</MenuItem>
             </TextField>
             <TextField
               fullWidth
