@@ -34,6 +34,7 @@ import { Iconify } from 'src/components/iconify';
 import type { Client } from './clients';
 
 type Material = 'BOPP' | 'CPP' | 'PE' | 'PET';
+type Currency = 'USD' | 'EUR' | 'RUB' | 'UZS';
 
 type OrderBookItem = {
   id: string;
@@ -51,9 +52,13 @@ type OrderBookItem = {
   cylinderCount: number;
   startDate: string; // ISO date - production start
   endDate: string; // ISO date - production end
+  pricePerKg: number;
+  priceCurrency: Currency;
+  admin: string;
 };
 
 const MATERIALS: Material[] = ['BOPP', 'CPP', 'PE', 'PET'];
+const PRICE_CURRENCIES: Currency[] = ['USD', 'EUR', 'RUB', 'UZS'];
 
 const MATERIAL_CATEGORIES: Record<Material, string[]> = {
   BOPP: ['prazrachniy', 'metal', 'jemchuk', 'jemchuk metal'],
@@ -77,6 +82,7 @@ const generateOrderNumber = () => {
 const normalizeItems = (items: (Partial<OrderBookItem> & { id?: string; client?: string })[]): OrderBookItem[] =>
   items.map((item, index) => {
     const material = (item.material as Material) || 'BOPP';
+    const priceCurrency = (item.priceCurrency as Currency) || 'USD';
     return {
       id: item.id || `order-${index}`,
       date: item.date || todayISO(),
@@ -96,6 +102,10 @@ const normalizeItems = (items: (Partial<OrderBookItem> & { id?: string; client?:
         typeof item.cylinderCount === 'number' ? item.cylinderCount : Number(item.cylinderCount) || 0,
       startDate: item.startDate || todayISO(),
       endDate: item.endDate || todayISO(),
+      pricePerKg:
+        typeof item.pricePerKg === 'number' ? item.pricePerKg : Number(item.pricePerKg) || 0,
+      priceCurrency,
+      admin: item.admin || '',
     };
   });
 
@@ -116,6 +126,9 @@ const seedData: OrderBookItem[] = [
     cylinderCount: 8,
     startDate: '2024-12-05',
     endDate: '2024-12-15',
+    pricePerKg: 3.2,
+    priceCurrency: 'USD',
+    admin: 'Nodir',
   },
   {
     id: 'order-2',
@@ -133,6 +146,9 @@ const seedData: OrderBookItem[] = [
     cylinderCount: 6,
     startDate: '2024-12-10',
     endDate: '2024-12-20',
+    pricePerKg: 28500,
+    priceCurrency: 'UZS',
+    admin: 'Dilshod',
   },
 ];
 
@@ -190,12 +206,22 @@ export default function ClientsOrderBookPage() {
   const [menuItem, setMenuItem] = useState<OrderBookItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<OrderBookItem | null>(null);
   const [form, setForm] = useState<
-    Omit<OrderBookItem, 'id' | 'quantityKg' | 'filmThickness' | 'filmWidth' | 'cylinderLength' | 'cylinderCount'> & {
+    Omit<
+      OrderBookItem,
+      | 'id'
+      | 'quantityKg'
+      | 'filmThickness'
+      | 'filmWidth'
+      | 'cylinderLength'
+      | 'cylinderCount'
+      | 'pricePerKg'
+    > & {
       quantityKg: string;
       filmThickness: string;
       filmWidth: string;
       cylinderLength: string;
       cylinderCount: string;
+      pricePerKg: string;
     }
   >({
     date: todayISO(),
@@ -212,6 +238,9 @@ export default function ClientsOrderBookPage() {
     cylinderCount: '',
     startDate: todayISO(),
     endDate: todayISO(),
+    pricePerKg: '',
+    priceCurrency: 'USD',
+    admin: '',
   });
   
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -247,6 +276,9 @@ export default function ClientsOrderBookPage() {
       cylinderCount: '',
       startDate: todayISO(),
       endDate: todayISO(),
+      pricePerKg: '',
+      priceCurrency: PRICE_CURRENCIES[0],
+      admin: '',
     });
     dialog.onTrue();
   };
@@ -270,6 +302,9 @@ export default function ClientsOrderBookPage() {
       cylinderCount: item.cylinderCount ? String(item.cylinderCount) : '',
       startDate: item.startDate || todayISO(),
       endDate: item.endDate || todayISO(),
+      pricePerKg: item.pricePerKg ? String(item.pricePerKg) : '',
+      priceCurrency: item.priceCurrency,
+      admin: item.admin || '',
     });
     dialog.onTrue();
   };
@@ -280,6 +315,7 @@ export default function ClientsOrderBookPage() {
     const filmWidthNum = parseFloat(form.filmWidth) || 0;
     const cylinderLengthNum = parseFloat(form.cylinderLength) || 0;
     const cylinderCountNum = parseInt(form.cylinderCount, 10) || 0;
+    const pricePerKgNum = parseFloat(form.pricePerKg) || 0;
 
     const payload: OrderBookItem = {
       id: editing ? editing.id : uuidv4(),
@@ -297,6 +333,9 @@ export default function ClientsOrderBookPage() {
       cylinderCount: cylinderCountNum,
       startDate: form.startDate || todayISO(),
       endDate: form.endDate || todayISO(),
+      pricePerKg: pricePerKgNum,
+      priceCurrency: form.priceCurrency,
+      admin: form.admin.trim(),
     };
 
     if (editing) {
@@ -341,6 +380,7 @@ export default function ClientsOrderBookPage() {
     parseFloat(form.filmWidth) > 0 &&
     parseFloat(form.cylinderLength) > 0 &&
     parseInt(form.cylinderCount, 10) > 0 &&
+    parseFloat(form.pricePerKg) > 0 &&
     form.startDate &&
     form.endDate &&
     form.startDate <= form.endDate;
@@ -369,7 +409,7 @@ export default function ClientsOrderBookPage() {
               <Table
                 size="medium"
                 sx={{
-                  minWidth: 1800,
+                  minWidth: 2100,
                   '& th, & td': { py: 1.5, px: 1.25 },
                 }}
               >
@@ -380,6 +420,9 @@ export default function ClientsOrderBookPage() {
                     <TableCell sx={{ minWidth: 160 }}>{t('orderBookPage.client')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('orderBookPage.orderTitle')}</TableCell>
                     <TableCell sx={{ minWidth: 120 }}>{t('orderBookPage.quantityKg')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('orderBookPage.pricePerKg')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('orderBookPage.totalCost')}</TableCell>
+                    <TableCell sx={{ minWidth: 140 }}>{t('orderBookPage.admin')}</TableCell>
                     <TableCell sx={{ minWidth: 100 }}>{t('orderBookPage.material')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>{t('orderBookPage.filmThickness')}</TableCell>
                     <TableCell sx={{ minWidth: 130 }}>{t('orderBookPage.filmWidth')}</TableCell>
@@ -395,7 +438,7 @@ export default function ClientsOrderBookPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={13}>
+                      <TableCell colSpan={16}>
                         <Box
                           sx={{
                             py: 6,
@@ -416,65 +459,84 @@ export default function ClientsOrderBookPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    items.map((item) => (
-                      <TableRow key={item.id} hover>
-                        <TableCell>
-                          <Typography variant="body2">{item.date}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {item.orderNumber}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.clientName}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="subtitle2">{item.title}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {item.quantityKg.toLocaleString()} {t('orderBookPage.kg')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {item.material} - {item.subMaterial}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {item.filmThickness} {t('orderBookPage.microns')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {item.filmWidth} {t('orderBookPage.mm')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {item.cylinderLength} {t('orderBookPage.mm')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {item.cylinderCount} {t('orderBookPage.pcs')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.startDate}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.endDate}</Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <IconButton onClick={(e) => openMenu(e, item)}>
-                            <Iconify icon="eva:more-vertical-fill" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    items.map((item) => {
+                      const totalCost = item.quantityKg * item.pricePerKg;
+                      return (
+                        <TableRow key={item.id} hover>
+                          <TableCell>
+                            <Typography variant="body2">{item.date}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {item.orderNumber}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{item.clientName}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="subtitle2">{item.title}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.quantityKg.toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                              {t('orderBookPage.kg')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.pricePerKg.toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                              {item.priceCurrency} / {t('orderBookPage.kg')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                              {item.priceCurrency}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{item.admin}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.material} - {item.subMaterial}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.filmThickness} {t('orderBookPage.microns')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.filmWidth} {t('orderBookPage.mm')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.cylinderLength} {t('orderBookPage.mm')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.cylinderCount} {t('orderBookPage.pcs')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{item.startDate}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{item.endDate}</Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <IconButton onClick={(e) => openMenu(e, item)}>
+                              <Iconify icon="eva:more-vertical-fill" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
@@ -558,6 +620,16 @@ export default function ClientsOrderBookPage() {
               </Grid>
               <Grid size={{ xs: 12, sm: 3 }}>
                 <TextField
+                  fullWidth
+                  type="number"
+                  label={t('orderBookPage.pricePerKg')}
+                  value={form.pricePerKg}
+                  onChange={(e) => setForm((prev) => ({ ...prev, pricePerKg: e.target.value }))}
+                  inputProps={{ min: 0, step: '0.01', placeholder: t('orderBookPage.pricePerKg') }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <TextField
                   select
                   fullWidth
                   label={t('orderBookPage.material')}
@@ -567,6 +639,21 @@ export default function ClientsOrderBookPage() {
                   {MATERIALS.map((material) => (
                     <MenuItem key={material} value={material}>
                       {material}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <TextField
+                  select
+                  fullWidth
+                  label={t('orderBookPage.priceCurrency')}
+                  value={form.priceCurrency}
+                  onChange={(e) => setForm((prev) => ({ ...prev, priceCurrency: e.target.value as Currency }))}
+                >
+                  {PRICE_CURRENCIES.map((currency) => (
+                    <MenuItem key={currency} value={currency}>
+                      {currency}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -648,6 +735,15 @@ export default function ClientsOrderBookPage() {
                   value={form.endDate}
                   onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value || todayISO() }))}
                   InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label={t('orderBookPage.admin')}
+                  value={form.admin}
+                  onChange={(e) => setForm((prev) => ({ ...prev, admin: e.target.value }))}
+                  placeholder={t('orderBookPage.admin')}
                 />
               </Grid>
             </Grid>
