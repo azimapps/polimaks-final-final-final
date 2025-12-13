@@ -22,16 +22,13 @@ import {
   DialogActions,
   TableContainer,
   Chip,
-  MenuItem,
 } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
-import {
-  readClients,
-} from './transactions-data';
+import { ORDER_BOOK_KEY } from './transactions-data';
 
 // ----------------------------------------------------------------------
 
@@ -39,7 +36,6 @@ type MonthlyPlan = {
   id: string;
   month: string; // YYYY-MM
   limit: number;
-  actual: number;
 };
 
 type StoredClient = {
@@ -49,6 +45,7 @@ type StoredClient = {
 };
 
 const CLIENTS_STORAGE_KEY = 'clients-main';
+const ORDER_BOOK_STORAGE_KEY = ORDER_BOOK_KEY;
 const FALLBACK_CLIENTS: StoredClient[] = [
   { id: 'client-1', fullName: 'Otabek Karimov', monthlyPlans: [] },
   { id: 'client-2', fullName: 'Dilnoza Rahimova', monthlyPlans: [] },
@@ -68,7 +65,6 @@ const readFullClients = (): StoredClient[] => {
         id: plan.id ?? uuidv4(),
         month: plan.month ?? '',
         limit: Number(plan.limitKg ?? plan.limit ?? 0) || 0,
-        actual: Number(plan.actualKg ?? plan.actual ?? 0) || 0,
       })),
     }));
   } catch {
@@ -85,6 +81,39 @@ const persistPlans = (clientId: string, plans: MonthlyPlan[]) => {
   localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(next));
 };
 
+type OrderRecord = {
+  id: string;
+  clientId: string;
+  date?: string;
+  startDate?: string;
+  quantityKg: number;
+};
+
+const readOrderBook = (): OrderRecord[] => {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(ORDER_BOOK_STORAGE_KEY);
+  if (!stored) return [];
+  try {
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((item: any, index: number) => ({
+      id: item.id ?? `order-${index}`,
+      clientId: item.clientId ?? '',
+      date: item.date,
+      startDate: item.startDate,
+      quantityKg: Number(item.quantityKg ?? item.miqdor ?? 0) || 0,
+    }));
+  } catch {
+    return [];
+  }
+};
+
+const getOrderMonth = (order: OrderRecord): string | null => {
+  const date = order.date || order.startDate;
+  if (!date) return null;
+  return String(date).slice(0, 7);
+};
+
 // ----------------------------------------------------------------------
 
 export default function ClientAgreementsPage() {
@@ -93,17 +122,14 @@ export default function ClientAgreementsPage() {
   const { clientId } = useParams();
 
   const clients = useMemo(() => readFullClients(), []);
-  const compactClients = useMemo(() => readClients(), []);
   const client = useMemo(() => clients.find((item) => item.id === clientId) ?? null, [clients, clientId]);
 
   const [plans, setPlans] = useState<MonthlyPlan[]>(() => client?.monthlyPlans ?? []);
   const dialog = useBoolean();
-  const addActualDialog = useBoolean();
-  const [targetPlan, setTargetPlan] = useState<MonthlyPlan | null>(null);
+  const [orders, setOrders] = useState<OrderRecord[]>(() => readOrderBook());
   const [form, setForm] = useState({
     month: new Date().toISOString().slice(0, 7),
     limit: '',
-    actual: '',
   });
 
   useEffect(() => {
@@ -114,9 +140,18 @@ export default function ClientAgreementsPage() {
         const found = updated.find((c) => c.id === clientId);
         setPlans(found?.monthlyPlans ?? []);
       }
+      if (event.key === ORDER_BOOK_STORAGE_KEY) {
+        setOrders(readOrderBook());
+      }
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
+  }, [clientId]);
+
+  useEffect(() => {
+    const found = readFullClients().find((c) => c.id === clientId);
+    setPlans(found?.monthlyPlans ?? []);
+    setOrders(readOrderBook());
   }, [clientId]);
 
   const filtered = useMemo(
@@ -126,10 +161,22 @@ export default function ClientAgreementsPage() {
   const pageTitle = `${client?.fullName ?? t('clientsPage.title')} — Agreements | ${CONFIG.appName}`;
   const currentMonth = useMemo(() => new Date().toISOString().slice(0, 7), []);
 
+  const monthTotals = useMemo(() => {
+    const map = new Map<string, number>();
+    orders
+      .filter((order) => order.clientId === clientId)
+      .forEach((order) => {
+        const key = getOrderMonth(order);
+        if (!key) return;
+        map.set(key, (map.get(key) ?? 0) + order.quantityKg);
+      });
+    return map;
+  }, [clientId, orders]);
+
   const rows = useMemo(
     () =>
       filtered.map((plan) => {
-        const achieved = plan.actual;
+        const achieved = monthTotals.get(plan.month) ?? 0;
         const hit = achieved >= plan.limit && plan.limit > 0;
         const isCurrent = plan.month === currentMonth;
         let color: 'success' | 'warning' | 'error' = 'success';
@@ -146,7 +193,7 @@ export default function ClientAgreementsPage() {
         }
         return { ...plan, achieved, status: { color, label }, isCurrent };
       }),
-    [currentMonth, filtered]
+    [currentMonth, filtered, monthTotals]
   );
 
   const savePlan = () => {
@@ -155,7 +202,6 @@ export default function ClientAgreementsPage() {
       id: uuidv4(),
       month: form.month,
       limit: Number(form.limit) || 0,
-      actual: Number(form.actual) || 0,
     };
     const nextPlans = (() => {
       const others = plans.filter((p) => p.month !== payload.month);
@@ -164,20 +210,7 @@ export default function ClientAgreementsPage() {
     setPlans(nextPlans);
     persistPlans(clientId, nextPlans);
     dialog.onFalse();
-    setForm({ month: currentMonth, limit: '', actual: '' });
-  };
-
-  const incrementActual = () => {
-    if (!targetPlan || !clientId || !form.actual) return;
-    const increment = Number(form.actual) || 0;
-    if (increment <= 0) return;
-    const nextPlans = plans.map((p) =>
-      p.id === targetPlan.id ? { ...p, actual: p.actual + increment } : p
-    );
-    setPlans(nextPlans);
-    persistPlans(clientId, nextPlans);
-    addActualDialog.onFalse();
-    setForm((prev) => ({ ...prev, actual: '' }));
+    setForm({ month: currentMonth, limit: '' });
   };
 
   return (
@@ -235,9 +268,6 @@ export default function ClientAgreementsPage() {
                       {t('clientsAgreements.actual', { defaultValue: 'Progress' })}
                     </TableCell>
                     <TableCell sx={{ width: 160 }}>{t('clientsAgreements.status', { defaultValue: 'Status' })}</TableCell>
-                    <TableCell sx={{ width: 140 }} align="right">
-                      {t('clientsAgreements.actions', { defaultValue: 'Actions' })}
-                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -273,19 +303,6 @@ export default function ClientAgreementsPage() {
                         <TableCell>
                           <Chip label={item.status.label} color={item.status.color} size="small" />
                         </TableCell>
-                        <TableCell align="right">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => {
-                              setTargetPlan(item);
-                              setForm((prev) => ({ ...prev, actual: '' }));
-                              addActualDialog.onTrue();
-                            }}
-                          >
-                            {t('clientsAgreements.updateActual', { defaultValue: 'Update actual' })}
-                          </Button>
-                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -317,15 +334,6 @@ export default function ClientAgreementsPage() {
               inputProps={{ min: 0, step: 1 }}
               InputLabelProps={{ shrink: true }}
             />
-            <TextField
-              fullWidth
-              type="number"
-              label={t('clientsAgreements.initialActual', { defaultValue: 'Initial actual (optional)' })}
-              value={form.actual}
-              onChange={(e) => setForm((prev) => ({ ...prev, actual: e.target.value }))}
-              inputProps={{ min: 0, step: 1 }}
-              InputLabelProps={{ shrink: true }}
-            />
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -334,33 +342,6 @@ export default function ClientAgreementsPage() {
           </Button>
           <Button onClick={savePlan} variant="contained" disabled={!form.month || !Number(form.limit)}>
             {t('clientsAgreements.saveLimit', { defaultValue: 'Save limit' })}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={addActualDialog.value} onClose={addActualDialog.onFalse} maxWidth="xs" fullWidth>
-        <DialogTitle>{t('clientsAgreements.updateActual', { defaultValue: 'Update actual' })}</DialogTitle>
-        <DialogContent dividers>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <Typography variant="subtitle2">{targetPlan?.month}</Typography>
-            <TextField
-              fullWidth
-              type="number"
-              label={t('clientsAgreements.addAmount', { defaultValue: 'Add amount' })}
-              value={form.actual}
-              onChange={(e) => setForm((prev) => ({ ...prev, actual: e.target.value }))}
-              inputProps={{ min: 0, step: 1 }}
-              InputLabelProps={{ shrink: true }}
-              helperText={`Current: ${targetPlan?.actual?.toLocaleString?.() ?? 0}`}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={addActualDialog.onFalse} color="inherit">
-            {t('clientsAgreements.cancel', { defaultValue: 'Cancel' })}
-          </Button>
-          <Button onClick={incrementActual} variant="contained" disabled={!form.actual || Number(form.actual) <= 0}>
-            {t('clientsAgreements.save', { defaultValue: 'Save' })}
           </Button>
         </DialogActions>
       </Dialog>
