@@ -694,7 +694,7 @@ export default function ClientsPage() {
           }}
         >
           <Iconify icon="solar:hand-heart-bold" width={18} height={18} style={{ marginRight: 8 }} />
-          Agreements (peregavorlar)
+          {t('clientsAgreements.title', { defaultValue: 'Agreements' })}
         </MenuItem>
         <MenuItem
           onClick={() => {
