@@ -881,5 +881,22 @@
     "noOrdersMatch": "Qidiruvga mos buyurtmalar yo'q",
     "importHint": "Tanlangan buyurtmalar 'Rejalashtirish' statusida import qilinadi. Import qilgandan so'ng ularni tahrirlashingiz mumkin.",
     "importSelected": "Tanlanganlarni Import qilish"
+  },
+  "clientsAgreements": {
+    "title": "Kelishuvlar",
+    "monthlyLimits": "Oylik limitlar",
+    "subtitle": "Oylik reja va yetkazib berishni kuzating.",
+    "addLimit": "Oylik limit qo‘shish",
+    "month": "Oy",
+    "limit": "Limit",
+    "actual": "Jarayon",
+    "status": "Holat",
+    "empty": "Hali limit qo‘shilmagan. Boshlash uchun qo‘shing.",
+    "saveLimit": "Limitni saqlash",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "hit": "Limit bajarildi",
+    "inProgress": "Jarayonda",
+    "belowLimit": "Limitdan past"
   }
 }

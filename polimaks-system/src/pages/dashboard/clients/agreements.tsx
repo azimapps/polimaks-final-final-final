@@ -179,21 +179,24 @@ export default function ClientAgreementsPage() {
         const achieved = monthTotals.get(plan.month) ?? 0;
         const hit = achieved >= plan.limit && plan.limit > 0;
         const isCurrent = plan.month === currentMonth;
+        const hitLabel = t('clientsAgreements.hit', { defaultValue: 'Hit limit' });
+        const inProgressLabel = t('clientsAgreements.inProgress', { defaultValue: 'In progress' });
+        const belowLimitLabel = t('clientsAgreements.belowLimit', { defaultValue: 'Below limit' });
         let color: 'success' | 'warning' | 'error' = 'success';
-        let label = 'Hit';
+        let label = hitLabel;
         if (hit) {
           color = 'success';
-          label = 'Hit limit';
+          label = hitLabel;
         } else if (isCurrent) {
           color = 'warning';
-          label = 'In progress';
+          label = inProgressLabel;
         } else {
           color = 'error';
-          label = 'Below limit';
+          label = belowLimitLabel;
         }
         return { ...plan, achieved, status: { color, label }, isCurrent };
       }),
-    [currentMonth, filtered, monthTotals]
+    [currentMonth, filtered, monthTotals, t]
   );
 
   const savePlan = () => {

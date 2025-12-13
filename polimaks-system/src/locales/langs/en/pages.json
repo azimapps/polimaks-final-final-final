@@ -880,5 +880,22 @@
     "noOrdersMatch": "No orders match your search",
     "importHint": "Selected orders will be imported with default status 'Planning'. You can edit them after import.",
     "importSelected": "Import Selected"
+  },
+  "clientsAgreements": {
+    "title": "Agreements",
+    "monthlyLimits": "Monthly limits",
+    "subtitle": "Track monthly commitment vs. delivered.",
+    "addLimit": "Add month limit",
+    "month": "Month",
+    "limit": "Limit",
+    "actual": "Progress",
+    "status": "Status",
+    "empty": "No monthly limits yet. Add one to start tracking.",
+    "saveLimit": "Save limit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "hit": "Hit limit",
+    "inProgress": "In progress",
+    "belowLimit": "Below limit"
   }
 }
