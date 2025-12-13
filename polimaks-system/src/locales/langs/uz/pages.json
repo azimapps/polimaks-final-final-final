@@ -898,5 +898,25 @@
     "hit": "Limit bajarildi",
     "inProgress": "Jarayonda",
     "belowLimit": "Limitdan past"
+  },
+  "clientsComplaints": {
+    "title": "Shikoyatlar",
+    "subtitle": "Muammolar va yechimlarni kuzating.",
+    "caption": "Har bir shikoyat sarlavha, tavsif, holat va vaqtni saqlaydi.",
+    "add": "Shikoyat qo‘shish",
+    "titleLabel": "Sarlavha",
+    "description": "Tavsif",
+    "status": "Holat",
+    "createdAt": "Yaratilgan vaqt",
+    "empty": "Hozircha shikoyatlar yo‘q.",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "edit": "Shikoyatni tahrirlash",
+    "actions": "Harakatlar",
+    "statuses": {
+      "open": "Ochilgan",
+      "in_progress": "Jarayonda",
+      "resolved": "Hal qilindi"
+    }
   }
 }

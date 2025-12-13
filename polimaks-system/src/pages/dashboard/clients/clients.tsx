@@ -567,6 +567,17 @@ export default function ClientsPage() {
         </MenuItem>
         <MenuItem
           onClick={() => {
+            if (menuItem) {
+              navigate(paths.dashboard.clients.complaintsClient(menuItem.id));
+            }
+            closeMenu();
+          }}
+        >
+          <Iconify icon="solar:chat-round-dots-bold" width={18} height={18} style={{ marginRight: 8 }} />
+          {t('clientsComplaints.title', { defaultValue: 'Complaints' })}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
             if (menuItem) openEdit(menuItem);
           }}
         >

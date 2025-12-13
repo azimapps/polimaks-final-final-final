@@ -897,5 +897,25 @@
     "hit": "Hit limit",
     "inProgress": "In progress",
     "belowLimit": "Below limit"
+  },
+  "clientsComplaints": {
+    "title": "Complaints",
+    "subtitle": "Track issues and resolutions.",
+    "caption": "Each complaint stores title, description, status, and time.",
+    "add": "Add complaint",
+    "titleLabel": "Title",
+    "description": "Description",
+    "status": "Status",
+    "createdAt": "Created at",
+    "empty": "No complaints yet.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit complaint",
+    "actions": "Actions",
+    "statuses": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "resolved": "Resolved"
+    }
   }
 }

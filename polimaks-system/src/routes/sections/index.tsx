@@ -52,6 +52,7 @@ const ClientTransactionsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-transactions')
 );
 const ClientAgreementsPage = lazy(() => import('src/pages/dashboard/clients/agreements'));
+const ClientComplaintsPage = lazy(() => import('src/pages/dashboard/clients/complaints'));
 const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
 const ClientsOrderBookPage = lazy(() => import('src/pages/dashboard/clients/order-book'));
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
@@ -137,6 +138,7 @@ export const routesSection: RouteObject[] = [
               { index: true, element: <ClientsPage /> },
               { path: ':clientId', element: <ClientDetailPage /> },
               { path: 'agreements/:clientId', element: <ClientAgreementsPage /> },
+              { path: 'complaints/:clientId', element: <ClientComplaintsPage /> },
               { path: 'transactions/:clientId', element: <ClientTransactionsDetailPage /> },
               { path: 'materials', element: <ClientsMaterialsPage /> },
               { path: 'order-book', element: <ClientsOrderBookPage /> },
