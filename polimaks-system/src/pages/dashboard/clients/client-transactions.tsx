@@ -41,6 +41,7 @@ import {
   convertToDisplayCurrency,
   readOrderBookPromises,
   ORDER_BOOK_KEY,
+  TRANSACTIONS_KEY,
 } from './transactions-data';
 
 import type { ClientSummary, ClientTransaction } from './transactions-data';
@@ -196,6 +197,9 @@ export default function ClientTransactionsDetailPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleStorage = (event: StorageEvent) => {
+      if (event?.key === TRANSACTIONS_KEY) {
+        setTransactions(readTransactions());
+      }
       if (event?.key === ORDER_BOOK_KEY) {
         setOrderPromises(readOrderBookPromises());
       }
@@ -213,7 +217,7 @@ export default function ClientTransactionsDetailPage() {
           <Stack direction="row" spacing={1} alignItems="center">
             <Button
               component="button"
-              onClick={() => navigate(paths.dashboard.clients.transactions)}
+              onClick={() => navigate(paths.dashboard.clients.root)}
               startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}
               variant="text"
             >

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useBoolean } from 'minimal-shared/hooks';
 
@@ -29,8 +29,19 @@ import {
 
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
+import {
+  CURRENCY_OPTIONS,
+  ORDER_BOOK_KEY,
+  TRANSACTIONS_KEY,
+  convertToDisplayCurrency,
+  formatAmount,
+  persistTransactions,
+  readOrderBookPromises,
+  readTransactions,
+} from './transactions-data';
 
 // ----------------------------------------------------------------------
 
@@ -60,7 +71,8 @@ export type MonthlyPlan = {
 
 const STORAGE_KEY = 'clients-main';
 
-const getRawPhone = (value: string) => value.replace(/\D/g, '').slice(0, 9);
+const getRawPhone = (value: string | undefined | null) =>
+  (typeof value === 'string' ? value : '').replace(/\D/g, '').slice(0, 9);
 
 const formatPhone = (raw: string) => {
   const digits = getRawPhone(raw);
@@ -108,8 +120,6 @@ export default function ClientsPage() {
     return `${now.getFullYear()}-${m}`;
   }, []);
 
-  const title = `${t('clients.items.clients.title')} | ${CONFIG.appName}`;
-
   const initialData = useMemo<Client[]>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -146,6 +156,16 @@ export default function ClientsPage() {
     company: '',
     notes: '',
   });
+  const [transactions, setTransactions] = useState(() => readTransactions());
+  const [orderPromises, setOrderPromises] = useState(() => readOrderBookPromises());
+  const [displayCurrency, setDisplayCurrency] = useState<string>(CURRENCY_OPTIONS[0]);
+  const [paymentForm, setPaymentForm] = useState<{ amount: string; currency: string; date: string; notes: string }>({
+    amount: '',
+    currency: 'UZS',
+    date: new Date().toISOString().split('T')[0],
+    notes: '',
+  });
+  const [paymentClient, setPaymentClient] = useState<Client | null>(null);
   const [editing, setEditing] = useState<Client | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<Client | null>(null);
@@ -155,6 +175,84 @@ export default function ClientsPage() {
   const deleteDialog = useBoolean();
   const complaintDialog = useBoolean();
   const planDialog = useBoolean();
+  const paymentDialog = useBoolean();
+  const pageTitle = `${t('clients.items.clients.title')} | ${CONFIG.appName}`;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === TRANSACTIONS_KEY) {
+        setTransactions(readTransactions());
+      }
+      if (event.key === ORDER_BOOK_KEY) {
+        setOrderPromises(readOrderBookPromises());
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  const allTransactions = useMemo(
+    () => [...transactions, ...orderPromises],
+    [orderPromises, transactions]
+  );
+
+  const clientSummaries = useMemo(() => {
+    const paidMap = new Map<string, number>();
+    const promiseMap = new Map<string, number>();
+
+    items.forEach((client) => {
+      paidMap.set(client.id, 0);
+      promiseMap.set(client.id, 0);
+    });
+
+    allTransactions.forEach((tx) => {
+      if (!tx.clientId) return;
+      const converted = convertToDisplayCurrency(tx.amount, tx.currency, displayCurrency);
+      if (tx.type === 'payment') {
+        paidMap.set(tx.clientId, (paidMap.get(tx.clientId) ?? 0) + converted);
+      } else {
+        promiseMap.set(tx.clientId, (promiseMap.get(tx.clientId) ?? 0) + converted);
+      }
+    });
+
+    return items.map((client) => {
+      const paid = paidMap.get(client.id) ?? 0;
+      const promised = promiseMap.get(client.id) ?? 0;
+      const balance = paid - promised;
+
+      const status =
+        balance === 0
+          ? {
+              label: t('clientsTransactionsPage.statusBalanced'),
+              color: 'success' as const,
+              caption: t('clientsTransactionsPage.balanceBalanced'),
+            }
+          : balance > 0
+            ? {
+                label: t('clientsTransactionsPage.statusWeOwe'),
+                color: 'warning' as const,
+                caption: t('clientsTransactionsPage.balanceWeOwe', {
+                  amount: formatAmount(balance),
+                }),
+              }
+            : {
+                label: t('clientsTransactionsPage.statusTheyOwe'),
+                color: 'error' as const,
+                caption: t('clientsTransactionsPage.balanceClientOwes', {
+                  amount: formatAmount(Math.abs(balance)),
+                }),
+              };
+
+      return {
+        client,
+        paid,
+        promised,
+        balance,
+        status,
+      };
+    });
+  }, [allTransactions, displayCurrency, items, t]);
 
   const setItemsAndPersist = (updater: (prev: Client[]) => Client[]) => {
     setItems((prev) => {
@@ -190,6 +288,17 @@ export default function ClientsPage() {
 
   const closeMenu = () => {
     setMenuAnchor(null);
+  };
+
+  const openPayment = (client: Client) => {
+    setPaymentClient(client);
+    setPaymentForm({
+      amount: '',
+      currency: 'UZS',
+      date: new Date().toISOString().split('T')[0],
+      notes: '',
+    });
+    paymentDialog.onTrue();
   };
 
   const handleSave = () => {
@@ -253,46 +362,100 @@ export default function ClientsPage() {
 
   const onPhoneChange = (value: string) => setForm((prev) => ({ ...prev, phone: formatPhone(value) }));
 
+  const savePayment = () => {
+    if (!paymentClient) return;
+    const amount = Number(paymentForm.amount);
+    if (Number.isNaN(amount) || amount <= 0) return;
+    const payload = {
+      id: uuidv4(),
+      clientId: paymentClient.id,
+      type: 'payment' as const,
+      amount,
+      currency: paymentForm.currency,
+      date: paymentForm.date || new Date().toISOString().split('T')[0],
+      notes: paymentForm.notes.trim(),
+    };
+    setTransactions((prev) => {
+      const next = [...prev, payload];
+      persistTransactions(next);
+      return next;
+    });
+    setPaymentForm((prev) => ({
+      ...prev,
+      amount: '',
+      notes: '',
+      date: new Date().toISOString().split('T')[0],
+    }));
+    paymentDialog.onFalse();
+  };
+
   const canSave = form.fullName.trim() && getRawPhone(form.phone).length === 9;
   const canSaveComplaint = complaintText.trim().length > 0;
   const canSavePlan = plan.month >= currentMonth && Number(plan.limitKg) > 0;
+  const canSavePayment =
+    Boolean(paymentClient && paymentForm.currency && paymentForm.date) &&
+    Number(paymentForm.amount) > 0;
 
   return (
     <>
-      <title>{title}</title>
+      <title>{pageTitle}</title>
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Stack spacing={3}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            flexWrap="wrap"
+            gap={1.5}
+          >
             <Box>
               <Typography variant="h4">{t('clientsPage.title')}</Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
                 {t('clientsPage.subtitle')}
               </Typography>
             </Box>
-            <Button variant="contained" onClick={openAdd}>
-              {t('clientsPage.add')}
-            </Button>
+
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" rowGap={1}>
+              <TextField
+                select
+                size="small"
+                label={t('clientsTransactionsPage.displayCurrencyLabel')}
+                value={displayCurrency}
+                onChange={(event) => setDisplayCurrency(event.target.value)}
+                sx={{ minWidth: 160 }}
+              >
+                {CURRENCY_OPTIONS.map((code) => (
+                  <MenuItem key={code} value={code}>
+                    {code}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <Button variant="contained" onClick={openAdd}>
+                {t('clientsPage.add')}
+              </Button>
+            </Stack>
           </Stack>
 
           <Card>
-            <TableContainer>
-              <Table>
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 1100 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ width: 240 }}>{t('clientsPage.fullName')}</TableCell>
-                    <TableCell sx={{ width: 140 }}>{t('clientsPage.phone')}</TableCell>
-                    <TableCell sx={{ width: 200 }}>{t('clientsPage.company')}</TableCell>
-                    <TableCell>{t('clientsPage.notes')}</TableCell>
-                    <TableCell align="right" sx={{ width: 120 }}>
+                    <TableCell sx={{ width: 200 }}>{t('clientsPage.fullName')}</TableCell>
+                    <TableCell sx={{ width: 120 }}>{t('clientsPage.phone')}</TableCell>
+                    <TableCell sx={{ width: 180 }}>{t('clientsPage.company')}</TableCell>
+                    <TableCell sx={{ minWidth: 200 }}>{t('clientsPage.notes')}</TableCell>
+                    <TableCell sx={{ width: 200 }}>{t('clientsTransactionsPage.tableBalance')}</TableCell>
+                    <TableCell align="right" sx={{ width: 260 }}>
                       {t('clientsPage.actions')}
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {items.length === 0 ? (
+                  {clientSummaries.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5}>
+                      <TableCell colSpan={6}>
                         <Box
                           sx={{
                             py: 6,
@@ -313,20 +476,66 @@ export default function ClientsPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    items.map((item) => (
-                      <TableRow key={item.id} hover>
-                        <TableCell>{item.fullName}</TableCell>
-                    <TableCell>{formatPhone(item.phone)}</TableCell>
-                    <TableCell>{item.company || t('clientsPage.notProvided')}</TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {item.notes || t('clientsPage.notProvided')}
-                      </Typography>
+                    clientSummaries.map(({ client, balance, status }) => (
+                      <TableRow key={client.id} hover>
+                        <TableCell>{client.fullName}</TableCell>
+                        <TableCell>{formatPhone(client.phone)}</TableCell>
+                        <TableCell>{client.company || t('clientsPage.notProvided')}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            {client.notes || t('clientsPage.notProvided')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" alignItems="center" spacing={1}>
+                            <Box
+                              sx={{
+                                width: 10,
+                                height: 10,
+                                borderRadius: 0.75,
+                                bgcolor: `${status.color}.main`,
+                              }}
+                            />
+                            <Stack spacing={0.25}>
+                              <Typography variant="body2">
+                                {formatAmount(balance)} {displayCurrency}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                {status.label}
+                              </Typography>
+                            </Stack>
+                          </Stack>
                         </TableCell>
                         <TableCell align="right">
-                          <IconButton onClick={(e) => openMenu(e, item)}>
-                            <Iconify icon="solar:menu-dots-bold-duotone" />
-                          </IconButton>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            justifyContent="flex-end"
+                            flexWrap="wrap"
+                            rowGap={1}
+                          >
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={() => openPayment(client)}
+                              startIcon={<Iconify icon="solar:cart-plus-bold" />}
+                            >
+                              {t('clientsTransactionsPage.addTransaction')}
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() =>
+                                navigate(paths.dashboard.clients.transactionsClient(client.id))
+                              }
+                              endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
+                            >
+                              {t('clientsTransactionsPage.viewHistory')}
+                            </Button>
+                            <IconButton onClick={(e) => openMenu(e, client)}>
+                              <Iconify icon="solar:menu-dots-bold-duotone" />
+                            </IconButton>
+                          </Stack>
                         </TableCell>
                       </TableRow>
                     ))
@@ -337,6 +546,73 @@ export default function ClientsPage() {
           </Card>
         </Stack>
       </Container>
+
+      <Dialog open={paymentDialog.value} onClose={paymentDialog.onFalse} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('clientsTransactionsPage.addTransaction')}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              label={t('clientsTransactionsPage.formClient')}
+              value={paymentClient?.fullName || ''}
+              disabled
+            />
+            <TextField
+              fullWidth
+              type="number"
+              label={t('clientsTransactionsPage.formAmount')}
+              value={paymentForm.amount}
+              onChange={(event) =>
+                setPaymentForm((prev) => ({ ...prev, amount: event.target.value }))
+              }
+              inputProps={{ min: 0, step: 1 }}
+            />
+            <TextField
+              select
+              fullWidth
+              label={t('clientsTransactionsPage.formCurrency')}
+              value={paymentForm.currency}
+              onChange={(event) =>
+                setPaymentForm((prev) => ({ ...prev, currency: event.target.value }))
+              }
+            >
+              {CURRENCY_OPTIONS.map((code) => (
+                <MenuItem key={code} value={code}>
+                  {code}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth
+              type="date"
+              label={t('clientsTransactionsPage.formDate')}
+              value={paymentForm.date}
+              onChange={(event) =>
+                setPaymentForm((prev) => ({ ...prev, date: event.target.value }))
+              }
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              fullWidth
+              label={t('clientsTransactionsPage.formNotes')}
+              multiline
+              minRows={3}
+              value={paymentForm.notes}
+              onChange={(event) =>
+                setPaymentForm((prev) => ({ ...prev, notes: event.target.value }))
+              }
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={paymentDialog.onFalse} color="inherit">
+            {t('clientsTransactionsPage.formCancel')}
+          </Button>
+          <Button onClick={savePayment} disabled={!canSavePayment} variant="contained">
+            {t('clientsTransactionsPage.formSave')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={dialog.value} onClose={dialog.onFalse} maxWidth="sm" fullWidth>
         <DialogTitle>{editing ? t('clientsPage.edit') : t('clientsPage.add')}</DialogTitle>
@@ -411,8 +687,18 @@ export default function ClientsPage() {
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
         <MenuItem
           onClick={() => {
-            if (menuItem) openEdit(menuItem);
+            if (menuItem) {
+              navigate(paths.dashboard.clients.agreementsClient(menuItem.id));
+            }
             closeMenu();
+          }}
+        >
+          <Iconify icon="solar:hand-heart-bold" width={18} height={18} style={{ marginRight: 8 }} />
+          Agreements (peregavorlar)
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuItem) openEdit(menuItem);
           }}
         >
           <Iconify icon="solar:pen-bold" width={18} height={18} style={{ marginRight: 8 }} />
@@ -428,18 +714,6 @@ export default function ClientsPage() {
         >
           <Iconify icon="solar:user-rounded-bold" width={18} height={18} style={{ marginRight: 8 }} />
           {t('clientsPage.openProfile')}
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            if (menuItem) {
-              deleteDialog.onTrue();
-            }
-            closeMenu();
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <Iconify icon="solar:trash-bin-trash-bold" width={18} height={18} style={{ marginRight: 8 }} />
-          {t('clientsPage.delete')}
         </MenuItem>
       </Menu>
 

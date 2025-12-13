@@ -61,7 +61,12 @@ const createEmptyForm = (clientId: string) => ({
   date: new Date().toISOString().split('T')[0],
   notes: '',
 });
-export default function ClientsTransactionsPage() {
+
+type ClientsTransactionsSectionProps = {
+  embedded?: boolean;
+};
+
+export function ClientsTransactionsSection({ embedded = false }: ClientsTransactionsSectionProps) {
   const { t } = useTranslate('pages');
   const navigate = useNavigate();
 
@@ -193,145 +198,153 @@ export default function ClientsTransactionsPage() {
 
   const pageTitle = `${t('clientsTransactionsPage.title')} | ${CONFIG.appName}`;
 
-  return (
-    <>
-      <title>{pageTitle}</title>
+  const content = (
+    <Stack spacing={3}>
+      <Stack spacing={1}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Chip
+            label={t('clientsTransactionsPage.badge')}
+            color="primary"
+            size="small"
+            sx={{ fontWeight: 600, letterSpacing: 0.2 }}
+          />
+          <Typography variant="h3">{t('clientsTransactionsPage.title')}</Typography>
+        </Stack>
+        <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 720 }}>
+          {t('clientsTransactionsPage.subtitle')}
+        </Typography>
+      </Stack>
 
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <Stack spacing={3}>
-          <Stack spacing={1}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Chip
-                label={t('clientsTransactionsPage.badge')}
-                color="primary"
-                size="small"
-                sx={{ fontWeight: 600, letterSpacing: 0.2 }}
-              />
-              <Typography variant="h3">{t('clientsTransactionsPage.title')}</Typography>
-            </Stack>
-            <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 720 }}>
-              {t('clientsTransactionsPage.subtitle')}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        flexWrap="wrap"
+        gap={1}
+      >
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('clientsTransactionsPage.caption')}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {t('clientsTransactionsPage.displayCurrencyCaption', { currency: displayCurrency })}
+          </Typography>
+        </Stack>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <TextField
+            select
+            size="small"
+            label={t('clientsTransactionsPage.displayCurrencyLabel')}
+            value={displayCurrency}
+            onChange={(event) => setDisplayCurrency(event.target.value as string)}
+            sx={{ minWidth: 160 }}
+          >
+            {CURRENCY_OPTIONS.map((code) => (
+              <MenuItem key={code} value={code}>
+                {code}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Button
+            type="button"
+            variant="contained"
+            startIcon={<Iconify icon="solar:cart-plus-bold" />}
+            onClick={transactionDialog.onTrue}
+          >
+            {t('clientsTransactionsPage.addTransaction')}
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Card sx={{ p: 2.5 }}>
+        <Stack spacing={2}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="subtitle1">{t('clientsTransactionsPage.clientsTitle')}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              {clients.length} {t('clientsTransactionsPage.clientsLabel')}
             </Typography>
           </Stack>
-
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            flexWrap="wrap"
-            gap={1}
-          >
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {t('clientsTransactionsPage.caption')}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                {t('clientsTransactionsPage.displayCurrencyCaption', { currency: displayCurrency })}
-              </Typography>
-            </Stack>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <TextField
-                select
-                size="small"
-                label={t('clientsTransactionsPage.displayCurrencyLabel')}
-                value={displayCurrency}
-                onChange={(event) => setDisplayCurrency(event.target.value as string)}
-                sx={{ minWidth: 160 }}
-              >
-                {CURRENCY_OPTIONS.map((code) => (
-                  <MenuItem key={code} value={code}>
-                    {code}
-                  </MenuItem>
-                ))}
-              </TextField>
-            <Button
-              type="button"
-              variant="contained"
-              startIcon={<Iconify icon="solar:cart-plus-bold" />}
-              onClick={transactionDialog.onTrue}
-            >
-                {t('clientsTransactionsPage.addTransaction')}
-              </Button>
-            </Stack>
-          </Stack>
-
-          <Card sx={{ p: 2.5 }}>
-            <Stack spacing={2}>
-              <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Typography variant="subtitle1">{t('clientsTransactionsPage.clientsTitle')}</Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {clients.length} {t('clientsTransactionsPage.clientsLabel')}
-                </Typography>
-              </Stack>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{t('clientsTransactionsPage.tableClient')}</TableCell>
-                      <TableCell>{t('clientsTransactionsPage.tableBalance')}</TableCell>
-                      <TableCell align="right">{t('clientsTransactionsPage.tableActions')}</TableCell>
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t('clientsTransactionsPage.tableClient')}</TableCell>
+                  <TableCell>{t('clientsTransactionsPage.tableBalance')}</TableCell>
+                  <TableCell align="right">{t('clientsTransactionsPage.tableActions')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {clients.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', py: 3 }}>
+                        {t('clientsTransactionsPage.noClients')}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  clientSummaries.map(({ client, paid, promised, balance, status }) => (
+                    <TableRow key={client.id}>
+                      <TableCell>
+                        <Typography variant="subtitle2">{client.fullName}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Box
+                            sx={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: 0.75,
+                              bgcolor: `${status.color}.main`,
+                            }}
+                          />
+                          <Stack spacing={0.25}>
+                            <Typography variant="body2">
+                              {formatAmount(balance)} {displayCurrency}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                              {status.label}
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          type="button"
+                          size="small"
+                          variant="contained"
+                          color="secondary"
+                          onClick={() =>
+                            navigate(paths.dashboard.clients.transactionsClient(client.id))
+                          }
+                          endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
+                        >
+                          {t('clientsTransactionsPage.viewHistory')}
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {clients.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4}>
-                          <Typography variant="body2" sx={{ color: 'text.secondary', py: 3 }}>
-                            {t('clientsTransactionsPage.noClients')}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      clientSummaries.map(({ client, paid, promised, balance, status }) => (
-                        <TableRow key={client.id}>
-                          <TableCell>
-                            <Typography variant="subtitle2">{client.fullName}</Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <Box
-                                sx={{
-                                  width: 10,
-                                  height: 10,
-                                  borderRadius: 0.75,
-                                  bgcolor: `${status.color}.main`,
-                                }}
-                              />
-                              <Stack spacing={0.25}>
-                                <Typography variant="body2">
-                                  {formatAmount(balance)} {displayCurrency}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                  {status.label}
-                                </Typography>
-                              </Stack>
-                            </Stack>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Button
-                              type="button"
-                              size="small"
-                              variant="contained"
-                              color="secondary"
-                              onClick={() =>
-                                navigate(paths.dashboard.clients.transactionsClient(client.id))
-                              }
-                              endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
-                            >
-                              {t('clientsTransactionsPage.viewHistory')}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Stack>
-          </Card>
-
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Stack>
-      </Container>
+      </Card>
+    </Stack>
+  );
+
+  return (
+    <>
+      {!embedded ? (
+        <>
+          <title>{pageTitle}</title>
+          <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+            {content}
+          </Container>
+        </>
+      ) : (
+        content
+      )}
 
       <Dialog open={transactionDialog.value} onClose={transactionDialog.onFalse} maxWidth="sm" fullWidth>
         <DialogTitle>{t('clientsTransactionsPage.addTransaction')}</DialogTitle>
@@ -402,4 +415,8 @@ export default function ClientsTransactionsPage() {
       </Dialog>
     </>
   );
+}
+
+export default function ClientsTransactionsPage() {
+  return <ClientsTransactionsSection />;
 }

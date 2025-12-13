@@ -48,12 +48,10 @@ const StaffWorkerPage = lazy(() => import('src/pages/dashboard/staff/worker'));
 const StaffAccountantPage = lazy(() => import('src/pages/dashboard/staff/accountant'));
 const StaffPlannerPage = lazy(() => import('src/pages/dashboard/staff/planner'));
 const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
-const ClientsTransactionsPage = lazy(
-  () => import('src/pages/dashboard/clients/transactions')
-);
 const ClientTransactionsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-transactions')
 );
+const ClientAgreementsPage = lazy(() => import('src/pages/dashboard/clients/agreements'));
 const ClientsMaterialsPage = lazy(() => import('src/pages/dashboard/clients/materials'));
 const ClientsOrderBookPage = lazy(() => import('src/pages/dashboard/clients/order-book'));
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
@@ -138,7 +136,7 @@ export const routesSection: RouteObject[] = [
             children: [
               { index: true, element: <ClientsPage /> },
               { path: ':clientId', element: <ClientDetailPage /> },
-              { path: 'transactions', element: <ClientsTransactionsPage /> },
+              { path: 'agreements/:clientId', element: <ClientAgreementsPage /> },
               { path: 'transactions/:clientId', element: <ClientTransactionsDetailPage /> },
               { path: 'materials', element: <ClientsMaterialsPage /> },
               { path: 'order-book', element: <ClientsOrderBookPage /> },

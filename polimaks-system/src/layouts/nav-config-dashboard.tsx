@@ -82,7 +82,6 @@ export const useNavData = (): NavSectionProps['data'] => {
             icon: ICONS.clients,
             children: [
               { title: t('clients_clients'), path: paths.dashboard.clients.clients },
-              { title: t('clients_transactions'), path: paths.dashboard.clients.transactions },
               { title: t('clients_materials'), path: paths.dashboard.clients.materials },
               { title: t('clients_order_book'), path: paths.dashboard.clients.orderBook },
             ],

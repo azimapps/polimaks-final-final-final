@@ -29,6 +29,11 @@ export const CURRENCY_RATES: Record<string, number> = {
   RUB: 130,
 };
 
+const FALLBACK_CLIENTS: ClientSummary[] = [
+  { id: 'client-1', fullName: 'Otabek Karimov' },
+  { id: 'client-2', fullName: 'Dilnoza Rahimova' },
+];
+
 export const convertToDisplayCurrency = (value: number, from: string, to: string) => {
   const fromRate = CURRENCY_RATES[from] ?? 1;
   const toRate = CURRENCY_RATES[to] ?? 1;
@@ -39,12 +44,12 @@ export const convertToDisplayCurrency = (value: number, from: string, to: string
 export const formatAmount = (value: number) => new Intl.NumberFormat().format(value);
 
 export const readClients = (): ClientSummary[] => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return FALLBACK_CLIENTS;
   const stored = localStorage.getItem(CLIENTS_KEY);
-  if (!stored) return [];
+  if (!stored) return FALLBACK_CLIENTS;
   try {
     const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed)) return [];
+    if (!Array.isArray(parsed)) return FALLBACK_CLIENTS;
     return parsed
       .map((client: any) => ({
         id: client.id ?? '',
@@ -52,7 +57,7 @@ export const readClients = (): ClientSummary[] => {
       }))
       .filter((client: ClientSummary) => Boolean(client.id));
   } catch {
-    return [];
+    return FALLBACK_CLIENTS;
   }
 };
 
