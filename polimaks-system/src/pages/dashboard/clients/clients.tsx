@@ -159,13 +159,6 @@ export default function ClientsPage() {
   const [transactions, setTransactions] = useState(() => readTransactions());
   const [orderPromises, setOrderPromises] = useState(() => readOrderBookPromises());
   const [displayCurrency, setDisplayCurrency] = useState<string>(CURRENCY_OPTIONS[0]);
-  const [paymentForm, setPaymentForm] = useState<{ amount: string; currency: string; date: string; notes: string }>({
-    amount: '',
-    currency: 'UZS',
-    date: new Date().toISOString().split('T')[0],
-    notes: '',
-  });
-  const [paymentClient, setPaymentClient] = useState<Client | null>(null);
   const [editing, setEditing] = useState<Client | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<Client | null>(null);
@@ -175,7 +168,6 @@ export default function ClientsPage() {
   const deleteDialog = useBoolean();
   const complaintDialog = useBoolean();
   const planDialog = useBoolean();
-  const paymentDialog = useBoolean();
   const pageTitle = `${t('clients.items.clients.title')} | ${CONFIG.appName}`;
 
   useEffect(() => {
@@ -290,17 +282,6 @@ export default function ClientsPage() {
     setMenuAnchor(null);
   };
 
-  const openPayment = (client: Client) => {
-    setPaymentClient(client);
-    setPaymentForm({
-      amount: '',
-      currency: 'UZS',
-      date: new Date().toISOString().split('T')[0],
-      notes: '',
-    });
-    paymentDialog.onTrue();
-  };
-
   const handleSave = () => {
     const payload: Client = {
       id: editing ? editing.id : uuidv4(),
@@ -362,39 +343,9 @@ export default function ClientsPage() {
 
   const onPhoneChange = (value: string) => setForm((prev) => ({ ...prev, phone: formatPhone(value) }));
 
-  const savePayment = () => {
-    if (!paymentClient) return;
-    const amount = Number(paymentForm.amount);
-    if (Number.isNaN(amount) || amount <= 0) return;
-    const payload = {
-      id: uuidv4(),
-      clientId: paymentClient.id,
-      type: 'payment' as const,
-      amount,
-      currency: paymentForm.currency,
-      date: paymentForm.date || new Date().toISOString().split('T')[0],
-      notes: paymentForm.notes.trim(),
-    };
-    setTransactions((prev) => {
-      const next = [...prev, payload];
-      persistTransactions(next);
-      return next;
-    });
-    setPaymentForm((prev) => ({
-      ...prev,
-      amount: '',
-      notes: '',
-      date: new Date().toISOString().split('T')[0],
-    }));
-    paymentDialog.onFalse();
-  };
-
   const canSave = form.fullName.trim() && getRawPhone(form.phone).length === 9;
   const canSaveComplaint = complaintText.trim().length > 0;
   const canSavePlan = plan.month >= currentMonth && Number(plan.limitKg) > 0;
-  const canSavePayment =
-    Boolean(paymentClient && paymentForm.currency && paymentForm.date) &&
-    Number(paymentForm.amount) > 0;
 
   return (
     <>
@@ -507,35 +458,9 @@ export default function ClientsPage() {
                           </Stack>
                         </TableCell>
                         <TableCell align="right">
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            justifyContent="flex-end"
-                            flexWrap="wrap"
-                            rowGap={1}
-                          >
-                            <Button
-                              size="small"
-                              variant="contained"
-                              onClick={() => openPayment(client)}
-                              startIcon={<Iconify icon="solar:cart-plus-bold" />}
-                            >
-                              {t('clientsTransactionsPage.addTransaction')}
-                            </Button>
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() =>
-                                navigate(paths.dashboard.clients.transactionsClient(client.id))
-                              }
-                              endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
-                            >
-                              {t('clientsTransactionsPage.viewHistory')}
-                            </Button>
-                            <IconButton onClick={(e) => openMenu(e, client)}>
-                              <Iconify icon="solar:menu-dots-bold-duotone" />
-                            </IconButton>
-                          </Stack>
+                          <IconButton onClick={(e) => openMenu(e, client)}>
+                            <Iconify icon="solar:menu-dots-bold-duotone" />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))
@@ -546,73 +471,6 @@ export default function ClientsPage() {
           </Card>
         </Stack>
       </Container>
-
-      <Dialog open={paymentDialog.value} onClose={paymentDialog.onFalse} maxWidth="sm" fullWidth>
-        <DialogTitle>{t('clientsTransactionsPage.addTransaction')}</DialogTitle>
-        <DialogContent dividers>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              label={t('clientsTransactionsPage.formClient')}
-              value={paymentClient?.fullName || ''}
-              disabled
-            />
-            <TextField
-              fullWidth
-              type="number"
-              label={t('clientsTransactionsPage.formAmount')}
-              value={paymentForm.amount}
-              onChange={(event) =>
-                setPaymentForm((prev) => ({ ...prev, amount: event.target.value }))
-              }
-              inputProps={{ min: 0, step: 1 }}
-            />
-            <TextField
-              select
-              fullWidth
-              label={t('clientsTransactionsPage.formCurrency')}
-              value={paymentForm.currency}
-              onChange={(event) =>
-                setPaymentForm((prev) => ({ ...prev, currency: event.target.value }))
-              }
-            >
-              {CURRENCY_OPTIONS.map((code) => (
-                <MenuItem key={code} value={code}>
-                  {code}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              fullWidth
-              type="date"
-              label={t('clientsTransactionsPage.formDate')}
-              value={paymentForm.date}
-              onChange={(event) =>
-                setPaymentForm((prev) => ({ ...prev, date: event.target.value }))
-              }
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              fullWidth
-              label={t('clientsTransactionsPage.formNotes')}
-              multiline
-              minRows={3}
-              value={paymentForm.notes}
-              onChange={(event) =>
-                setPaymentForm((prev) => ({ ...prev, notes: event.target.value }))
-              }
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={paymentDialog.onFalse} color="inherit">
-            {t('clientsTransactionsPage.formCancel')}
-          </Button>
-          <Button onClick={savePayment} disabled={!canSavePayment} variant="contained">
-            {t('clientsTransactionsPage.formSave')}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog open={dialog.value} onClose={dialog.onFalse} maxWidth="sm" fullWidth>
         <DialogTitle>{editing ? t('clientsPage.edit') : t('clientsPage.add')}</DialogTitle>
@@ -698,6 +556,17 @@ export default function ClientsPage() {
         </MenuItem>
         <MenuItem
           onClick={() => {
+            if (menuItem) {
+              navigate(paths.dashboard.clients.transactionsClient(menuItem.id));
+            }
+            closeMenu();
+          }}
+        >
+          <Iconify icon="eva:arrow-ios-forward-fill" width={18} height={18} style={{ marginRight: 8 }} />
+          {t('clientsTransactionsPage.viewHistory')}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
             if (menuItem) openEdit(menuItem);
           }}
         >
@@ -707,13 +576,14 @@ export default function ClientsPage() {
         <MenuItem
           onClick={() => {
             if (menuItem) {
-              navigate(`/clients/${menuItem.id}`);
+              deleteDialog.onTrue();
             }
             closeMenu();
           }}
+          sx={{ color: 'error.main' }}
         >
-          <Iconify icon="solar:user-rounded-bold" width={18} height={18} style={{ marginRight: 8 }} />
-          {t('clientsPage.openProfile')}
+          <Iconify icon="solar:trash-bin-trash-bold" width={18} height={18} style={{ marginRight: 8 }} />
+          {t('clientsPage.delete')}
         </MenuItem>
       </Menu>
 
