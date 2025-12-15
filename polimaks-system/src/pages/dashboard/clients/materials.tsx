@@ -284,7 +284,7 @@ export default function ClientsMaterialsPage() {
                                     navigate(paths.dashboard.clients.materialsClient(client.id));
                                   }}
                                 >
-                                  <Iconify icon="solar:eye-bold-duotone" />
+                                  <Iconify icon="solar:eye-bold" />
                                 </IconButton>
                               </Tooltip>
                             </Stack>
