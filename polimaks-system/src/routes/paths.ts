@@ -39,6 +39,7 @@ export const paths = {
       complaintsClient: (clientId: string) => `/clients/complaints/${clientId}`,
       transactionsClient: (clientId: string) => `/clients/transactions/${clientId}`,
       materials: '/clients/materials',
+      materialsClient: (clientId: string) => `/clients/materials/${clientId}`,
       orderBook: '/clients/order-book',
     },
     stanok: {

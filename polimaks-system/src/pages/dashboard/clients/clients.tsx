@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useBoolean } from 'minimal-shared/hooks';
+import { useMemo, useEffect, useState } from 'react';
 
 import {
   Box,
@@ -27,11 +27,13 @@ import {
   TableContainer,
 } from '@mui/material';
 
-import { CONFIG } from 'src/global-config';
-import { useTranslate } from 'src/locales';
 import { paths } from 'src/routes/paths';
 
+import { CONFIG } from 'src/global-config';
+import { useTranslate } from 'src/locales';
+
 import { Iconify } from 'src/components/iconify';
+
 import {
   CURRENCY_OPTIONS,
   ORDER_BOOK_KEY,
@@ -551,7 +553,7 @@ export default function ClientsPage() {
             closeMenu();
           }}
         >
-          <Iconify icon="solar:hand-heart-bold" width={18} height={18} style={{ marginRight: 8 }} />
+          <Iconify icon="solar:file-text-bold" width={18} height={18} style={{ marginRight: 8 }} />
           {t('clientsAgreements.title', { defaultValue: 'Agreements' })}
         </MenuItem>
         <MenuItem

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { useMemo, useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router';
 import { useBoolean } from 'minimal-shared/hooks';
+import { useMemo, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router';
 
 import {
   Box,
@@ -27,8 +27,10 @@ import {
 } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
+
 import { CONFIG } from 'src/global-config';
-  import { useTranslate } from 'src/locales';
+import { useTranslate } from 'src/locales';
+
 import { Iconify } from 'src/components/iconify';
 
 type Complaint = {

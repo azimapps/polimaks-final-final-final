@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 
 import {
@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
+
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
