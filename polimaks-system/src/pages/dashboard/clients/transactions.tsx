@@ -34,14 +34,14 @@ import { Iconify } from 'src/components/iconify';
 
 import {
   CLIENTS_KEY,
-  ORDER_BOOK_KEY,
   readClients,
   formatAmount,
+  ORDER_BOOK_KEY,
   CURRENCY_OPTIONS,
   readTransactions,
   persistTransactions,
-  convertToDisplayCurrency,
   readOrderBookPromises,
+  convertToDisplayCurrency,
 } from './transactions-data';
 
 import type { ClientSummary, ClientTransaction } from './transactions-data';

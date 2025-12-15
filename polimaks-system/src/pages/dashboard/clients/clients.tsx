@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router';
 import { useBoolean } from 'minimal-shared/hooks';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import {
   Box,
@@ -35,14 +35,13 @@ import { useTranslate } from 'src/locales';
 import { Iconify } from 'src/components/iconify';
 
 import {
-  CURRENCY_OPTIONS,
-  ORDER_BOOK_KEY,
-  TRANSACTIONS_KEY,
-  convertToDisplayCurrency,
   formatAmount,
-  persistTransactions,
-  readOrderBookPromises,
+  ORDER_BOOK_KEY,
+  CURRENCY_OPTIONS,
+  TRANSACTIONS_KEY,
   readTransactions,
+  readOrderBookPromises,
+  convertToDisplayCurrency,
 } from './transactions-data';
 
 // ----------------------------------------------------------------------
