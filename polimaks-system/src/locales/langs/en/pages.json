@@ -890,6 +890,10 @@
   "orderPlanPage": {
     "title": "Order Planning",
     "subtitle": "Manage production orders, material requirements and scheduling",
+    "sortLabel": "Sort",
+    "sortDefault": "Default order",
+    "sortCylinderAsc": "Cylinder length (mm): low to high",
+    "sortCylinderDesc": "Cylinder length (mm): high to low",
     "add": "Add Order",
     "edit": "Edit Order",
     "save": "Save",

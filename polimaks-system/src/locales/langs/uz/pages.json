@@ -891,6 +891,10 @@
   "orderPlanPage": {
     "title": "Buyurtma planlashtirish",
     "subtitle": "Ishlab chiqarish buyurtmalari, material talablari va rejalashtirish boshqaruvi",
+    "sortLabel": "Saralash",
+    "sortDefault": "Asl tartib",
+    "sortCylinderAsc": "Силиндр узунлиги (мм): o'sish tartibida",
+    "sortCylinderDesc": "Силиндр узунлиги (мм): kamayish tartibida",
     "add": "Buyurtma qo'shish",
     "edit": "Buyurtmani tahrirlash",
     "save": "Saqlash",

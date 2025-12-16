@@ -1,5 +1,5 @@
 /* eslint-disable perfectionist/sort-imports */
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
@@ -41,6 +41,7 @@ import brigadaLaminatsiyaSeed from 'src/data/stanok-brigada-laminatsiya.json';
 type Material = 'BOPP' | 'CPP' | 'PE' | 'PET';
 type Currency = 'USD' | 'EUR' | 'RUB' | 'UZS';
 type MachineType = 'pechat' | 'reska' | 'laminatsiya';
+type SortOption = 'default' | 'cylinderAsc' | 'cylinderDesc';
 
 type OrderBookItem = {
   id: string;
@@ -333,6 +334,7 @@ export default function BuyurtmaPlanlashtirish() {
   const [detailPlan, setDetailPlan] = useState<PlanItem | null>(null);
 
   const [formData, setFormData] = useState<FormState>(defaultFormState);
+  const [sortOption, setSortOption] = useState<SortOption>('default');
 
   const title = `${t('buyurtmaPlanlashtirish.title')} | ${CONFIG.appName}`;
 
@@ -439,6 +441,21 @@ export default function BuyurtmaPlanlashtirish() {
   };
 
   const canSubmit = !!selectedOrder && !!formData.machineType && !!formData.groupId;
+  const sortedPlans = useMemo(() => {
+    if (sortOption === 'cylinderAsc' || sortOption === 'cylinderDesc') {
+      return plans
+        .map((plan, index) => ({ plan, index }))
+        .sort((a, b) => {
+          const aLen = Number(a.plan.cylinderLength) || 0;
+          const bLen = Number(b.plan.cylinderLength) || 0;
+          const delta = sortOption === 'cylinderAsc' ? aLen - bLen : bLen - aLen;
+          if (delta !== 0) return delta;
+          return a.index - b.index;
+        })
+        .map((item) => item.plan);
+    }
+    return plans;
+  }, [plans, sortOption]);
 
   useEffect(() => {
     if (!formData.machineType) {
@@ -476,7 +493,19 @@ export default function BuyurtmaPlanlashtirish() {
               {t('buyurtmaPlanlashtirish.subtitle')}
             </Typography>
           </div>
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <FormControl size="small" sx={{ minWidth: 240 }}>
+              <InputLabel>{t('orderPlanPage.sortLabel')}</InputLabel>
+              <Select
+                value={sortOption}
+                label={t('orderPlanPage.sortLabel')}
+                onChange={(event) => setSortOption(event.target.value as SortOption)}
+              >
+                <MenuItem value="default">{t('orderPlanPage.sortDefault')}</MenuItem>
+                <MenuItem value="cylinderAsc">{t('orderPlanPage.sortCylinderAsc')}</MenuItem>
+                <MenuItem value="cylinderDesc">{t('orderPlanPage.sortCylinderDesc')}</MenuItem>
+              </Select>
+            </FormControl>
             <Button
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
@@ -486,16 +515,6 @@ export default function BuyurtmaPlanlashtirish() {
             </Button>
           </Stack>
         </Stack>
-
-        <Card sx={{ mb: 3, p: 2.5 }}>
-          <Stack spacing={1}>
-            <Typography variant="subtitle1">Jarayon</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              1) Buyurtmani Order Book dan tanlang. 2) Stanok turini belgilang. 3) Brigadani
-              tanlang. 4) Boshlanish va yakun sanasini qo&apos;ying, izoh yozing va saqlang.
-            </Typography>
-          </Stack>
-        </Card>
 
         <Card>
           <TableContainer sx={{ overflow: 'auto' }}>
@@ -513,7 +532,7 @@ export default function BuyurtmaPlanlashtirish() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {plans.length === 0 ? (
+                {sortedPlans.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                       <Typography variant="body2" sx={{ color: 'text.disabled' }}>
@@ -522,7 +541,7 @@ export default function BuyurtmaPlanlashtirish() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  plans.map((plan) => (
+                  sortedPlans.map((plan) => (
                     <TableRow key={plan.id} hover>
                       <TableCell sx={{ py: 2 }}>
                         <Typography variant="subtitle2">{plan.orderNumber}</Typography>
