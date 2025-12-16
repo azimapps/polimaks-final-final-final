@@ -1,6 +1,6 @@
 import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid2';
+import Grid2 from '@mui/material/Unstable_Grid2';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -45,9 +45,9 @@ export default function RoleSelectPage() {
           </Typography>
         </Stack>
 
-        <Grid container spacing={3}>
+        <Grid2 container spacing={3}>
           {roles.map((role) => (
-            <Grid key={role.key} size={{ xs: 12, md: 6 }}>
+            <Grid2 key={role.key} xs={12} md={6}>
               <Card
                 variant="outlined"
                 sx={{
@@ -74,9 +74,9 @@ export default function RoleSelectPage() {
                   {role.cta}
                 </Button>
               </Card>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       </Container>
     </>
   );

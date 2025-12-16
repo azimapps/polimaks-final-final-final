@@ -26,7 +26,6 @@ const ICONS = {
   clients: icon('ic-analytics'),
   ishlabChiqarish: componentIcon('ic-extra-chart'),
   buyurtmaPlanlashtirish: componentIcon('ic-progress'),
-  reskaPanel: icon('ic-analytics'),
 };
 
 // ----------------------------------------------------------------------
@@ -102,11 +101,6 @@ export const useNavData = (): NavSectionProps['data'] => {
             title: t('buyurtma_planlashtirish'),
             path: paths.dashboard.buyurtmaPlanlashtirish.root,
             icon: ICONS.buyurtmaPlanlashtirish,
-          },
-          {
-            title: t('reska_panel'),
-            path: paths.dashboard.reskaPanel.root,
-            icon: ICONS.reskaPanel,
           },
         ],
       },

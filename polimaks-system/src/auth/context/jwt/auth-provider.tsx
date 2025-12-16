@@ -27,12 +27,13 @@ type Props = {
 export function AuthProvider({ children }: Props) {
   const { user: mockedUser } = useMockedUser();
   const { state, setState } = useSetState<AuthState>({
-    user: mockedUser,
-    loading: !mockedUser,
+    user: CONFIG.auth.skip ? null : mockedUser,
+    loading: CONFIG.auth.skip ? false : !mockedUser,
   });
 
   const checkUserSession = useCallback(async () => {
     if (CONFIG.auth.skip) {
+      setState({ loading: false, user: null });
       return;
     }
 
