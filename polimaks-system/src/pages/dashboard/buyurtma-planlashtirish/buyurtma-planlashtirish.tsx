@@ -1,5 +1,5 @@
 /* eslint-disable perfectionist/sort-imports */
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
@@ -456,7 +456,7 @@ export default function BuyurtmaPlanlashtirish() {
 
   // Ensure Order Book stays in sync with latest localStorage (e.g., if user edits on /clients/order-book)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return () => {};
     const handleStorage = () => setOrders(loadOrderBookItems());
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
