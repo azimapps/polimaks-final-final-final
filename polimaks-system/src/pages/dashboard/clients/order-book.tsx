@@ -50,6 +50,7 @@ type OrderBookItem = {
   filmWidth: number; // mm
   cylinderLength: number; // mm
   cylinderCount: number;
+  cylinderAylanasi: number; // mm
   startDate: string; // ISO date - production start
   endDate: string; // ISO date - production end
   pricePerKg: number;
@@ -100,6 +101,10 @@ const normalizeItems = (items: (Partial<OrderBookItem> & { id?: string; client?:
         typeof item.cylinderLength === 'number' ? item.cylinderLength : Number(item.cylinderLength) || 0,
       cylinderCount:
         typeof item.cylinderCount === 'number' ? item.cylinderCount : Number(item.cylinderCount) || 0,
+      cylinderAylanasi:
+        typeof item.cylinderAylanasi === 'number'
+          ? item.cylinderAylanasi
+          : Number(item.cylinderAylanasi) || 0,
       startDate: item.startDate || todayISO(),
       endDate: item.endDate || todayISO(),
       pricePerKg:
@@ -124,6 +129,7 @@ const seedData: OrderBookItem[] = [
     filmWidth: 1000,
     cylinderLength: 320,
     cylinderCount: 8,
+    cylinderAylanasi: 200,
     startDate: '2024-12-05',
     endDate: '2024-12-15',
     pricePerKg: 3.2,
@@ -144,6 +150,7 @@ const seedData: OrderBookItem[] = [
     filmWidth: 800,
     cylinderLength: 280,
     cylinderCount: 6,
+    cylinderAylanasi: 180,
     startDate: '2024-12-10',
     endDate: '2024-12-20',
     pricePerKg: 28500,
@@ -214,6 +221,7 @@ export default function ClientsOrderBookPage() {
       | 'filmWidth'
       | 'cylinderLength'
       | 'cylinderCount'
+      | 'cylinderAylanasi'
       | 'pricePerKg'
     > & {
       quantityKg: string;
@@ -221,6 +229,7 @@ export default function ClientsOrderBookPage() {
       filmWidth: string;
       cylinderLength: string;
       cylinderCount: string;
+      cylinderAylanasi: string;
       pricePerKg: string;
     }
   >({
@@ -236,6 +245,7 @@ export default function ClientsOrderBookPage() {
     filmWidth: '',
     cylinderLength: '',
     cylinderCount: '',
+    cylinderAylanasi: '',
     startDate: todayISO(),
     endDate: todayISO(),
     pricePerKg: '',
@@ -300,6 +310,7 @@ export default function ClientsOrderBookPage() {
       filmWidth: item.filmWidth ? String(item.filmWidth) : '',
       cylinderLength: item.cylinderLength ? String(item.cylinderLength) : '',
       cylinderCount: item.cylinderCount ? String(item.cylinderCount) : '',
+      cylinderAylanasi: item.cylinderAylanasi ? String(item.cylinderAylanasi) : '',
       startDate: item.startDate || todayISO(),
       endDate: item.endDate || todayISO(),
       pricePerKg: item.pricePerKg ? String(item.pricePerKg) : '',
@@ -315,6 +326,7 @@ export default function ClientsOrderBookPage() {
     const filmWidthNum = parseFloat(form.filmWidth) || 0;
     const cylinderLengthNum = parseFloat(form.cylinderLength) || 0;
     const cylinderCountNum = parseInt(form.cylinderCount, 10) || 0;
+    const cylinderAylanasiNum = parseFloat(form.cylinderAylanasi) || 0;
     const pricePerKgNum = parseFloat(form.pricePerKg) || 0;
 
     const payload: OrderBookItem = {
@@ -331,6 +343,7 @@ export default function ClientsOrderBookPage() {
       filmWidth: filmWidthNum,
       cylinderLength: cylinderLengthNum,
       cylinderCount: cylinderCountNum,
+      cylinderAylanasi: cylinderAylanasiNum,
       startDate: form.startDate || todayISO(),
       endDate: form.endDate || todayISO(),
       pricePerKg: pricePerKgNum,
@@ -428,6 +441,7 @@ export default function ClientsOrderBookPage() {
                     <TableCell sx={{ minWidth: 130 }}>{t('orderBookPage.filmWidth')}</TableCell>
                     <TableCell sx={{ minWidth: 150 }}>{t('orderBookPage.cylinderLength')}</TableCell>
                     <TableCell sx={{ minWidth: 130 }}>{t('orderBookPage.cylinderCount')}</TableCell>
+                    <TableCell sx={{ minWidth: 140 }}>Cylinder aylanasi</TableCell>
                     <TableCell sx={{ minWidth: 120 }}>{t('orderBookPage.startDate')}</TableCell>
                     <TableCell sx={{ minWidth: 120 }}>{t('orderBookPage.endDate')}</TableCell>
                     <TableCell align="right" sx={{ width: 80 }}>
@@ -438,7 +452,7 @@ export default function ClientsOrderBookPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={16}>
+                      <TableCell colSpan={17}>
                         <Box
                           sx={{
                             py: 6,
@@ -521,6 +535,13 @@ export default function ClientsOrderBookPage() {
                           <TableCell>
                             <Typography variant="body2">
                               {item.cylinderCount} {t('orderBookPage.pcs')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {item.cylinderAylanasi
+                                ? `${item.cylinderAylanasi} ${t('orderBookPage.mm')}`
+                                : '—'}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -715,6 +736,16 @@ export default function ClientsOrderBookPage() {
                   value={form.cylinderCount}
                   onChange={(e) => setForm((prev) => ({ ...prev, cylinderCount: e.target.value }))}
                   inputProps={{ min: 0, step: '1', placeholder: t('orderBookPage.cylinderCount') }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Cylinder aylanasi (мм)"
+                  value={form.cylinderAylanasi}
+                  onChange={(e) => setForm((prev) => ({ ...prev, cylinderAylanasi: e.target.value }))}
+                  inputProps={{ min: 0, step: '1', placeholder: 'Cylinder aylanasi' }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>

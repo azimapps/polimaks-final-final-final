@@ -56,6 +56,7 @@ type OrderBookItem = {
   filmWidth: number;
   cylinderLength: number;
   cylinderCount: number;
+  cylinderAylanasi?: number;
   pricePerKg?: number;
   priceCurrency?: Currency;
   admin?: string;
@@ -88,6 +89,7 @@ type PlanItem = {
   filmWidth?: number;
   cylinderLength?: number;
   cylinderCount?: number;
+  cylinderAylanasi?: number;
   pricePerKg?: number;
   priceCurrency?: Currency;
   admin?: string;
@@ -135,6 +137,7 @@ const ORDER_BOOK_SEED: OrderBookItem[] = [
     filmWidth: 1000,
     cylinderLength: 320,
     cylinderCount: 8,
+    cylinderAylanasi: 200,
     pricePerKg: 3.2,
     priceCurrency: 'USD',
     admin: 'Nodir',
@@ -155,6 +158,7 @@ const ORDER_BOOK_SEED: OrderBookItem[] = [
     filmWidth: 800,
     cylinderLength: 280,
     cylinderCount: 6,
+    cylinderAylanasi: 180,
     pricePerKg: 28500,
     priceCurrency: 'UZS',
     admin: 'Dilshod',
@@ -200,6 +204,10 @@ const normalizeOrderBookItem = (item: Partial<OrderBookItem>, index: number): Or
       : Number(item.cylinderLength) || 0,
   cylinderCount:
     typeof item.cylinderCount === 'number' ? item.cylinderCount : Number(item.cylinderCount) || 0,
+  cylinderAylanasi:
+    typeof item.cylinderAylanasi === 'number'
+      ? item.cylinderAylanasi
+      : Number(item.cylinderAylanasi) || 0,
   pricePerKg:
     typeof item.pricePerKg === 'number' ? item.pricePerKg : Number(item.pricePerKg) || 0,
   priceCurrency: (item.priceCurrency as Currency) || 'UZS',
@@ -227,6 +235,7 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   filmWidth: Number(raw?.filmWidth) || 0,
   cylinderLength: Number(raw?.cylinderLength) || 0,
   cylinderCount: Number(raw?.cylinderCount) || 0,
+  cylinderAylanasi: Number(raw?.cylinderAylanasi) || 0,
   pricePerKg: Number(raw?.pricePerKg) || 0,
   priceCurrency: (raw?.priceCurrency as Currency) || 'UZS',
   admin: raw?.admin || '',
@@ -412,6 +421,7 @@ export default function BuyurtmaPlanlashtirish() {
       filmWidth: selectedOrder.filmWidth,
       cylinderLength: selectedOrder.cylinderLength,
       cylinderCount: selectedOrder.cylinderCount,
+      cylinderAylanasi: selectedOrder.cylinderAylanasi,
       pricePerKg: selectedOrder.pricePerKg,
       priceCurrency: selectedOrder.priceCurrency,
       admin: selectedOrder.admin,
@@ -859,6 +869,14 @@ export default function BuyurtmaPlanlashtirish() {
                     </Typography>
                     <Typography variant="subtitle2">
                       {detailPlan.cylinderCount ? `${detailPlan.cylinderCount}` : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Cylinder aylanasi (мм)
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.cylinderAylanasi ? `${detailPlan.cylinderAylanasi} мм` : '—'}
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
