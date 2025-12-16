@@ -1,11 +1,11 @@
 /* eslint-disable perfectionist/sort-imports */
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -34,13 +34,17 @@ import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
 
-type Material = 'BOPP' | 'CPP' | 'PE' | 'PET';
-type OrderStatus = 'planning' | 'in_progress' | 'completed' | 'cancelled';
+import brigadaPechatSeed from 'src/data/stanok-brigada-pechat.json';
+import brigadaReskaSeed from 'src/data/stanok-brigada-reska.json';
+import brigadaLaminatsiyaSeed from 'src/data/stanok-brigada-laminatsiya.json';
 
-// OrderBook integration types
+type Material = 'BOPP' | 'CPP' | 'PE' | 'PET';
+type Currency = 'USD' | 'EUR' | 'RUB' | 'UZS';
+type MachineType = 'pechat' | 'reska' | 'laminatsiya';
+
 type OrderBookItem = {
   id: string;
-  date: string; // ISO date - order creation
+  date: string;
   orderNumber: string;
   clientId: string;
   clientName: string;
@@ -48,303 +52,405 @@ type OrderBookItem = {
   quantityKg: number;
   material: Material;
   subMaterial: string;
-  filmThickness: number; // microns
-  filmWidth: number; // mm
-  cylinderLength: number; // mm
+  filmThickness: number;
+  filmWidth: number;
+  cylinderLength: number;
   cylinderCount: number;
-  startDate: string; // ISO date - production start
-  endDate: string; // ISO date - production end
+  pricePerKg?: number;
+  priceCurrency?: Currency;
+  admin?: string;
+  startDate: string;
+  endDate: string;
 };
 
-type OrderPlanItem = {
+type BrigadaGroup = {
   id: string;
-  date: string; // ISO date
+  name: string;
+  leader?: string;
+};
+
+type PlanItem = {
+  id: string;
+  orderId: string;
   orderNumber: string;
   clientName: string;
   title: string;
   quantityKg: number;
-  material: Material;
-  subMaterial: string;
-  filmThickness: number; // microns
-  filmWidth: number; // mm
-  cylinderLength: number; // mm
-  cylinderCount: number;
-  printingMachine: string;
-  responsiblePerson: string;
-  notes: string;
-  status: OrderStatus;
+  material: Material | '';
+  subMaterial?: string;
+  machineType: MachineType;
+  groupId: string;
+  groupName: string;
+  orderDate?: string;
+  startDate: string;
+  endDate: string;
+  filmThickness?: number;
+  filmWidth?: number;
+  cylinderLength?: number;
+  cylinderCount?: number;
+  pricePerKg?: number;
+  priceCurrency?: Currency;
+  admin?: string;
+  note: string;
 };
 
-const MATERIAL_CATEGORIES: Record<Material, string[]> = {
-  BOPP: ['prazrachniy', 'metal', 'jemchuk', 'jemchuk metal'],
-  CPP: ['prazrachniy', 'beliy', 'metal'],
-  PE: ['prazrachniy', 'beliy'],
-  PET: ['prazrachniy', 'metal', 'beliy'],
+type FormState = {
+  id?: string;
+  orderId: string;
+  machineType: MachineType | '';
+  groupId: string;
+  startDate: string;
+  endDate: string;
+  note: string;
 };
 
-const PRINTING_MACHINES = [
-  'Печатная машина №1',
-  'Печатная машина №2',
-  'Печатная машина №3',
-  'Печатная машина №4',
-  'Печатная машина №5',
+const ORDER_BOOK_STORAGE_KEY = 'clients-order-book';
+const PLAN_STORAGE_KEY = 'orderPlansV2';
+const LEGACY_PLAN_STORAGE_KEY = 'orderPlans';
+
+const BRIGADA_STORAGE_KEYS: Record<MachineType, string> = {
+  pechat: 'stanok-brigada-pechat',
+  reska: 'stanok-brigada-reska',
+  laminatsiya: 'stanok-brigada-laminatsiya',
+};
+
+const MACHINE_OPTIONS: { value: MachineType; label: string }[] = [
+  { value: 'pechat', label: 'Pechat' },
+  { value: 'reska', label: 'Reska' },
+  { value: 'laminatsiya', label: 'Laminatsiya' },
 ];
 
-const STATUS_COLORS: Record<OrderStatus, 'default' | 'warning' | 'info' | 'success' | 'error'> = {
-  planning: 'default',
-  in_progress: 'warning',
-  completed: 'success',
-  cancelled: 'error',
+const ORDER_BOOK_SEED: OrderBookItem[] = [
+  {
+    id: 'order-1',
+    date: '2024-12-01',
+    orderNumber: 'ORD-2024-001',
+    clientId: 'client-1',
+    clientName: 'PoliTex Group',
+    title: 'Упаковочная пленка BOPP',
+    quantityKg: 1500,
+    material: 'BOPP',
+    subMaterial: 'prazrachniy',
+    filmThickness: 20,
+    filmWidth: 1000,
+    cylinderLength: 320,
+    cylinderCount: 8,
+    pricePerKg: 3.2,
+    priceCurrency: 'USD',
+    admin: 'Nodir',
+    startDate: '2024-12-05',
+    endDate: '2024-12-15',
+  },
+  {
+    id: 'order-2',
+    date: '2024-12-02',
+    orderNumber: 'ORD-2024-002',
+    clientId: 'client-2',
+    clientName: 'GreenPack LLC',
+    title: 'Прозрачная пленка CPP',
+    quantityKg: 800,
+    material: 'CPP',
+    subMaterial: 'beliy',
+    filmThickness: 25,
+    filmWidth: 800,
+    cylinderLength: 280,
+    cylinderCount: 6,
+    pricePerKg: 28500,
+    priceCurrency: 'UZS',
+    admin: 'Dilshod',
+    startDate: '2024-12-10',
+    endDate: '2024-12-20',
+  },
+];
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+const formatDate = (value: string) => {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
 };
 
-// OrderBook integration utilities
-const ORDER_BOOK_STORAGE_KEY = 'clients-order-book';
+const formatPrice = (value?: number, currency?: Currency) => {
+  if (!value || value <= 0) return '—';
+  const formatter = new Intl.NumberFormat('uz-UZ', {
+    style: 'currency',
+    currency: currency === 'USD' ? 'USD' : currency === 'EUR' ? 'EUR' : 'UZS',
+    maximumFractionDigits: currency === 'USD' || currency === 'EUR' ? 2 : 0,
+  });
+  return formatter.format(value);
+};
+
+const normalizeOrderBookItem = (item: Partial<OrderBookItem>, index: number): OrderBookItem => ({
+  id: item.id || `order-${index}`,
+  date: item.date || todayISO(),
+  orderNumber: item.orderNumber || `ORD-${Date.now()}`,
+  clientId: item.clientId || '',
+  clientName: item.clientName || '',
+  title: item.title || '',
+  quantityKg: typeof item.quantityKg === 'number' ? item.quantityKg : Number(item.quantityKg) || 0,
+  material: (item.material as Material) || 'BOPP',
+  subMaterial: item.subMaterial || '',
+  filmThickness:
+    typeof item.filmThickness === 'number' ? item.filmThickness : Number(item.filmThickness) || 0,
+  filmWidth: typeof item.filmWidth === 'number' ? item.filmWidth : Number(item.filmWidth) || 0,
+  cylinderLength:
+    typeof item.cylinderLength === 'number'
+      ? item.cylinderLength
+      : Number(item.cylinderLength) || 0,
+  cylinderCount:
+    typeof item.cylinderCount === 'number' ? item.cylinderCount : Number(item.cylinderCount) || 0,
+  pricePerKg:
+    typeof item.pricePerKg === 'number' ? item.pricePerKg : Number(item.pricePerKg) || 0,
+  priceCurrency: (item.priceCurrency as Currency) || 'UZS',
+  admin: item.admin || '',
+  startDate: item.startDate || item.date || todayISO(),
+  endDate: item.endDate || item.date || todayISO(),
+});
+
+const normalizePlanItem = (raw: any, index: number): PlanItem => ({
+  id: raw?.id || `plan-${index}`,
+  orderId: raw?.orderId || '',
+  orderNumber: raw?.orderNumber || '',
+  clientName: raw?.clientName || raw?.client || '',
+  title: raw?.title || '',
+  quantityKg: Number(raw?.quantityKg) || 0,
+  material: raw?.material || '',
+  subMaterial: raw?.subMaterial || '',
+  machineType: (raw?.machineType as MachineType) || 'pechat',
+  groupId: raw?.groupId || '',
+  groupName: raw?.groupName || raw?.printingMachine || '',
+  orderDate: raw?.orderDate || raw?.date || '',
+  startDate: raw?.startDate || raw?.date || todayISO(),
+  endDate: raw?.endDate || raw?.date || todayISO(),
+  filmThickness: Number(raw?.filmThickness) || 0,
+  filmWidth: Number(raw?.filmWidth) || 0,
+  cylinderLength: Number(raw?.cylinderLength) || 0,
+  cylinderCount: Number(raw?.cylinderCount) || 0,
+  pricePerKg: Number(raw?.pricePerKg) || 0,
+  priceCurrency: (raw?.priceCurrency as Currency) || 'UZS',
+  admin: raw?.admin || '',
+  note: raw?.note ?? raw?.notes ?? '',
+});
+
+const normalizeBrigadaGroup = (raw: any, index: number): BrigadaGroup => ({
+  id: raw?.id || `group-${index}`,
+  name: raw?.name || `Group ${index + 1}`,
+  leader: raw?.leader || raw?.people?.[0]?.workerId || raw?.people?.[0]?.name,
+});
 
 const loadOrderBookItems = (): OrderBookItem[] => {
+  if (typeof window === 'undefined') {
+    return ORDER_BOOK_SEED.map((item, idx) => normalizeOrderBookItem(item, idx));
+  }
   try {
     const stored = localStorage.getItem(ORDER_BOOK_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (stored) {
+      const parsed = JSON.parse(stored) as OrderBookItem[];
+      const normalized = parsed.map((item, idx) => normalizeOrderBookItem(item, idx));
+      if (normalized.length) return normalized;
+    }
   } catch {
-    return [];
+    // ignore parsing errors
   }
+  return ORDER_BOOK_SEED.map((item, idx) => normalizeOrderBookItem(item, idx));
 };
 
-const convertOrderBookToOrderPlan = (orderBookItem: OrderBookItem): Omit<OrderPlanItem, 'id'> => ({
-  date: orderBookItem.date,
-  orderNumber: orderBookItem.orderNumber,
-  clientName: orderBookItem.clientName,
-  title: orderBookItem.title,
-  quantityKg: orderBookItem.quantityKg,
-  material: orderBookItem.material,
-  subMaterial: orderBookItem.subMaterial,
-  filmThickness: orderBookItem.filmThickness,
-  filmWidth: orderBookItem.filmWidth,
-  cylinderLength: orderBookItem.cylinderLength,
-  cylinderCount: orderBookItem.cylinderCount,
-  printingMachine: '', // New field - to be filled manually
-  responsiblePerson: '', // New field - to be filled manually  
-  notes: '', // New field - to be filled manually
-  status: 'planning' as OrderStatus, // Default status
-});
+const loadPlans = (): PlanItem[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(PLAN_STORAGE_KEY);
+    if (stored) {
+      return (JSON.parse(stored) as any[]).map((item, idx) => normalizePlanItem(item, idx));
+    }
+    const legacy = localStorage.getItem(LEGACY_PLAN_STORAGE_KEY);
+    if (legacy) {
+      const converted = (JSON.parse(legacy) as any[]).map((item, idx) =>
+        normalizePlanItem(item, idx)
+      );
+      localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(converted));
+      return converted;
+    }
+  } catch {
+    // ignore parse issues
+  }
+  return [];
+};
+
+const loadBrigadaGroups = (machineType: MachineType): BrigadaGroup[] => {
+  const seedMap: Record<MachineType, any[]> = {
+    pechat: brigadaPechatSeed as any[],
+    reska: brigadaReskaSeed as any[],
+    laminatsiya: brigadaLaminatsiyaSeed as any[],
+  };
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(BRIGADA_STORAGE_KEYS[machineType]);
+      if (stored) {
+        const parsed = JSON.parse(stored) as any[];
+        const normalized = parsed.map((item, idx) => normalizeBrigadaGroup(item, idx));
+        if (normalized.length) return normalized;
+      }
+    } catch {
+      // ignore parsing errors
+    }
+  }
+  return seedMap[machineType].map((item, idx) => normalizeBrigadaGroup(item, idx));
+};
+
+const defaultFormState: FormState = {
+  orderId: '',
+  machineType: '',
+  groupId: '',
+  startDate: todayISO(),
+  endDate: todayISO(),
+  note: '',
+};
 
 // ----------------------------------------------------------------------
 
 export default function BuyurtmaPlanlashtirish() {
   const { t } = useTranslate('pages');
-  
-  const [orderPlans, setOrderPlans] = useState<OrderPlanItem[]>(() => {
-    const saved = localStorage.getItem('orderPlans');
-    return saved ? JSON.parse(saved) : [];
-  });
 
-  const [selectedOrder, setSelectedOrder] = useState<OrderPlanItem | null>(null);
+  const [plans, setPlans] = useState<PlanItem[]>(() => loadPlans());
+  const [orders, setOrders] = useState<OrderBookItem[]>(() => loadOrderBookItems());
+  const [selectedOrder, setSelectedOrder] = useState<OrderBookItem | null>(null);
+  const [availableGroups, setAvailableGroups] = useState<BrigadaGroup[]>([]);
+
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [activePlan, setActivePlan] = useState<PlanItem | null>(null);
   const editDialog = useBoolean();
-  const importDialog = useBoolean();
-  
-  // Order Book integration state
-  const [availableOrderBookItems, setAvailableOrderBookItems] = useState<OrderBookItem[]>([]);
-  const [selectedOrderBookItems, setSelectedOrderBookItems] = useState<OrderBookItem[]>([]);
-  const [importSearchQuery, setImportSearchQuery] = useState('');
-  
-  // Form state
-  const [formData, setFormData] = useState<Partial<OrderPlanItem>>({
-    date: new Date().toISOString().split('T')[0],
-    orderNumber: '',
-    clientName: '',
-    title: '',
-    quantityKg: 0,
-    material: 'BOPP',
-    subMaterial: '',
-    filmThickness: 0,
-    filmWidth: 0,
-    cylinderLength: 0,
-    cylinderCount: 1,
-    printingMachine: '',
-    responsiblePerson: '',
-    notes: '',
-    status: 'planning',
-  });
+  const detailDialog = useBoolean();
+  const [detailPlan, setDetailPlan] = useState<PlanItem | null>(null);
 
-  const availableSubMaterials = useMemo(() => 
-    formData.material ? MATERIAL_CATEGORIES[formData.material] || [] : [],
-    [formData.material]
-  );
-
-  // Filter order book items based on search and exclude already imported orders
-  const filteredOrderBookItems = useMemo(() => {
-    const existingOrderNumbers = new Set(orderPlans.map(plan => plan.orderNumber));
-    
-    return availableOrderBookItems.filter(item => {
-      // Exclude already imported orders
-      if (existingOrderNumbers.has(item.orderNumber)) return false;
-      
-      // Apply search filter
-      if (importSearchQuery.trim()) {
-        const query = importSearchQuery.toLowerCase();
-        return (
-          item.orderNumber.toLowerCase().includes(query) ||
-          item.clientName.toLowerCase().includes(query) ||
-          item.title.toLowerCase().includes(query)
-        );
-      }
-      
-      return true;
-    });
-  }, [availableOrderBookItems, orderPlans, importSearchQuery]);
+  const [formData, setFormData] = useState<FormState>(defaultFormState);
 
   const title = `${t('buyurtmaPlanlashtirish.title')} | ${CONFIG.appName}`;
 
-  // Save to localStorage whenever orderPlans changes
-  const saveOrderPlans = (plans: OrderPlanItem[]) => {
-    localStorage.setItem('orderPlans', JSON.stringify(plans));
-    setOrderPlans(plans);
+  const persistPlans = (next: PlanItem[]) => {
+    setPlans(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(next));
+    }
   };
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, order: OrderPlanItem) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, plan: PlanItem) => {
     setMenuAnchorEl(event.currentTarget);
-    setSelectedOrder(order);
+    setActivePlan(plan);
   };
 
   const handleCloseMenu = () => {
     setMenuAnchorEl(null);
-    setSelectedOrder(null);
+    setActivePlan(null);
   };
 
   const handleEdit = () => {
-    if (selectedOrder) {
-      setFormData(selectedOrder);
+    if (activePlan) {
+      const orderFromBook =
+        orders.find((item) => item.id === activePlan.orderId) ||
+        orders.find((item) => item.orderNumber === activePlan.orderNumber) ||
+        null;
+      setSelectedOrder(orderFromBook);
+      setAvailableGroups(loadBrigadaGroups(activePlan.machineType));
+      setFormData({
+        id: activePlan.id,
+        orderId: orderFromBook?.id || activePlan.orderId,
+        machineType: activePlan.machineType,
+        groupId: activePlan.groupId,
+        startDate: activePlan.startDate,
+        endDate: activePlan.endDate,
+        note: activePlan.note,
+      });
       editDialog.onTrue();
     }
     handleCloseMenu();
   };
 
+  const handleViewDetails = (plan: PlanItem) => {
+    setDetailPlan(plan);
+    detailDialog.onTrue();
+  };
+
   const handleDelete = () => {
-    if (selectedOrder) {
-      const updatedPlans = orderPlans.filter((order) => order.id !== selectedOrder.id);
-      saveOrderPlans(updatedPlans);
+    if (activePlan) {
+      const updated = plans.filter((plan) => plan.id !== activePlan.id);
+      persistPlans(updated);
     }
     handleCloseMenu();
   };
 
   const handleAdd = () => {
-    setFormData({
-      date: new Date().toISOString().split('T')[0],
-      orderNumber: `ORD-${Date.now()}`,
-      clientName: '',
-      title: '',
-      quantityKg: 0,
-      material: 'BOPP',
-      subMaterial: '',
-      filmThickness: 0,
-      filmWidth: 0,
-      cylinderLength: 0,
-      cylinderCount: 1,
-      printingMachine: '',
-      responsiblePerson: '',
-      notes: '',
-      status: 'planning',
-    });
+    setFormData(defaultFormState);
+    setSelectedOrder(null);
+    setAvailableGroups([]);
     editDialog.onTrue();
   };
 
   const handleSave = () => {
-    if (!formData.clientName || !formData.title || !formData.orderNumber) {
+    if (!selectedOrder || !formData.machineType || !formData.groupId) {
       return;
     }
 
-    const orderToSave: OrderPlanItem = {
+    const groupName = availableGroups.find((group) => group.id === formData.groupId)?.name || '';
+
+    const planToSave: PlanItem = {
       id: formData.id || uuidv4(),
-      date: formData.date || new Date().toISOString().split('T')[0],
-      orderNumber: formData.orderNumber || '',
-      clientName: formData.clientName || '',
-      title: formData.title || '',
-      quantityKg: formData.quantityKg || 0,
-      material: formData.material || 'BOPP',
-      subMaterial: formData.subMaterial || '',
-      filmThickness: formData.filmThickness || 0,
-      filmWidth: formData.filmWidth || 0,
-      cylinderLength: formData.cylinderLength || 0,
-      cylinderCount: formData.cylinderCount || 1,
-      printingMachine: formData.printingMachine || '',
-      responsiblePerson: formData.responsiblePerson || '',
-      notes: formData.notes || '',
-      status: formData.status || 'planning',
+      orderId: selectedOrder.id,
+      orderNumber: selectedOrder.orderNumber,
+      clientName: selectedOrder.clientName,
+      title: selectedOrder.title,
+      quantityKg: selectedOrder.quantityKg,
+      material: selectedOrder.material,
+      subMaterial: selectedOrder.subMaterial,
+      machineType: formData.machineType,
+      groupId: formData.groupId,
+      groupName,
+      orderDate: selectedOrder.date,
+      startDate: formData.startDate || selectedOrder.startDate || todayISO(),
+      endDate: formData.endDate || formData.startDate || selectedOrder.endDate || todayISO(),
+      filmThickness: selectedOrder.filmThickness,
+      filmWidth: selectedOrder.filmWidth,
+      cylinderLength: selectedOrder.cylinderLength,
+      cylinderCount: selectedOrder.cylinderCount,
+      pricePerKg: selectedOrder.pricePerKg,
+      priceCurrency: selectedOrder.priceCurrency,
+      admin: selectedOrder.admin,
+      note: formData.note,
     };
 
     if (formData.id) {
-      // Edit existing
-      const updatedPlans = orderPlans.map((order) =>
-        order.id === formData.id ? orderToSave : order
-      );
-      saveOrderPlans(updatedPlans);
+      const updated = plans.map((plan) => (plan.id === formData.id ? planToSave : plan));
+      persistPlans(updated);
     } else {
-      // Add new
-      saveOrderPlans([...orderPlans, orderToSave]);
+      persistPlans([...plans, planToSave]);
     }
 
     editDialog.onFalse();
   };
 
-  const handleMaterialChange = (material: Material) => {
-    setFormData((prev) => ({
-      ...prev,
-      material,
-      subMaterial: '', // Reset sub-material when main material changes
-    }));
-  };
+  const canSubmit = !!selectedOrder && !!formData.machineType && !!formData.groupId;
 
-  // Import from Order Book handlers
-  const handleOpenImport = () => {
-    const orderBookItems = loadOrderBookItems();
-    setAvailableOrderBookItems(orderBookItems);
-    setSelectedOrderBookItems([]);
-    setImportSearchQuery('');
-    importDialog.onTrue();
-  };
-
-  const handleSelectOrderBookItem = (item: OrderBookItem, isSelected: boolean) => {
-    setSelectedOrderBookItems(prev => {
-      if (isSelected) {
-        return [...prev, item];
-      } else {
-        return prev.filter(selectedItem => selectedItem.id !== item.id);
-      }
-    });
-  };
-
-  const handleSelectAllOrderBookItems = (selectAll: boolean) => {
-    if (selectAll) {
-      setSelectedOrderBookItems(filteredOrderBookItems);
-    } else {
-      setSelectedOrderBookItems([]);
+  useEffect(() => {
+    if (!formData.machineType) {
+      setAvailableGroups([]);
+      setFormData((prev) => (prev.groupId ? { ...prev, groupId: '' } : prev));
+      return;
     }
-  };
+    const groups = loadBrigadaGroups(formData.machineType);
+    setAvailableGroups(groups);
+    setFormData((prev) => {
+      if (prev.groupId && groups.some((g) => g.id === prev.groupId)) return prev;
+      return { ...prev, groupId: groups[0]?.id || '' };
+    });
+  }, [formData.machineType]);
 
-  const handleImportOrders = () => {
-    if (selectedOrderBookItems.length === 0) return;
-
-    // Convert and add selected orders
-    const newOrderPlans: OrderPlanItem[] = selectedOrderBookItems.map(orderBookItem => ({
-      id: uuidv4(),
-      ...convertOrderBookToOrderPlan(orderBookItem),
-    }));
-
-    saveOrderPlans([...orderPlans, ...newOrderPlans]);
-    importDialog.onFalse();
-    setSelectedOrderBookItems([]);
-  };
-
-  const getStatusLabel = (status: OrderStatus) => {
-    const statusObj = t('orderPlanPage.status', { returnObjects: true }) as any;
-    const labels = {
-      planning: statusObj.planning || 'Planning',
-      in_progress: statusObj.inProgress || 'In Progress', 
-      completed: statusObj.completed || 'Completed',
-      cancelled: statusObj.cancelled || 'Cancelled',
-    };
-    return labels[status] || status;
-  };
+  // Ensure Order Book stays in sync with latest localStorage (e.g., if user edits on /clients/order-book)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleStorage = () => setOrders(loadOrderBookItems());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   return (
     <>
@@ -361,15 +467,8 @@ export default function BuyurtmaPlanlashtirish() {
             </Typography>
           </div>
           <Stack direction="row" spacing={2}>
-            <Button 
-              variant="outlined" 
-              startIcon={<Iconify icon="solar:import-bold" />}
-              onClick={handleOpenImport}
-            >
-              {t('orderPlanPage.importFromOrderBook')}
-            </Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
               onClick={handleAdd}
             >
@@ -378,69 +477,78 @@ export default function BuyurtmaPlanlashtirish() {
           </Stack>
         </Stack>
 
+        <Card sx={{ mb: 3, p: 2.5 }}>
+          <Stack spacing={1}>
+            <Typography variant="subtitle1">Jarayon</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              1) Buyurtmani Order Book dan tanlang. 2) Stanok turini belgilang. 3) Brigadani
+              tanlang. 4) Boshlanish va yakun sanasini qo&apos;ying, izoh yozing va saqlang.
+            </Typography>
+          </Stack>
+        </Card>
+
         <Card>
-          <TableContainer sx={{ overflow: 'auto', minWidth: 1200 }}>
-            <Table size="medium" sx={{ minWidth: 1200 }}>
+          <TableContainer sx={{ overflow: 'auto' }}>
+            <Table size="medium" sx={{ minWidth: 1100 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ minWidth: 100, py: 2 }}>{t('orderPlanPage.date')}</TableCell>
-                  <TableCell sx={{ minWidth: 120, py: 2 }}>{t('orderPlanPage.orderNumber')}</TableCell>
-                  <TableCell sx={{ minWidth: 150, py: 2 }}>{t('orderPlanPage.client')}</TableCell>
-                  <TableCell sx={{ minWidth: 200, py: 2 }}>{t('orderPlanPage.title')}</TableCell>
-                  <TableCell align="right" sx={{ minWidth: 100, py: 2 }}>{t('orderPlanPage.quantityKg')}</TableCell>
-                  <TableCell sx={{ minWidth: 120, py: 2 }}>{t('orderPlanPage.material')}</TableCell>
-                  <TableCell align="right" sx={{ minWidth: 100, py: 2 }}>{t('orderPlanPage.filmThickness')}</TableCell>
-                  <TableCell align="right" sx={{ minWidth: 100, py: 2 }}>{t('orderPlanPage.filmWidth')}</TableCell>
-                  <TableCell align="right" sx={{ minWidth: 100, py: 2 }}>{t('orderPlanPage.cylinderLength')}</TableCell>
-                  <TableCell align="right" sx={{ minWidth: 100, py: 2 }}>{t('orderPlanPage.cylinderCount')}</TableCell>
-                  <TableCell sx={{ minWidth: 160, py: 2 }}>{t('orderPlanPage.printingMachine')}</TableCell>
-                  <TableCell sx={{ minWidth: 150, py: 2 }}>{t('orderPlanPage.responsiblePerson')}</TableCell>
-                  <TableCell sx={{ minWidth: 120, py: 2 }}>{t('orderPlanPage.status')}</TableCell>
+                  <TableCell sx={{ minWidth: 160, py: 2 }}>{t('orderPlanPage.orderNumber')}</TableCell>
+                  <TableCell sx={{ minWidth: 220, py: 2 }}>{t('orderPlanPage.client')}</TableCell>
+                  <TableCell sx={{ minWidth: 140, py: 2 }}>Stanok</TableCell>
+                  <TableCell sx={{ minWidth: 150, py: 2 }}>Brigada</TableCell>
+                  <TableCell sx={{ minWidth: 120, py: 2 }}>Boshlanish</TableCell>
+                  <TableCell sx={{ minWidth: 120, py: 2 }}>Yakun</TableCell>
+                  <TableCell sx={{ minWidth: 200, py: 2 }}>Izoh</TableCell>
                   <TableCell sx={{ minWidth: 80, py: 2 }}>{t('orderPlanPage.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderPlans.length === 0 ? (
+                {plans.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={14} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                       <Typography variant="body2" sx={{ color: 'text.disabled' }}>
                         {t('orderPlanPage.empty')}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  orderPlans.map((order) => (
-                    <TableRow key={order.id} hover>
+                  plans.map((plan) => (
+                    <TableRow key={plan.id} hover>
                       <TableCell sx={{ py: 2 }}>
-                        {new Date(order.date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell sx={{ py: 2 }}>{order.orderNumber}</TableCell>
-                      <TableCell sx={{ py: 2 }}>{order.clientName}</TableCell>
-                      <TableCell sx={{ py: 2 }}>{order.title}</TableCell>
-                      <TableCell align="right" sx={{ py: 2 }}>{order.quantityKg} {t('orderPlanPage.kg')}</TableCell>
-                      <TableCell sx={{ py: 2 }}>
-                        {order.material}
-                        {order.subMaterial && (
-                          <Typography variant="caption" display="block" sx={{ color: 'text.secondary' }}>
-                            {order.subMaterial}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell align="right" sx={{ py: 2 }}>{order.filmThickness} {t('orderPlanPage.microns')}</TableCell>
-                      <TableCell align="right" sx={{ py: 2 }}>{order.filmWidth} {t('orderPlanPage.mm')}</TableCell>
-                      <TableCell align="right" sx={{ py: 2 }}>{order.cylinderLength} {t('orderPlanPage.mm')}</TableCell>
-                      <TableCell align="right" sx={{ py: 2 }}>{order.cylinderCount} {t('orderPlanPage.pcs')}</TableCell>
-                      <TableCell sx={{ py: 2 }}>{order.printingMachine}</TableCell>
-                      <TableCell sx={{ py: 2 }}>{order.responsiblePerson}</TableCell>
-                      <TableCell sx={{ py: 2 }}>
-                        <Chip 
-                          label={getStatusLabel(order.status)} 
-                          color={STATUS_COLORS[order.status]}
-                          size="small"
-                        />
+                        <Typography variant="subtitle2">{plan.orderNumber}</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          {plan.title}
+                        </Typography>
                       </TableCell>
                       <TableCell sx={{ py: 2 }}>
-                        <IconButton onClick={(e) => handleOpenMenu(e, order)}>
+                        <Typography variant="body2">{plan.clientName}</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          {plan.quantityKg} {t('orderPlanPage.kg')} · {plan.material}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        {MACHINE_OPTIONS.find((m) => m.value === plan.machineType)?.label || '-'}
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>{plan.groupName || '-'}</TableCell>
+                      <TableCell sx={{ py: 2 }}>{formatDate(plan.startDate)}</TableCell>
+                      <TableCell sx={{ py: 2 }}>{formatDate(plan.endDate)}</TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: plan.note ? 'text.primary' : 'text.disabled' }}
+                        >
+                          {plan.note || 'Izoh kiritilmagan'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <IconButton
+                          onClick={() => handleViewDetails(plan)}
+                          sx={{ mr: 0.5 }}
+                          color="primary"
+                        >
+                          <Iconify icon="solar:info-square-bold" />
+                        </IconButton>
+                        <IconButton onClick={(e) => handleOpenMenu(e, plan)}>
                           <Iconify icon="eva:more-vertical-fill" />
                         </IconButton>
                       </TableCell>
@@ -453,11 +561,16 @@ export default function BuyurtmaPlanlashtirish() {
         </Card>
 
         {/* Actions Menu */}
-        <Menu
-          anchorEl={menuAnchorEl}
-          open={Boolean(menuAnchorEl)}
-          onClose={handleCloseMenu}
-        >
+        <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={handleCloseMenu}>
+          <MenuItem
+            onClick={() => {
+              if (activePlan) handleViewDetails(activePlan);
+              handleCloseMenu();
+            }}
+          >
+            <Iconify icon="solar:eye-bold" sx={{ mr: 1 }} />
+            Tafsilotlar
+          </MenuItem>
           <MenuItem onClick={handleEdit}>
             <Iconify icon="solar:pen-bold" sx={{ mr: 1 }} />
             {t('orderPlanPage.edit')}
@@ -470,371 +583,323 @@ export default function BuyurtmaPlanlashtirish() {
         </Menu>
 
         {/* Add/Edit Dialog */}
-        <Dialog 
-          open={editDialog.value} 
-          onClose={editDialog.onFalse}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            {formData.id ? t('orderPlanPage.edit') : t('orderPlanPage.add')}
-          </DialogTitle>
-          
+        <Dialog open={editDialog.value} onClose={editDialog.onFalse} maxWidth="md" fullWidth>
+          <DialogTitle>{formData.id ? t('orderPlanPage.edit') : t('orderPlanPage.add')}</DialogTitle>
+
           <DialogContent dividers>
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.date')}
-                  type="date"
-                  value={formData.date || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                  slotProps={{ inputLabel: { shrink: true } }}
-                />
-              </Grid>
-              
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.orderNumber')}
-                  value={formData.orderNumber || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, orderNumber: e.target.value }))}
-                  required
-                />
-              </Grid>
+            <Stack spacing={3}>
+              <Autocomplete
+                fullWidth
+                options={orders}
+                value={selectedOrder}
+                onChange={(_e, value) => {
+                  setSelectedOrder(value);
+                  setFormData((prev) => ({
+                    ...prev,
+                    orderId: value?.id || '',
+                    startDate: value?.startDate || prev.startDate || todayISO(),
+                    endDate: value?.endDate || value?.startDate || prev.endDate || todayISO(),
+                  }));
+                }}
+                getOptionLabel={(option) =>
+                  `${option.orderNumber} · ${option.clientName} · ${option.title}`
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Buyurtma (Order Book)"
+                    placeholder="ORD-2024-001 · Client · Mahsulot"
+                  />
+                )}
+                noOptionsText="Order Book bo'sh. /clients/order-book ga kirib buyurtma qo'shing."
+              />
 
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.client')}
-                  value={formData.clientName || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, clientName: e.target.value }))}
-                  required
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.title')}
-                  value={formData.title || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  required
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.quantityKg')}
-                  type="number"
-                  value={formData.quantityKg || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, quantityKg: Number(e.target.value) }))}
-                  slotProps={{
-                    input: {
-                      endAdornment: t('orderPlanPage.kg'),
-                    }
-                  }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>{t('orderPlanPage.material')}</InputLabel>
-                  <Select
-                    value={formData.material || 'BOPP'}
-                    label={t('orderPlanPage.material')}
-                    onChange={(e) => handleMaterialChange(e.target.value as Material)}
-                  >
-                    <MenuItem value="BOPP">BOPP</MenuItem>
-                    <MenuItem value="CPP">CPP</MenuItem>
-                    <MenuItem value="PE">PE</MenuItem>
-                    <MenuItem value="PET">PET</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              {availableSubMaterials.length > 0 && (
+              <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth>
-                    <InputLabel>{t('orderPlanPage.subMaterial')}</InputLabel>
+                    <InputLabel>Stanok</InputLabel>
                     <Select
-                      value={formData.subMaterial || ''}
-                      label={t('orderPlanPage.subMaterial')}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, subMaterial: e.target.value }))}
+                      value={formData.machineType || ''}
+                      label="Stanok"
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          machineType: e.target.value as MachineType,
+                        }))
+                      }
                     >
-                      <MenuItem value="">
-                        <em>{t('orderPlanPage.selectSubMaterial')}</em>
-                      </MenuItem>
-                      {availableSubMaterials.map((subMaterial) => (
-                        <MenuItem key={subMaterial} value={subMaterial}>
-                          {subMaterial}
+                      {MACHINE_OPTIONS.map((machine) => (
+                        <MenuItem key={machine.value} value={machine.value}>
+                          {machine.label}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Grid>
-              )}
 
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.filmThickness')}
-                  type="number"
-                  value={formData.filmThickness || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, filmThickness: Number(e.target.value) }))}
-                  slotProps={{
-                    input: {
-                      endAdornment: t('orderPlanPage.microns'),
-                    }
-                  }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.filmWidth')}
-                  type="number"
-                  value={formData.filmWidth || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, filmWidth: Number(e.target.value) }))}
-                  slotProps={{
-                    input: {
-                      endAdornment: t('orderPlanPage.mm'),
-                    }
-                  }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.cylinderLength')}
-                  type="number"
-                  value={formData.cylinderLength || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, cylinderLength: Number(e.target.value) }))}
-                  slotProps={{
-                    input: {
-                      endAdornment: t('orderPlanPage.mm'),
-                    }
-                  }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.cylinderCount')}
-                  type="number"
-                  value={formData.cylinderCount || 1}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, cylinderCount: Number(e.target.value) }))}
-                  slotProps={{
-                    input: {
-                      endAdornment: t('orderPlanPage.pcs'),
-                    }
-                  }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>{t('orderPlanPage.printingMachine')}</InputLabel>
-                  <Select
-                    value={formData.printingMachine || ''}
-                    label={t('orderPlanPage.printingMachine')}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, printingMachine: e.target.value }))}
-                  >
-                    <MenuItem value="">
-                      <em>{t('orderPlanPage.selectMachine')}</em>
-                    </MenuItem>
-                    {PRINTING_MACHINES.map((machine) => (
-                      <MenuItem key={machine} value={machine}>
-                        {machine}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.responsiblePerson')}
-                  value={formData.responsiblePerson || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, responsiblePerson: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>{t('orderPlanPage.status')}</InputLabel>
-                  <Select
-                    value={formData.status || 'planning'}
-                    label={t('orderPlanPage.status')}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as OrderStatus }))}
-                  >
-                    <MenuItem value="planning">{getStatusLabel('planning')}</MenuItem>
-                    <MenuItem value="in_progress">{getStatusLabel('in_progress')}</MenuItem>
-                    <MenuItem value="completed">{getStatusLabel('completed')}</MenuItem>
-                    <MenuItem value="cancelled">{getStatusLabel('cancelled')}</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  fullWidth
-                  label={t('orderPlanPage.notes')}
-                  multiline
-                  rows={3}
-                  value={formData.notes || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-
-          <DialogActions>
-            <Button onClick={editDialog.onFalse}>
-              {t('orderPlanPage.cancel')}
-            </Button>
-            <Button variant="contained" onClick={handleSave}>
-              {t('orderPlanPage.save')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Import from Order Book Dialog */}
-        <Dialog 
-          open={importDialog.value} 
-          onClose={importDialog.onFalse}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>
-            {t('orderPlanPage.importFromOrderBook')}
-          </DialogTitle>
-          
-          <DialogContent dividers>
-            <Stack spacing={3}>
-              {/* Search */}
-              <TextField
-                fullWidth
-                placeholder={t('orderPlanPage.searchOrders')}
-                value={importSearchQuery}
-                onChange={(e) => setImportSearchQuery(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', mr: 1 }} />,
-                  }
-                }}
-              />
-
-              {/* Selection Controls */}
-              <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {selectedOrderBookItems.length > 0 
-                    ? `${selectedOrderBookItems.length} ${t('orderPlanPage.ordersSelected')}`
-                    : t('orderPlanPage.selectOrdersToImport')
-                  }
-                </Typography>
-                
-                {filteredOrderBookItems.length > 0 && (
-                  <Button
-                    size="small"
-                    onClick={() => handleSelectAllOrderBookItems(selectedOrderBookItems.length !== filteredOrderBookItems.length)}
-                  >
-                    {selectedOrderBookItems.length === filteredOrderBookItems.length 
-                      ? t('orderPlanPage.deselectAll') 
-                      : t('orderPlanPage.selectAll')
-                    }
-                  </Button>
-                )}
-              </Stack>
-
-              {/* Order Book Items Table */}
-              <Card>
-                <TableContainer sx={{ maxHeight: 400 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell padding="checkbox" />
-                        <TableCell>{t('orderPlanPage.orderNumber')}</TableCell>
-                        <TableCell>{t('orderPlanPage.client')}</TableCell>
-                        <TableCell>{t('orderPlanPage.title')}</TableCell>
-                        <TableCell>{t('orderPlanPage.quantityKg')}</TableCell>
-                        <TableCell>{t('orderPlanPage.material')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredOrderBookItems.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                            <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-                              {availableOrderBookItems.length === 0 
-                                ? t('orderPlanPage.noOrdersInOrderBook')
-                                : t('orderPlanPage.noOrdersMatch')
-                              }
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        filteredOrderBookItems.map((item) => {
-                          const isSelected = selectedOrderBookItems.some(selected => selected.id === item.id);
-                          
-                          return (
-                            <TableRow key={item.id} hover selected={isSelected}>
-                              <TableCell padding="checkbox">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={(e) => handleSelectOrderBookItem(item, e.target.checked)}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                  {item.orderNumber}
-                                </Typography>
-                              </TableCell>
-                              <TableCell>{item.clientName}</TableCell>
-                              <TableCell>{item.title}</TableCell>
-                              <TableCell>{item.quantityKg} {t('orderPlanPage.kg')}</TableCell>
-                              <TableCell>
-                                {item.material}
-                                {item.subMaterial && (
-                                  <Typography variant="caption" display="block" sx={{ color: 'text.secondary' }}>
-                                    {item.subMaterial}
-                                  </Typography>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth disabled={!formData.machineType}>
+                    <InputLabel>Brigada</InputLabel>
+                    <Select
+                      value={formData.groupId}
+                      label="Brigada"
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          groupId: e.target.value,
+                        }))
+                      }
+                    >
+                      {availableGroups.length === 0 && (
+                        <MenuItem value="">
+                          <em>Avval stanokni tanlang</em>
+                        </MenuItem>
                       )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Card>
+                      {availableGroups.map((group) => (
+                        <MenuItem key={group.id} value={group.id}>
+                          {group.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-              {selectedOrderBookItems.length > 0 && (
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {t('orderPlanPage.importHint')}
-                </Typography>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Boshlanish"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        startDate: e.target.value,
+                      }))
+                    }
+                    slotProps={{ inputLabel: { shrink: true } }}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Yakun / Deadline"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        endDate: e.target.value,
+                      }))
+                    }
+                    slotProps={{ inputLabel: { shrink: true } }}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    label="Izoh"
+                    multiline
+                    rows={3}
+                    value={formData.note}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, note: e.target.value }))}
+                    placeholder="Reja bo'yicha qo'shimcha izoh..."
+                  />
+                </Grid>
+              </Grid>
+
+              {selectedOrder && (
+                <Card variant="outlined">
+                  <Stack spacing={1.25} sx={{ p: 2 }}>
+                    <Typography variant="subtitle2">Buyurtma ma&apos;lumotlari</Typography>
+                    <Grid container spacing={2}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          Mijoz
+                        </Typography>
+                        <Typography variant="subtitle2">{selectedOrder.clientName}</Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          Mahsulot
+                        </Typography>
+                        <Typography variant="subtitle2">{selectedOrder.title}</Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          Hajm
+                        </Typography>
+                        <Typography variant="subtitle2">
+                          {selectedOrder.quantityKg} {t('orderPlanPage.kg')}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          Material
+                        </Typography>
+                        <Typography variant="subtitle2">
+                          {selectedOrder.material}{' '}
+                          {selectedOrder.subMaterial ? `· ${selectedOrder.subMaterial}` : ''}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Stack>
+                </Card>
               )}
             </Stack>
           </DialogContent>
 
           <DialogActions>
-            <Button onClick={importDialog.onFalse}>
-              {t('orderPlanPage.cancel')}
+            <Button onClick={editDialog.onFalse}>{t('orderPlanPage.cancel')}</Button>
+            <Button variant="contained" onClick={handleSave} disabled={!canSubmit}>
+              {t('orderPlanPage.save')}
             </Button>
-            <Button 
-              variant="contained" 
-              onClick={handleImportOrders}
-              disabled={selectedOrderBookItems.length === 0}
-            >
-              {t('orderPlanPage.importSelected')} ({selectedOrderBookItems.length})
-            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Details Dialog */}
+        <Dialog open={detailDialog.value} onClose={detailDialog.onFalse} maxWidth="md" fullWidth>
+          <DialogTitle>Buyurtma tafsilotlari</DialogTitle>
+          <DialogContent dividers>
+            {detailPlan ? (
+              <Stack spacing={2.5}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Sana (Order Book)
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.orderDate ? formatDate(detailPlan.orderDate) : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Буюртма рақами
+                    </Typography>
+                    <Typography variant="subtitle2">{detailPlan.orderNumber}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Клиент
+                    </Typography>
+                    <Typography variant="subtitle2">{detailPlan.clientName}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Номи
+                    </Typography>
+                    <Typography variant="subtitle2">{detailPlan.title}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Миқдор (кг)
+                    </Typography>
+                    <Typography variant="subtitle2">{detailPlan.quantityKg}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Нарх (кг учун)
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {formatPrice(detailPlan.pricePerKg, detailPlan.priceCurrency)}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Жами қиймат
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.pricePerKg && detailPlan.quantityKg
+                        ? formatPrice(detailPlan.pricePerKg * detailPlan.quantityKg, detailPlan.priceCurrency)
+                        : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Админ
+                    </Typography>
+                    <Typography variant="subtitle2">{detailPlan.admin || '—'}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Материал
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.material} {detailPlan.subMaterial ? `· ${detailPlan.subMaterial}` : ''}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Плёнка қалинлиги (мкм)
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.filmThickness ? `${detailPlan.filmThickness} мкм` : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Плёнка кенглиги (мм)
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.filmWidth ? `${detailPlan.filmWidth} мм` : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Силиндр узунлиги (мм)
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.cylinderLength ? `${detailPlan.cylinderLength} мм` : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Силиндрлар сони
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.cylinderCount ? `${detailPlan.cylinderCount}` : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Бошланиш сана
+                    </Typography>
+                    <Typography variant="subtitle2">{formatDate(detailPlan.startDate)}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Тугаш сана
+                    </Typography>
+                    <Typography variant="subtitle2">{formatDate(detailPlan.endDate)}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Stanok / Brigada
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {MACHINE_OPTIONS.find((m) => m.value === detailPlan.machineType)?.label || '-'} ·{' '}
+                      {detailPlan.groupName || '-'}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Изох
+                    </Typography>
+                    <Typography variant="body2">
+                      {detailPlan.note || 'Izoh kiritilmagan'}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Stack>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Maʼlumot topilmadi.
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={detailDialog.onFalse}>Yopish</Button>
           </DialogActions>
         </Dialog>
       </Container>
