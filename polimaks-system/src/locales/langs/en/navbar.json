@@ -38,5 +38,9 @@
   "ishlab_chiqarish_nazorat": "Production Control",
   "ishlab_chiqarish_hisobotlar": "Production Reports",
   "ishlab_chiqarish_uskunalar": "Production Equipment",
-  "buyurtma_planlashtirish": "Order Planning"
+  "buyurtma_planlashtirish": "Order Planning",
+  "reska_panel": "Reska panel",
+  "reska_panel_overview": "Overview",
+  "reska_panel_queue": "Queue",
+  "reska_panel_reports": "Reports"
 }

@@ -4,6 +4,7 @@ export const paths = {
   page500: '/error/500',
   components: '/components',
   auth: {
+    root: `/auth`,
     signIn: `/auth/sign-in`,
     signInPhone: `/auth/sign-in-phone`,
     signUp: `/auth/sign-up`,
@@ -64,6 +65,12 @@ export const paths = {
     },
     buyurtmaPlanlashtirish: {
       root: '/buyurtma-planlashtirish',
+    },
+    reskaPanel: {
+      root: '/reska-panel',
+      overview: '/reska-panel/overview',
+      queue: '/reska-panel/queue',
+      reports: '/reska-panel/reports',
     },
     user: {
       root: `/user`,

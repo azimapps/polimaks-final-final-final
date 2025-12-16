@@ -38,5 +38,9 @@
   "ishlab_chiqarish_nazorat": "Контроль производства",
   "ishlab_chiqarish_hisobotlar": "Отчеты производства",
   "ishlab_chiqarish_uskunalar": "Оборудование производства",
-  "buyurtma_planlashtirish": "Планирование заказов"
+  "buyurtma_planlashtirish": "Планирование заказов",
+  "reska_panel": "Панель резки",
+  "reska_panel_overview": "Обзор",
+  "reska_panel_queue": "Очередь",
+  "reska_panel_reports": "Отчеты"
 }

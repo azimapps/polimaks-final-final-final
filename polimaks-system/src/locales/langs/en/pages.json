@@ -938,6 +938,39 @@
     "importHint": "Selected orders will be imported with default status 'Planning'. You can edit them after import.",
     "importSelected": "Import Selected"
   },
+  "reskaPanel": {
+    "title": "Reska panel",
+    "subtitle": "Dedicated view for reska operator",
+    "overview": {
+      "heading": "Reska overview",
+      "description": "Empty space reserved for reska overview.",
+      "placeholder": "This page is intentionally empty for now."
+    },
+    "queue": {
+      "heading": "Queue",
+      "description": "Empty slot for upcoming queue items.",
+      "placeholder": "Queue page placeholder."
+    },
+    "reports": {
+      "heading": "Reports",
+      "description": "Empty area for reska reports.",
+      "placeholder": "Reports page placeholder."
+    }
+  },
+  "roleSelect": {
+    "title": "Choose your workspace",
+    "subtitle": "Pick which panel you want to enter.",
+    "ceo": {
+      "heading": "CEO panel",
+      "description": "Full access to the main dashboard.",
+      "cta": "Enter CEO panel"
+    },
+    "reska": {
+      "heading": "Reska panel",
+      "description": "Focused view for the cutting operator.",
+      "cta": "Enter Reska panel"
+    }
+  },
   "clientsAgreements": {
     "title": "Agreements",
     "monthlyLimits": "Monthly limits",

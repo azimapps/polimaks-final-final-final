@@ -939,6 +939,39 @@
     "importHint": "Tanlangan buyurtmalar 'Rejalashtirish' statusida import qilinadi. Import qilgandan so'ng ularni tahrirlashingiz mumkin.",
     "importSelected": "Tanlanganlarni Import qilish"
   },
+  "reskaPanel": {
+    "title": "Reska paneli",
+    "subtitle": "Reskachi uchun alohida sahifa",
+    "overview": {
+      "heading": "Reska umumiy",
+      "description": "Hozircha umumiy ko'rinish uchun bo'sh joy.",
+      "placeholder": "Bu sahifa hozircha bo'sh."
+    },
+    "queue": {
+      "heading": "Navbat",
+      "description": "Reska navbat jadvali uchun bo'sh joy.",
+      "placeholder": "Navbat sahifasi hozircha bo'sh."
+    },
+    "reports": {
+      "heading": "Hisobotlar",
+      "description": "Reska hisobotlari uchun bo'sh joy.",
+      "placeholder": "Hisobotlar sahifasi hozircha bo'sh."
+    }
+  },
+  "roleSelect": {
+    "title": "Panelni tanlang",
+    "subtitle": "Qaysi panelga kirishni tanlang.",
+    "ceo": {
+      "heading": "CEO paneli",
+      "description": "Asosiy boshqaruv paneli, to'liq kirish.",
+      "cta": "CEO paneliga kirish"
+    },
+    "reska": {
+      "heading": "Reska paneli",
+      "description": "Reskachi uchun soddalashtirilgan ko'rinish.",
+      "cta": "Reska paneliga kirish"
+    }
+  },
   "clientsAgreements": {
     "title": "Kelishuvlar",
     "monthlyLimits": "Oylik limitlar",

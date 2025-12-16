@@ -4,6 +4,7 @@ import { Outlet } from 'react-router';
 import { lazy, Suspense } from 'react';
 
 import { DashboardLayout } from 'src/layouts/dashboard';
+import { useReskaNavData } from 'src/layouts/nav-config-reska';
 
 import { LoadingScreen } from 'src/components/loading-screen';
 
@@ -65,6 +66,9 @@ const IshlabChiqarishNazorat = lazy(() => import('src/pages/dashboard/ishlab-chi
 const IshlabChiqarishHisobotlar = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/hisobotlar'));
 const IshlabChiqarishUskunalar = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/uskunalar'));
 const BuyurtmaPlanlashtirish = lazy(() => import('src/pages/dashboard/buyurtma-planlashtirish/buyurtma-planlashtirish'));
+const ReskaPanelOverviewPage = lazy(() => import('src/pages/dashboard/reska-panel/overview'));
+const ReskaPanelQueuePage = lazy(() => import('src/pages/dashboard/reska-panel/queue'));
+const ReskaPanelReportsPage = lazy(() => import('src/pages/dashboard/reska-panel/reports'));
 // ----------------------------------------------------------------------
 
 function SuspenseOutlet() {
@@ -81,6 +85,15 @@ const dashboardLayout = () => (
     <SuspenseOutlet />
   </DashboardLayout>
 );
+
+const ReskaPanelLayout = () => {
+  const reskaNavData = useReskaNavData();
+  return (
+    <DashboardLayout slotProps={{ nav: { data: reskaNavData } }}>
+      <SuspenseOutlet />
+    </DashboardLayout>
+  );
+};
 
 // ----------------------------------------------------------------------
 
@@ -162,6 +175,20 @@ export const routesSection: RouteObject[] = [
             path: 'buyurtma-planlashtirish',
             element: <BuyurtmaPlanlashtirish />,
           },
+    ],
+  },
+  {
+    path: 'reska-panel',
+    element: (
+      <AuthGuard>
+        <ReskaPanelLayout />
+      </AuthGuard>
+    ),
+    children: [
+      { index: true, element: <ReskaPanelOverviewPage /> },
+      { path: 'overview', element: <ReskaPanelOverviewPage /> },
+      { path: 'queue', element: <ReskaPanelQueuePage /> },
+      { path: 'reports', element: <ReskaPanelReportsPage /> },
     ],
   },
 
