@@ -556,7 +556,7 @@ export default function BuyurtmaPlanlashtirish() {
                           sx={{ mr: 0.5 }}
                           color="primary"
                         >
-                          <Iconify icon="solar:info-square-bold" />
+                          <Iconify icon="solar:info-circle-bold" />
                         </IconButton>
                         <IconButton onClick={(e) => handleOpenMenu(e, plan)}>
                           <Iconify icon="eva:more-vertical-fill" />

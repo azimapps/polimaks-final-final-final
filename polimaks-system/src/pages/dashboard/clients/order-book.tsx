@@ -284,6 +284,7 @@ export default function ClientsOrderBookPage() {
       filmWidth: '',
       cylinderLength: '',
       cylinderCount: '',
+      cylinderAylanasi: '',
       startDate: todayISO(),
       endDate: todayISO(),
       pricePerKg: '',
