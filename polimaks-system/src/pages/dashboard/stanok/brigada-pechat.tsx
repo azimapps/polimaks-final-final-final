@@ -118,8 +118,10 @@ export default function BrigadaPechatPage() {
 
   const initialData = useMemo<Group[]>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
+      const keysToTry = machineId ? [storageKey, STORAGE_KEY] : [storageKey];
+      for (const key of keysToTry) {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
         try {
           return (JSON.parse(stored) as any[]).map(normalizeGroup);
         } catch {
@@ -127,7 +129,7 @@ export default function BrigadaPechatPage() {
         }
       }
     }
-    return machineId ? [] : (data as any[]).map(normalizeGroup);
+    return (data as any[]).map(normalizeGroup);
   }, [machineId, storageKey]);
 
   const [items, setItems] = useState<Group[]>(initialData);

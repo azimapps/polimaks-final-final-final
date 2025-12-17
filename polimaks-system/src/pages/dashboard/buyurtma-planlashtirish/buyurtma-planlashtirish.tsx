@@ -1,5 +1,5 @@
 /* eslint-disable perfectionist/sort-imports */
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
@@ -34,6 +34,9 @@ import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
 
+import brigadaPechatSeed from 'src/data/stanok-brigada-pechat.json';
+import brigadaReskaSeed from 'src/data/stanok-brigada-reska.json';
+import brigadaLaminatsiyaSeed from 'src/data/stanok-brigada-laminatsiya.json';
 import stanokPechatSeed from 'src/data/stanok-pechat.json';
 import stanokReskaSeed from 'src/data/stanok-reska.json';
 import stanokLaminatsiyaSeed from 'src/data/stanok-laminatsiya.json';
@@ -300,21 +303,28 @@ const loadPlans = (): PlanItem[] => {
 };
 
 const loadBrigadaGroups = (machineType: MachineType, machineId?: string): BrigadaGroup[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const baseKey = BRIGADA_STORAGE_KEYS[machineType];
-    const keysToTry = machineId ? [`${baseKey}-${machineId}`, baseKey] : [baseKey];
-    for (const key of keysToTry) {
-      const stored = localStorage.getItem(key);
-      if (!stored) continue;
-      const parsed = JSON.parse(stored) as any[];
-      const normalized = parsed.map((item, idx) => normalizeBrigadaGroup(item, idx));
-      if (normalized.length) return normalized;
+  if (typeof window !== 'undefined') {
+    try {
+      const baseKey = BRIGADA_STORAGE_KEYS[machineType];
+      const keysToTry = machineId ? [`${baseKey}-${machineId}`, baseKey] : [baseKey];
+      for (const key of keysToTry) {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
+        const parsed = JSON.parse(stored) as any[];
+        const normalized = parsed.map((item, idx) => normalizeBrigadaGroup(item, idx));
+        if (normalized.length) return normalized;
+      }
+    } catch {
+      // ignore parsing errors
     }
-  } catch {
-    // ignore parsing errors
   }
-  return [];
+
+  const seedMap: Record<MachineType, any[]> = {
+    pechat: brigadaPechatSeed as any[],
+    reska: brigadaReskaSeed as any[],
+    laminatsiya: brigadaLaminatsiyaSeed as any[],
+  };
+  return seedMap[machineType].map((item, idx) => normalizeBrigadaGroup(item, idx));
 };
 
 const loadMachines = (machineType: MachineType): Machine[] => {

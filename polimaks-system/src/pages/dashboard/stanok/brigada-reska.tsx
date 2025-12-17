@@ -1,7 +1,7 @@
 /* eslint-disable perfectionist/sort-imports */
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useBoolean } from 'minimal-shared/hooks';
 
 import Autocomplete from '@mui/material/Autocomplete';
@@ -118,8 +118,10 @@ export default function BrigadaReskaPage() {
 
   const initialData = useMemo<Group[]>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
+      const keysToTry = machineId ? [storageKey, STORAGE_KEY] : [storageKey];
+      for (const key of keysToTry) {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
         try {
           return (JSON.parse(stored) as any[]).map(normalizeGroup);
         } catch {
@@ -127,7 +129,7 @@ export default function BrigadaReskaPage() {
         }
       }
     }
-    return machineId ? [] : (data as any[]).map(normalizeGroup);
+    return (data as any[]).map(normalizeGroup);
   }, [machineId, storageKey]);
 
   const [items, setItems] = useState<Group[]>(initialData);
@@ -142,6 +144,14 @@ export default function BrigadaReskaPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const existing = localStorage.getItem(storageKey);
+    if (!existing) {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+    }
+  }, [items, storageKey]);
 
   const setItemsAndPersist = (updater: (prev: Group[]) => Group[]) => {
     setItems((prev) => {
