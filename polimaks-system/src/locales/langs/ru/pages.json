@@ -944,10 +944,15 @@
   "reskaPanel": {
     "title": "Панель резки",
     "subtitle": "Отдельная панель для резчика",
+    "machineLabel": "Станок",
+    "brigadaLabel": "Бригада",
+    "noMachines": "Станки не найдены",
+    "noBrigadas": "Бригады не найдены",
     "overview": {
       "heading": "Обзор",
       "description": "Пустая зона для общего обзора резки.",
-      "placeholder": "Страница пока пустая."
+      "placeholder": "Страница пока пустая.",
+      "selection": "Выбрано: {{machine}} · {{brigada}}"
     },
     "queue": {
       "heading": "Очередь",

@@ -944,10 +944,15 @@
   "reskaPanel": {
     "title": "Reska paneli",
     "subtitle": "Reskachi uchun alohida sahifa",
+    "machineLabel": "Stanok",
+    "brigadaLabel": "Brigada",
+    "noMachines": "Stanoklar topilmadi",
+    "noBrigadas": "Brigadalar topilmadi",
     "overview": {
       "heading": "Reska umumiy",
       "description": "Hozircha umumiy ko'rinish uchun bo'sh joy.",
-      "placeholder": "Bu sahifa hozircha bo'sh."
+      "placeholder": "Bu sahifa hozircha bo'sh.",
+      "selection": "Tanlangan: {{machine}} · {{brigada}}"
     },
     "queue": {
       "heading": "Navbat",

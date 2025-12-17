@@ -943,10 +943,15 @@
   "reskaPanel": {
     "title": "Reska panel",
     "subtitle": "Dedicated view for reska operator",
+    "machineLabel": "Machine",
+    "brigadaLabel": "Brigada",
+    "noMachines": "No machines found",
+    "noBrigadas": "No brigadas found",
     "overview": {
       "heading": "Reska overview",
       "description": "Empty space reserved for reska overview.",
-      "placeholder": "This page is intentionally empty for now."
+      "placeholder": "This page is intentionally empty for now.",
+      "selection": "Selected: {{machine}} · {{brigada}}"
     },
     "queue": {
       "heading": "Queue",

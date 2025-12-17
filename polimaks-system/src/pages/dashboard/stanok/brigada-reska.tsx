@@ -203,7 +203,6 @@ export default function BrigadaReskaPage() {
 
   const closeMenu = () => {
     setMenuAnchor(null);
-    setMenuItem(null);
   };
 
   const addPerson = () => {

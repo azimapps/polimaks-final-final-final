@@ -944,10 +944,15 @@
   "reskaPanel": {
     "title": "Реска панели",
     "subtitle": "Рескачи учун алоҳида саҳифа",
+    "machineLabel": "Станок",
+    "brigadaLabel": "Бригада",
+    "noMachines": "Станоклар топилмади",
+    "noBrigadas": "Бригада топилмади",
     "overview": {
       "heading": "Реска умумий",
       "description": "Ҳозирча умумий кўриниш учун бўш жой.",
-      "placeholder": "Бу саҳифа ҳозирча бўш."
+      "placeholder": "Бу саҳифа ҳозирча бўш.",
+      "selection": "Танланган: {{machine}} · {{brigada}}"
     },
     "queue": {
       "heading": "Навбат",
