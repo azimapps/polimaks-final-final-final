@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -18,9 +18,8 @@ import Typography from '@mui/material/Typography';
 
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
-
-import brigadaReskaSeed from 'src/data/stanok-brigada-reska.json';
 import stanokReskaSeed from 'src/data/stanok-reska.json';
+import brigadaReskaSeed from 'src/data/stanok-brigada-reska.json';
 
 type PlanItem = {
   id: string;
