@@ -290,8 +290,8 @@ export default function KleyPage() {
               >
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: 160 }}>{t('kleyPage.receivedDate')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('kleyPage.supplier')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('kleyPage.receivedDate')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('kleyPage.numberIdentifier')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>{t('kleyPage.type')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('kleyPage.name')}</TableCell>
@@ -335,12 +335,12 @@ export default function KleyPage() {
                     items.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell>
-                          <Typography variant="body2">{item.receivedDate}</Typography>
-                        </TableCell>
-                        <TableCell>
                           <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
                             {item.supplier || '—'}
                           </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.receivedDate}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.numberIdentifier}</Typography>

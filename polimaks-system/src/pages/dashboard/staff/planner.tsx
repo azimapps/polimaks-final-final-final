@@ -1,26 +1,10 @@
-import Stack from '@mui/material/Stack';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
+import { StaffSimplePage, type StaffMember } from './staff-template';
 
-import { CONFIG } from 'src/global-config';
-import { useTranslate } from 'src/locales';
+const PLANNER_SEED: StaffMember[] = [
+  { id: 'plan-1', name: 'Production planner', phone: '998765432', description: 'Slots jobs and capacities' },
+  { id: 'plan-2', name: 'Shift coordinator', phone: '901119988', description: 'Coordinates shifts and changes' },
+];
 
 export default function StaffPlannerPage() {
-  const { t } = useTranslate('pages');
-
-  const title = `${t('staff.items.planner.title')} | ${CONFIG.appName}`;
-
-  return (
-    <>
-      <title>{title}</title>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Stack spacing={1}>
-          <Typography variant="h4">{t('staff.items.planner.title')}</Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {t('staff.items.planner.description')}
-          </Typography>
-        </Stack>
-      </Container>
-    </>
-  );
+  return <StaffSimplePage roleKey="planner" storageKey="staff-planner" seed={PLANNER_SEED} />;
 }

@@ -550,7 +550,20 @@
     "items": {
       "crm": {
         "title": "CRM",
-        "description": "Customer touchpoints, leads, and account owners."
+        "description": "Customer touchpoints, leads, and account owners.",
+        "name": "Full name",
+        "phone": "Phone (UZ)",
+        "phoneHint": "Enter a 9-digit UZ number. Format: (##) ###-##-##",
+        "descriptionLabel": "Notes",
+        "add": "Add CRM staff",
+        "edit": "Edit CRM staff",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this CRM record?",
+        "deleteHint": "You can add them back later.",
+        "empty": "No CRM staff yet.",
+        "actions": "Actions"
       },
       "worker": {
         "title": "Workers",
@@ -571,11 +584,37 @@
       },
       "accountant": {
         "title": "Accountants",
-        "description": "Finance and bookkeeping staff."
+        "description": "Finance and bookkeeping staff.",
+        "name": "Full name",
+        "phone": "Phone (UZ)",
+        "phoneHint": "Enter a 9-digit UZ number. Format: (##) ###-##-##",
+        "descriptionLabel": "Notes",
+        "add": "Add accountant",
+        "edit": "Edit accountant",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this accountant?",
+        "deleteHint": "You can add them back later.",
+        "empty": "No accountants yet.",
+        "actions": "Actions"
       },
       "planner": {
         "title": "Planners",
-        "description": "Production and schedule planners."
+        "description": "Production and schedule planners.",
+        "name": "Full name",
+        "phone": "Phone (UZ)",
+        "phoneHint": "Enter a 9-digit UZ number. Format: (##) ###-##-##",
+        "descriptionLabel": "Notes",
+        "add": "Add planner",
+        "edit": "Edit planner",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this planner?",
+        "deleteHint": "You can add them back later.",
+        "empty": "No planners yet.",
+        "actions": "Actions"
       }
     }
   },

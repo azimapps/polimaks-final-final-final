@@ -264,12 +264,12 @@ export default function SilindirPage() {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ minWidth: 180 }}>{t('silindirPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('silindirPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.originLabel')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.length')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.diameter')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('silindirPage.usage')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('silindirPage.price')}</TableCell>
-                    <TableCell sx={{ minWidth: 180 }}>{t('silindirPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 260 }}>{t('silindirPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('silindirPage.actions')}
@@ -305,6 +305,9 @@ export default function SilindirPage() {
                         <TableCell>
                           <Typography variant="body2">{item.createdDate}</Typography>
                         </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.seriyaNumber}</Typography>
+                        </TableCell>
                         <TableCell sx={{ textTransform: 'capitalize' }}>
                           <Typography variant="subtitle2">{originLabel(item.origin)}</Typography>
                         </TableCell>
@@ -328,9 +331,6 @@ export default function SilindirPage() {
                           <Typography variant="body2">
                             {item.price.toLocaleString()} {currencyLabel(item.priceCurrency)}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.seriyaNumber}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography

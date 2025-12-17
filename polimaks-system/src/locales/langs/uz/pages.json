@@ -551,7 +551,20 @@
     "items": {
       "crm": {
         "title": "CRM",
-        "description": "Mijozlar bilan aloqa, lidlar va akkaunt egalari."
+        "description": "Mijozlar bilan aloqa, lidlar va akkaunt egalari.",
+        "name": "To'liq ism",
+        "phone": "Telefon (UZ)",
+        "phoneHint": "9 raqam kiriting. Format: (##) ###-##-##",
+        "descriptionLabel": "Izoh",
+        "add": "CRM xodim qo'shish",
+        "edit": "CRM xodimni tahrirlash",
+        "save": "Saqlash",
+        "cancel": "Bekor qilish",
+        "delete": "O'chirish",
+        "deleteConfirm": "Ushbu CRM xodimini o'chirasizmi?",
+        "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+        "empty": "Hozircha CRM xodimlari yo'q.",
+        "actions": "Amallar"
       },
       "worker": {
         "title": "Ishchilar",
@@ -572,11 +585,37 @@
       },
       "accountant": {
         "title": "Buxgalterlar",
-        "description": "Moliya va buxgalteriya hisobi."
+        "description": "Moliya va buxgalteriya hisobi.",
+        "name": "To'liq ism",
+        "phone": "Telefon (UZ)",
+        "phoneHint": "9 raqam kiriting. Format: (##) ###-##-##",
+        "descriptionLabel": "Izoh",
+        "add": "Buxgalter qo'shish",
+        "edit": "Buxgalterni tahrirlash",
+        "save": "Saqlash",
+        "cancel": "Bekor qilish",
+        "delete": "O'chirish",
+        "deleteConfirm": "Ushbu buxgalterni o'chirasizmi?",
+        "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+        "empty": "Hozircha buxgalterlar yo'q.",
+        "actions": "Amallar"
       },
       "planner": {
         "title": "Rejalashtiruvchilar",
-        "description": "Ishlab chiqarish va grafik rejalari."
+        "description": "Ishlab chiqarish va grafik rejalari.",
+        "name": "To'liq ism",
+        "phone": "Telefon (UZ)",
+        "phoneHint": "9 raqam kiriting. Format: (##) ###-##-##",
+        "descriptionLabel": "Izoh",
+        "add": "Rejalashtiruvchi qo'shish",
+        "edit": "Rejalashtiruvchini tahrirlash",
+        "save": "Saqlash",
+        "cancel": "Bekor qilish",
+        "delete": "O'chirish",
+        "deleteConfirm": "Ushbu rejalashtiruvchini o'chirasizmi?",
+        "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+        "empty": "Hozircha rejalashtiruvchilar yo'q.",
+        "actions": "Amallar"
       }
     }
   },

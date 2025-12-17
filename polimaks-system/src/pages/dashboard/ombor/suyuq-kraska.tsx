@@ -256,14 +256,14 @@ export default function SuyuqKraskaPage() {
               >
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={{ minWidth: 200 }}>{t('suyuqKraskaPage.supplier')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.marka')}</TableCell>
                     <TableCell sx={{ minWidth: 220 }}>{t('suyuqKraskaPage.color')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('suyuqKraskaPage.totalKg')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('suyuqKraskaPage.price')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('suyuqKraskaPage.totalPrice')}</TableCell>
-                    <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.seriya')}</TableCell>
-                    <TableCell sx={{ minWidth: 180 }}>{t('suyuqKraskaPage.receivedDate')}</TableCell>
-                    <TableCell sx={{ minWidth: 200 }}>{t('suyuqKraskaPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 320 }}>{t('suyuqKraskaPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('suyuqKraskaPage.actions')}
@@ -296,6 +296,17 @@ export default function SuyuqKraskaPage() {
                   ) : (
                     items.map((item) => (
                       <TableRow key={item.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.supplier || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.seriyaNumber}</Typography>
+                        </TableCell>
                         <TableCell>
                           <Typography variant="body2">{item.marka || '—'}</Typography>
                         </TableCell>
@@ -333,17 +344,6 @@ export default function SuyuqKraskaPage() {
                           <Typography variant="body2">
                             {(item.totalKg * item.pricePerKg).toLocaleString()}{' '}
                             {currencyLabel(item.priceCurrency)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.seriyaNumber}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.createdDate}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                            {item.supplier || '—'}
                           </Typography>
                         </TableCell>
                         <TableCell>

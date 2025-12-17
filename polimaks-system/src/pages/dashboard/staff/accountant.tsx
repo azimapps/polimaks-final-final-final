@@ -1,26 +1,10 @@
-import Stack from '@mui/material/Stack';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
+import { StaffSimplePage, type StaffMember } from './staff-template';
 
-import { CONFIG } from 'src/global-config';
-import { useTranslate } from 'src/locales';
+const ACCOUNTANT_SEED: StaffMember[] = [
+  { id: 'acc-1', name: 'Lead accountant', phone: '907654321', description: 'Payroll and invoicing' },
+  { id: 'acc-2', name: 'Assistant accountant', phone: '935551122', description: 'Payables and receipts' },
+];
 
 export default function StaffAccountantPage() {
-  const { t } = useTranslate('pages');
-
-  const title = `${t('staff.items.accountant.title')} | ${CONFIG.appName}`;
-
-  return (
-    <>
-      <title>{title}</title>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Stack spacing={1}>
-          <Typography variant="h4">{t('staff.items.accountant.title')}</Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {t('staff.items.accountant.description')}
-          </Typography>
-        </Stack>
-      </Container>
-    </>
-  );
+  return <StaffSimplePage roleKey="accountant" storageKey="staff-accountant" seed={ACCOUNTANT_SEED} />;
 }
