@@ -913,6 +913,8 @@
     "filmWidth": "Film Width",
     "cylinderLength": "Cylinder Length",
     "cylinderCount": "Number of Cylinders",
+    "machineTypeLabel": "Machine type",
+    "machineLabel": "Machine",
     "printingMachine": "Printing Machine",
     "selectMachine": "Select machine",
     "responsiblePerson": "Responsible Person",

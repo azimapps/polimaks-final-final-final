@@ -1,6 +1,6 @@
 import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
-import Grid2 from '@mui/material/Unstable_Grid2';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -45,38 +45,43 @@ export default function RoleSelectPage() {
           </Typography>
         </Stack>
 
-        <Grid2 container spacing={3}>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 3,
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+          }}
+        >
           {roles.map((role) => (
-            <Grid2 key={role.key} xs={12} md={6}>
-              <Card
-                variant="outlined"
-                sx={{
-                  p: 3,
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: 2,
-                }}
+            <Card
+              key={role.key}
+              variant="outlined"
+              sx={{
+                p: 3,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: 2,
+              }}
+            >
+              <Stack spacing={1}>
+                <Typography variant="h5">{role.heading}</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  {role.description}
+                </Typography>
+              </Stack>
+              <Button
+                component={RouterLink}
+                href={role.href}
+                variant="contained"
+                color={role.key === 'reska' ? 'secondary' : 'primary'}
               >
-                <Stack spacing={1}>
-                  <Typography variant="h5">{role.heading}</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    {role.description}
-                  </Typography>
-                </Stack>
-                <Button
-                  component={RouterLink}
-                  href={role.href}
-                  variant="contained"
-                  color={role.key === 'reska' ? 'secondary' : 'primary'}
-                >
-                  {role.cta}
-                </Button>
-              </Card>
-            </Grid2>
+                {role.cta}
+              </Button>
+            </Card>
           ))}
-        </Grid2>
+        </Box>
       </Container>
     </>
   );

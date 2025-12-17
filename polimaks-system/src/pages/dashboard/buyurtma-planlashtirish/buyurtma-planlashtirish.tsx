@@ -34,13 +34,14 @@ import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
 
-import brigadaPechatSeed from 'src/data/stanok-brigada-pechat.json';
-import brigadaReskaSeed from 'src/data/stanok-brigada-reska.json';
-import brigadaLaminatsiyaSeed from 'src/data/stanok-brigada-laminatsiya.json';
+import stanokPechatSeed from 'src/data/stanok-pechat.json';
+import stanokReskaSeed from 'src/data/stanok-reska.json';
+import stanokLaminatsiyaSeed from 'src/data/stanok-laminatsiya.json';
 
 type Material = 'BOPP' | 'CPP' | 'PE' | 'PET';
 type Currency = 'USD' | 'EUR' | 'RUB' | 'UZS';
 type MachineType = 'pechat' | 'reska' | 'laminatsiya';
+type Machine = { id: string; name: string };
 type SortOption = 'default' | 'cylinderAsc' | 'cylinderDesc';
 
 type OrderBookItem = {
@@ -83,6 +84,8 @@ type PlanItem = {
   machineType: MachineType;
   groupId: string;
   groupName: string;
+  machineId: string;
+  machineName: string;
   orderDate?: string;
   startDate: string;
   endDate: string;
@@ -102,6 +105,7 @@ type FormState = {
   orderId: string;
   machineType: MachineType | '';
   groupId: string;
+  machineId: string;
   startDate: string;
   endDate: string;
   note: string;
@@ -115,6 +119,12 @@ const BRIGADA_STORAGE_KEYS: Record<MachineType, string> = {
   pechat: 'stanok-brigada-pechat',
   reska: 'stanok-brigada-reska',
   laminatsiya: 'stanok-brigada-laminatsiya',
+};
+
+const MACHINE_STORAGE_KEYS: Record<MachineType, string> = {
+  pechat: 'stanok-pechat',
+  reska: 'stanok-reska',
+  laminatsiya: 'stanok-laminatsiya',
 };
 
 const MACHINE_OPTIONS: { value: MachineType; label: string }[] = [
@@ -227,6 +237,8 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   material: raw?.material || '',
   subMaterial: raw?.subMaterial || '',
   machineType: (raw?.machineType as MachineType) || 'pechat',
+  machineId: raw?.machineId || '',
+  machineName: raw?.machineName || '',
   groupId: raw?.groupId || '',
   groupName: raw?.groupName || raw?.printingMachine || '',
   orderDate: raw?.orderDate || raw?.date || '',
@@ -287,31 +299,61 @@ const loadPlans = (): PlanItem[] => {
   return [];
 };
 
-const loadBrigadaGroups = (machineType: MachineType): BrigadaGroup[] => {
+const loadBrigadaGroups = (machineType: MachineType, machineId?: string): BrigadaGroup[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const baseKey = BRIGADA_STORAGE_KEYS[machineType];
+    const keysToTry = machineId ? [`${baseKey}-${machineId}`, baseKey] : [baseKey];
+    for (const key of keysToTry) {
+      const stored = localStorage.getItem(key);
+      if (!stored) continue;
+      const parsed = JSON.parse(stored) as any[];
+      const normalized = parsed.map((item, idx) => normalizeBrigadaGroup(item, idx));
+      if (normalized.length) return normalized;
+    }
+  } catch {
+    // ignore parsing errors
+  }
+  return [];
+};
+
+const loadMachines = (machineType: MachineType): Machine[] => {
   const seedMap: Record<MachineType, any[]> = {
-    pechat: brigadaPechatSeed as any[],
-    reska: brigadaReskaSeed as any[],
-    laminatsiya: brigadaLaminatsiyaSeed as any[],
+    pechat: stanokPechatSeed as any[],
+    reska: stanokReskaSeed as any[],
+    laminatsiya: stanokLaminatsiyaSeed as any[],
   };
+
+  const resolveSeed = (): Machine[] =>
+    seedMap[machineType].map((item, idx) => ({
+      id: item?.id || `machine-${idx}`,
+      name: item?.name || `Machine ${idx + 1}`,
+    }));
+
   if (typeof window !== 'undefined') {
     try {
-      const stored = localStorage.getItem(BRIGADA_STORAGE_KEYS[machineType]);
+      const stored = localStorage.getItem(MACHINE_STORAGE_KEYS[machineType]);
       if (stored) {
         const parsed = JSON.parse(stored) as any[];
-        const normalized = parsed.map((item, idx) => normalizeBrigadaGroup(item, idx));
+        const normalized = parsed.map((item, idx) => ({
+          id: item?.id || `machine-${idx}`,
+          name: item?.name || `Machine ${idx + 1}`,
+        }));
         if (normalized.length) return normalized;
       }
     } catch {
-      // ignore parsing errors
+      // ignore parse errors
     }
   }
-  return seedMap[machineType].map((item, idx) => normalizeBrigadaGroup(item, idx));
+
+  return resolveSeed();
 };
 
 const defaultFormState: FormState = {
   orderId: '',
   machineType: '',
   groupId: '',
+  machineId: '',
   startDate: todayISO(),
   endDate: todayISO(),
   note: '',
@@ -326,6 +368,7 @@ export default function BuyurtmaPlanlashtirish() {
   const [orders, setOrders] = useState<OrderBookItem[]>(() => loadOrderBookItems());
   const [selectedOrder, setSelectedOrder] = useState<OrderBookItem | null>(null);
   const [availableGroups, setAvailableGroups] = useState<BrigadaGroup[]>([]);
+  const [availableMachines, setAvailableMachines] = useState<Machine[]>([]);
 
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [activePlan, setActivePlan] = useState<PlanItem | null>(null);
@@ -362,11 +405,13 @@ export default function BuyurtmaPlanlashtirish() {
         orders.find((item) => item.orderNumber === activePlan.orderNumber) ||
         null;
       setSelectedOrder(orderFromBook);
-      setAvailableGroups(loadBrigadaGroups(activePlan.machineType));
+      setAvailableGroups(loadBrigadaGroups(activePlan.machineType, activePlan.machineId));
+      setAvailableMachines(loadMachines(activePlan.machineType));
       setFormData({
         id: activePlan.id,
         orderId: orderFromBook?.id || activePlan.orderId,
         machineType: activePlan.machineType,
+        machineId: activePlan.machineId,
         groupId: activePlan.groupId,
         startDate: activePlan.startDate,
         endDate: activePlan.endDate,
@@ -394,15 +439,18 @@ export default function BuyurtmaPlanlashtirish() {
     setFormData(defaultFormState);
     setSelectedOrder(null);
     setAvailableGroups([]);
+    setAvailableMachines([]);
     editDialog.onTrue();
   };
 
   const handleSave = () => {
-    if (!selectedOrder || !formData.machineType || !formData.groupId) {
+    if (!selectedOrder || !formData.machineType || !formData.groupId || !formData.machineId) {
       return;
     }
 
     const groupName = availableGroups.find((group) => group.id === formData.groupId)?.name || '';
+    const machineName =
+      availableMachines.find((machine) => machine.id === formData.machineId)?.name || '';
 
     const planToSave: PlanItem = {
       id: formData.id || uuidv4(),
@@ -414,6 +462,8 @@ export default function BuyurtmaPlanlashtirish() {
       material: selectedOrder.material,
       subMaterial: selectedOrder.subMaterial,
       machineType: formData.machineType,
+      machineId: formData.machineId,
+      machineName,
       groupId: formData.groupId,
       groupName,
       orderDate: selectedOrder.date,
@@ -440,7 +490,8 @@ export default function BuyurtmaPlanlashtirish() {
     editDialog.onFalse();
   };
 
-  const canSubmit = !!selectedOrder && !!formData.machineType && !!formData.groupId;
+  const canSubmit =
+    !!selectedOrder && !!formData.machineType && !!formData.groupId && !!formData.machineId;
   const sortedPlans = useMemo(() => {
     if (sortOption === 'cylinderAsc' || sortOption === 'cylinderDesc') {
       return plans
@@ -459,17 +510,35 @@ export default function BuyurtmaPlanlashtirish() {
 
   useEffect(() => {
     if (!formData.machineType) {
+      setAvailableMachines([]);
+      setAvailableGroups([]);
+      setFormData((prev) =>
+        prev.machineId || prev.groupId ? { ...prev, machineId: '', groupId: '' } : prev
+      );
+      return;
+    }
+
+    const machines = loadMachines(formData.machineType);
+    setAvailableMachines(machines);
+    setFormData((prev) => {
+      if (prev.machineId && machines.some((m) => m.id === prev.machineId)) return prev;
+      return { ...prev, machineId: machines[0]?.id || '' };
+    });
+  }, [formData.machineType]);
+
+  useEffect(() => {
+    if (!formData.machineType || !formData.machineId) {
       setAvailableGroups([]);
       setFormData((prev) => (prev.groupId ? { ...prev, groupId: '' } : prev));
       return;
     }
-    const groups = loadBrigadaGroups(formData.machineType);
+    const groups = loadBrigadaGroups(formData.machineType, formData.machineId);
     setAvailableGroups(groups);
     setFormData((prev) => {
       if (prev.groupId && groups.some((g) => g.id === prev.groupId)) return prev;
       return { ...prev, groupId: groups[0]?.id || '' };
     });
-  }, [formData.machineType]);
+  }, [formData.machineType, formData.machineId]);
 
   // Ensure Order Book stays in sync with latest localStorage (e.g., if user edits on /clients/order-book)
   useEffect(() => {
@@ -556,7 +625,12 @@ export default function BuyurtmaPlanlashtirish() {
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ py: 2 }}>
-                        {MACHINE_OPTIONS.find((m) => m.value === plan.machineType)?.label || '-'}
+                        <Typography variant="subtitle2">
+                          {MACHINE_OPTIONS.find((m) => m.value === plan.machineType)?.label || '-'}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          {plan.machineName || '—'}
+                        </Typography>
                       </TableCell>
                       <TableCell sx={{ py: 2 }}>{plan.groupName || '-'}</TableCell>
                       <TableCell sx={{ py: 2 }}>{formatDate(plan.startDate)}</TableCell>
@@ -646,20 +720,48 @@ export default function BuyurtmaPlanlashtirish() {
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth>
-                    <InputLabel>Stanok</InputLabel>
+                    <InputLabel>{t('orderPlanPage.machineTypeLabel')}</InputLabel>
                     <Select
                       value={formData.machineType || ''}
-                      label="Stanok"
+                      label={t('orderPlanPage.machineTypeLabel')}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
                           machineType: e.target.value as MachineType,
+                          machineId: '',
                         }))
                       }
                     >
                       {MACHINE_OPTIONS.map((machine) => (
                         <MenuItem key={machine.value} value={machine.value}>
                           {machine.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth disabled={!formData.machineType}>
+                    <InputLabel>{t('orderPlanPage.machineLabel')}</InputLabel>
+                    <Select
+                      value={formData.machineId}
+                      label={t('orderPlanPage.machineLabel')}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          machineId: e.target.value,
+                        }))
+                      }
+                    >
+                      {availableMachines.length === 0 && (
+                        <MenuItem value="">
+                          <em>{t('orderPlanPage.selectMachine')}</em>
+                        </MenuItem>
+                      )}
+                      {availableMachines.map((machine) => (
+                        <MenuItem key={machine.id} value={machine.id}>
+                          {machine.name}
                         </MenuItem>
                       ))}
                     </Select>
@@ -916,7 +1018,7 @@ export default function BuyurtmaPlanlashtirish() {
                     </Typography>
                     <Typography variant="subtitle2">
                       {MACHINE_OPTIONS.find((m) => m.value === detailPlan.machineType)?.label || '-'} ·{' '}
-                      {detailPlan.groupName || '-'}
+                      {detailPlan.machineName || '—'} · {detailPlan.groupName || '-'}
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12 }}>

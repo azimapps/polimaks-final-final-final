@@ -914,6 +914,8 @@
     "filmWidth": "Ширина пленки",
     "cylinderLength": "Длина цилиндра",
     "cylinderCount": "Количество цилиндров",
+    "machineTypeLabel": "Тип станка",
+    "machineLabel": "Станок",
     "printingMachine": "Печатная машина",
     "selectMachine": "Выберите машину",
     "responsiblePerson": "Ответственное лицо",
