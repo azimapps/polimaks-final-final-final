@@ -1,7 +1,7 @@
 /* eslint-disable perfectionist/sort-imports */
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'react-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useBoolean } from 'minimal-shared/hooks';
 
 import Autocomplete from '@mui/material/Autocomplete';
