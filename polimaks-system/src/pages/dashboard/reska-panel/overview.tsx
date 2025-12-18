@@ -36,7 +36,35 @@ type PlanItem = {
   groupName?: string;
 };
 
-const PLAN_STORAGE_KEY = 'orderPlansV2';
+const PLAN_STORAGE_KEY = 'reska-panel-plans';
+const PLAN_SEED: PlanItem[] = [
+  {
+    id: 'reska-plan-1',
+    orderNumber: 'RP-001',
+    clientName: 'Demo klient',
+    title: 'Kesish partiya',
+    quantityKg: 1200,
+    startDate: '2024-01-05',
+    endDate: '2024-01-06',
+    machineType: 'reska',
+    machineId: 'reska-1',
+    machineName: 'Kesish stanogi 1',
+    groupId: 'brigada-reska-1',
+    groupName: 'Reska Alpha',
+  },
+];
+
+const readLocalArray = (key: string, fallback: any[]) => {
+  if (typeof window === 'undefined') return fallback;
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
 
 // ----------------------------------------------------------------------
 
@@ -44,50 +72,46 @@ export default function ReskaOverviewPage() {
   const { t } = useTranslate('pages');
   const title = `${t('reskaPanel.title')} | ${CONFIG.appName}`;
 
-  const machines = useMemo(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('stanok-reska');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored) as any[];
-          if (parsed.length) return parsed;
-        } catch {
-          // ignore corrupted data
-        }
-      }
-    }
-    return stanokReskaSeed as any[];
-  }, []);
-
-  const [selectedMachineId, setSelectedMachineId] = useState<string>(machines[0]?.id || '');
+  const [machines, setMachines] = useState<any[]>([]);
+  const [selectedMachineId, setSelectedMachineId] = useState<string>('');
+  const [brigadas, setBrigadas] = useState<any[]>([]);
+  const [selectedBrigadaId, setSelectedBrigadaId] = useState<string>('');
   const [plans, setPlans] = useState<PlanItem[]>([]);
 
-  const brigadas = useMemo(() => {
-    if (!selectedMachineId) return [];
-    if (typeof window !== 'undefined') {
-      const keys = [`stanok-brigada-reska-${selectedMachineId}`, 'stanok-brigada-reska'];
-      for (const key of keys) {
-        const stored = localStorage.getItem(key);
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored) as any[];
-            if (parsed.length) return parsed;
-          } catch {
-            // ignore corrupted data
-          }
-        }
-      }
-    }
-    return brigadaReskaSeed as any[];
-  }, [selectedMachineId]);
+  useEffect(() => {
+    const loadMachines = () => setMachines(readLocalArray('stanok-reska', stanokReskaSeed as any[]));
+    loadMachines();
 
-  const [selectedBrigadaId, setSelectedBrigadaId] = useState<string>('');
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key) return;
+      if (event.key === 'stanok-reska') loadMachines();
+      if (event.key.startsWith('stanok-brigada-reska')) {
+        setBrigadas(readLocalArray(`stanok-brigada-reska-${selectedMachineId}`, brigadaReskaSeed as any[]));
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', onStorage);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', onStorage);
+      }
+    };
+  }, [selectedMachineId]);
 
   useEffect(() => {
     if (!selectedMachineId && machines[0]?.id) {
       setSelectedMachineId(machines[0].id);
     }
   }, [machines, selectedMachineId]);
+
+  useEffect(() => {
+    const nextBrigadas = selectedMachineId
+      ? readLocalArray(`stanok-brigada-reska-${selectedMachineId}`, brigadaReskaSeed as any[])
+      : readLocalArray('stanok-brigada-reska', brigadaReskaSeed as any[]);
+    setBrigadas(nextBrigadas);
+  }, [selectedMachineId]);
 
   useEffect(() => {
     if (!brigadas.length) {
@@ -100,7 +124,11 @@ export default function ReskaOverviewPage() {
   }, [brigadas, selectedBrigadaId]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      setPlans(PLAN_SEED);
+      return;
+    }
+
     try {
       const stored = localStorage.getItem(PLAN_STORAGE_KEY);
       if (stored) {
@@ -119,11 +147,14 @@ export default function ReskaOverviewPage() {
           groupId: p?.groupId || '',
           groupName: p?.groupName || '',
         }));
-        setPlans(mapped);
+        setPlans(mapped.length ? mapped : PLAN_SEED);
+        return;
       }
     } catch {
       // ignore parse errors
     }
+
+    setPlans(PLAN_SEED);
   }, []);
 
   const filteredPlans = useMemo(
