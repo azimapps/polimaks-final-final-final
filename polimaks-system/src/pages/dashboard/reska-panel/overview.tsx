@@ -60,7 +60,7 @@ const readLocalArray = (key: string, fallback: any[]) => {
   if (!raw) return fallback;
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length ? parsed : fallback;
+    return Array.isArray(parsed) ? parsed : fallback;
   } catch {
     return fallback;
   }
@@ -80,22 +80,36 @@ export default function ReskaOverviewPage() {
 
   useEffect(() => {
     const loadMachines = () => setMachines(readLocalArray('stanok-reska', stanokReskaSeed as any[]));
+    const loadBrigadas = () => {
+      setBrigadas(
+        selectedMachineId
+          ? readLocalArray(`stanok-brigada-reska-${selectedMachineId}`, brigadaReskaSeed as any[])
+          : readLocalArray('stanok-brigada-reska', brigadaReskaSeed as any[])
+      );
+    };
+
     loadMachines();
+    loadBrigadas();
 
     const onStorage = (event: StorageEvent) => {
       if (!event.key) return;
       if (event.key === 'stanok-reska') loadMachines();
-      if (event.key.startsWith('stanok-brigada-reska')) {
-        setBrigadas(readLocalArray(`stanok-brigada-reska-${selectedMachineId}`, brigadaReskaSeed as any[]));
-      }
+      if (event.key.startsWith('stanok-brigada-reska')) loadBrigadas();
+    };
+
+    const onFocus = () => {
+      loadMachines();
+      loadBrigadas();
     };
 
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', onStorage);
+      window.addEventListener('focus', onFocus);
     }
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('storage', onStorage);
+        window.removeEventListener('focus', onFocus);
       }
     };
   }, [selectedMachineId]);
