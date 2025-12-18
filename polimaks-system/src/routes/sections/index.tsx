@@ -48,6 +48,9 @@ const StaffCrmPage = lazy(() => import('src/pages/dashboard/staff/crm'));
 const StaffWorkerPage = lazy(() => import('src/pages/dashboard/staff/worker'));
 const StaffAccountantPage = lazy(() => import('src/pages/dashboard/staff/accountant'));
 const StaffPlannerPage = lazy(() => import('src/pages/dashboard/staff/planner'));
+const FinancePage = lazy(() => import('src/pages/dashboard/finance'));
+const FinanceIncomePage = lazy(() => import('src/pages/dashboard/finance/income'));
+const FinanceExpensePage = lazy(() => import('src/pages/dashboard/finance/expense'));
 const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
 const ClientTransactionsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-transactions')
@@ -146,6 +149,14 @@ export const routesSection: RouteObject[] = [
           { path: 'worker', element: <StaffWorkerPage /> },
           { path: 'accountant', element: <StaffAccountantPage /> },
           { path: 'planner', element: <StaffPlannerPage /> },
+        ],
+      },
+      {
+        path: 'finance',
+        children: [
+          { index: true, element: <FinancePage /> },
+          { path: 'income', element: <FinanceIncomePage /> },
+          { path: 'expense', element: <FinanceExpensePage /> },
         ],
       },
       {

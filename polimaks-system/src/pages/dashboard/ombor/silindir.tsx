@@ -41,6 +41,7 @@ type SilindirItem = {
   seriyaNumber: string;
   length: number;
   diameter: number;
+  quantity: number;
   usage: number;
   usageLimit: number;
   price: number;
@@ -67,6 +68,7 @@ export default function SilindirPage() {
             ...item,
             id: item.id || `silindir-${index}`,
             createdDate: item.createdDate || todayISO(),
+            quantity: typeof (item as any).quantity === 'number' ? (item as any).quantity : Number((item as any).quantity) || 0,
           }));
         } catch {
           // ignore corrupted data
@@ -77,6 +79,7 @@ export default function SilindirPage() {
       ...item,
       id: item.id || `silindir-${index}`,
       createdDate: item.createdDate || todayISO(),
+      quantity: typeof (item as any).quantity === 'number' ? (item as any).quantity : Number((item as any).quantity) || 0,
     }));
   }, []);
 
@@ -85,13 +88,17 @@ export default function SilindirPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<SilindirItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SilindirItem | null>(null);
+  const [filterLengthMin, setFilterLengthMin] = useState('');
+  const [filterDiameterMin, setFilterDiameterMin] = useState('');
+  const [filterQuantityMin, setFilterQuantityMin] = useState('');
   const [form, setForm] = useState<
     Omit<
       SilindirItem,
-      'id' | 'length' | 'diameter' | 'usage' | 'usageLimit' | 'price'
+      'id' | 'length' | 'diameter' | 'usage' | 'usageLimit' | 'price' | 'quantity'
     > & {
       length: string;
       diameter: string;
+      quantity: string;
       usage: string;
       usageLimit: string;
       price: string;
@@ -101,6 +108,7 @@ export default function SilindirPage() {
     seriyaNumber: '',
     length: '',
     diameter: '',
+    quantity: '',
     usage: '',
     usageLimit: '',
     price: '',
@@ -129,6 +137,7 @@ export default function SilindirPage() {
       seriyaNumber: '',
       length: '',
       diameter: '',
+      quantity: '',
       usage: '',
       usageLimit: '',
       price: '',
@@ -146,6 +155,7 @@ export default function SilindirPage() {
       seriyaNumber: item.seriyaNumber,
       length: item.length ? String(item.length) : '',
       diameter: item.diameter ? String(item.diameter) : '',
+      quantity: item.quantity ? String(item.quantity) : '',
       usage: item.usage ? String(item.usage) : '',
       usageLimit: item.usageLimit ? String(item.usageLimit) : '',
       price: item.price ? String(item.price) : '',
@@ -163,6 +173,7 @@ export default function SilindirPage() {
       seriyaNumber: form.seriyaNumber.trim(),
       length: parseFloat(form.length) || 0,
       diameter: parseFloat(form.diameter) || 0,
+      quantity: parseFloat(form.quantity) || 0,
       usage: parseFloat(form.usage) || 0,
       usageLimit: parseFloat(form.usageLimit) || 0,
       price: parseFloat(form.price) || 0,
@@ -202,6 +213,7 @@ export default function SilindirPage() {
     form.seriyaNumber.trim() &&
     parseFloat(form.length) > 0 &&
     parseFloat(form.diameter) > 0 &&
+    parseFloat(form.quantity) > 0 &&
     parseFloat(form.usage) >= 0 &&
     parseFloat(form.usageLimit) > 0 &&
     parseFloat(form.price) > 0 &&
@@ -233,6 +245,13 @@ export default function SilindirPage() {
     }
   };
 
+  const filteredItems = items.filter((item) => {
+    const lengthOk = filterLengthMin ? item.length >= Number(filterLengthMin) : true;
+    const diameterOk = filterDiameterMin ? item.diameter >= Number(filterDiameterMin) : true;
+    const quantityOk = filterQuantityMin ? item.quantity >= Number(filterQuantityMin) : true;
+    return lengthOk && diameterOk && quantityOk;
+  });
+
   return (
     <>
       <title>{title}</title>
@@ -252,6 +271,33 @@ export default function SilindirPage() {
             </Button>
           </Stack>
 
+          <Card sx={{ p: 2, display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' } }}>
+            <TextField
+              type="number"
+              size="small"
+              label={`${t('silindirPage.length')} ≥`}
+              value={filterLengthMin}
+              onChange={(e) => setFilterLengthMin(e.target.value)}
+              inputProps={{ min: 0, step: '0.01', placeholder: '0' }}
+            />
+            <TextField
+              type="number"
+              size="small"
+              label={`${t('silindirPage.diameter')} ≥`}
+              value={filterDiameterMin}
+              onChange={(e) => setFilterDiameterMin(e.target.value)}
+              inputProps={{ min: 0, step: '0.01', placeholder: '0' }}
+            />
+            <TextField
+              type="number"
+              size="small"
+              label={`${t('silindirPage.quantity')} ≥`}
+              value={filterQuantityMin}
+              onChange={(e) => setFilterQuantityMin(e.target.value)}
+              inputProps={{ min: 0, step: '1', placeholder: '0' }}
+            />
+          </Card>
+
           <Card>
             <TableContainer>
               <Table
@@ -268,6 +314,7 @@ export default function SilindirPage() {
                     <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.originLabel')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.length')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('silindirPage.diameter')}</TableCell>
+                    <TableCell sx={{ minWidth: 140 }}>{t('silindirPage.quantity')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('silindirPage.usage')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('silindirPage.price')}</TableCell>
                     <TableCell sx={{ minWidth: 260 }}>{t('silindirPage.description')}</TableCell>
@@ -277,7 +324,7 @@ export default function SilindirPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {items.length === 0 ? (
+                  {filteredItems.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8}>
                         <Box
@@ -300,7 +347,7 @@ export default function SilindirPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    items.map((item) => (
+                    filteredItems.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell>
                           <Typography variant="body2">{item.createdDate}</Typography>
@@ -320,6 +367,9 @@ export default function SilindirPage() {
                           <Typography variant="body2">
                             {item.diameter.toLocaleString()} {t('silindirPage.mm')}
                           </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.quantity.toLocaleString()}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
@@ -399,6 +449,16 @@ export default function SilindirPage() {
                   value={form.diameter}
                   onChange={(e) => setForm((prev) => ({ ...prev, diameter: e.target.value }))}
                   inputProps={{ min: 0, step: '0.01', placeholder: t('silindirPage.diameter') }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label={t('silindirPage.quantity')}
+                  value={form.quantity}
+                  onChange={(e) => setForm((prev) => ({ ...prev, quantity: e.target.value }))}
+                  inputProps={{ min: 0, step: '1', placeholder: t('silindirPage.quantity') }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>

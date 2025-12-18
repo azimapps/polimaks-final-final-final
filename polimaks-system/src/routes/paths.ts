@@ -66,6 +66,11 @@ export const paths = {
     buyurtmaPlanlashtirish: {
       root: '/buyurtma-planlashtirish',
     },
+    finance: {
+      root: '/finance',
+      income: '/finance/income',
+      expense: '/finance/expense',
+    },
     reskaPanel: {
       root: '/reska-panel',
       overview: '/reska-panel/overview',

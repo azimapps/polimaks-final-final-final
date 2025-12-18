@@ -24,6 +24,7 @@ const ICONS = {
   machine: icon('ic-odd'),
   staff: icon('ic-user'),
   clients: icon('ic-analytics'),
+  finance: icon('ic-analytics'),
   ishlabChiqarish: componentIcon('ic-extra-chart'),
   buyurtmaPlanlashtirish: componentIcon('ic-progress'),
 };
@@ -84,6 +85,15 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('clients_clients'), path: paths.dashboard.clients.clients },
               { title: t('clients_materials'), path: paths.dashboard.clients.materials },
               { title: t('clients_order_book'), path: paths.dashboard.clients.orderBook },
+            ],
+          },
+          {
+            title: t('finance'),
+            path: paths.dashboard.finance.root,
+            icon: ICONS.finance,
+            children: [
+              { title: t('finance_income'), path: paths.dashboard.finance.income },
+              { title: t('finance_expense'), path: paths.dashboard.finance.expense },
             ],
           },
           {
