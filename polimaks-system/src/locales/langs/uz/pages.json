@@ -226,9 +226,26 @@
     "table": {
       "date": "Sana",
       "type": "Turi",
+      "machine": "Stanok",
       "amount": "Miqdor (kg)",
       "note": "Izoh"
-    }
+    },
+    "form": {
+      "type": "Turi",
+      "date": "Sana",
+      "machineType": "Stanok turi",
+      "machine": "Stanok",
+      "amount": "Miqdor (kg)",
+      "note": "Izoh",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+    },
+    "deleteConfirm": "Ushbu transaksiyani o'chirasizmi?",
+    "initial": "Boshlang'ich qoldiq",
+    "deleteTitle": "Transaksiyani o'chirish"
   },
   "tayyorMahsulotlarAngrenPage": {
     "title": "Tayyor mahsulotlar (Angren)",

@@ -400,9 +400,26 @@
     "table": {
       "date": "Date",
       "type": "Type",
+      "machine": "Machine",
       "amount": "Amount (kg)",
       "note": "Note"
-    }
+    },
+    "form": {
+      "type": "Type",
+      "date": "Date",
+      "machineType": "Machine type",
+      "machine": "Machine",
+      "amount": "Amount (kg)",
+      "note": "Note",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "localHint": "Saved locally in your browser. Hook this up to your API later."
+    },
+    "deleteConfirm": "Delete this transaction?",
+    "initial": "Initial balance",
+    "deleteTitle": "Delete transaction"
   },
   "machines": {
     "title": "Machines",
