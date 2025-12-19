@@ -24,6 +24,7 @@ export default function RoleSelectPage() {
       description: t('roleSelect.ceo.description'),
       cta: t('roleSelect.ceo.cta'),
       href: paths.dashboard.root,
+      color: 'primary' as const,
     },
     {
       key: 'reska',
@@ -31,6 +32,15 @@ export default function RoleSelectPage() {
       description: t('roleSelect.reska.description'),
       cta: t('roleSelect.reska.cta'),
       href: paths.dashboard.reskaPanel.root,
+      color: 'secondary' as const,
+    },
+    {
+      key: 'pechat',
+      heading: t('roleSelect.pechat.heading'),
+      description: t('roleSelect.pechat.description'),
+      cta: t('roleSelect.pechat.cta'),
+      href: paths.dashboard.stanok.pechat,
+      color: 'info' as const,
     },
   ];
 
@@ -76,7 +86,7 @@ export default function RoleSelectPage() {
                 component={RouterLink}
                 href={role.href}
                 variant="contained"
-                color={role.key === 'reska' ? 'secondary' : 'primary'}
+                color={role.color || 'primary'}
               >
                 {role.cta}
               </Button>

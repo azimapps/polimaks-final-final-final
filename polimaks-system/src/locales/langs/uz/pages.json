@@ -1069,7 +1069,7 @@
     "noBrigadas": "Brigadalar topilmadi",
     "overview": {
       "heading": "Reska umumiy",
-      "description": "Hozircha umumiy ko'rinish uchun bo'sh joy.",
+      "description": "Reja bo'yicha reskaga biriktirilgan buyurtmalar tanlangan stanok va brigada bo'yicha ko'rinadi.",
       "placeholder": "Bu sahifa hozircha bo'sh.",
       "selection": "Tanlangan: {{machine}} · {{brigada}}"
     },
@@ -1096,6 +1096,11 @@
       "heading": "Reska paneli",
       "description": "Reskachi uchun soddalashtirilgan ko'rinish.",
       "cta": "Reska paneliga kirish"
+    },
+    "pechat": {
+      "heading": "Pechat paneli",
+      "description": "Pechat stanogi uchun operator ko'rinishi.",
+      "cta": "Pechat paneliga kirish"
     }
   },
   "clientsAgreements": {

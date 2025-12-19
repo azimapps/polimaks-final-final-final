@@ -45,5 +45,7 @@
   "reska_panel": "Панель резки",
   "reska_panel_overview": "Обзор",
   "reska_panel_queue": "Очередь",
-  "reska_panel_reports": "Отчеты"
+  "reska_panel_reports": "Отчеты",
+  "pechat_panel": "Панель печати",
+  "pechat_panel_overview": "Обзор"
 }

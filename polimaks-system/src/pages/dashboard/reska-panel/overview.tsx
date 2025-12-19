@@ -36,7 +36,8 @@ type PlanItem = {
   groupName?: string;
 };
 
-const PLAN_STORAGE_KEY = 'reska-panel-plans';
+const ORDER_PLAN_STORAGE_KEY = 'orderPlansV2';
+const LEGACY_ORDER_PLAN_STORAGE_KEY = 'orderPlans';
 const PLAN_SEED: PlanItem[] = [
   {
     id: 'reska-plan-1',
@@ -53,6 +54,47 @@ const PLAN_SEED: PlanItem[] = [
     groupName: 'Reska Alpha',
   },
 ];
+
+const normalizePlanItem = (raw: any, index: number): PlanItem => ({
+  id: raw?.id || `plan-${index}`,
+  orderNumber: raw?.orderNumber || '',
+  clientName: raw?.clientName || '',
+  title: raw?.title || '',
+  quantityKg: Number(raw?.quantityKg) || 0,
+  startDate: raw?.startDate || '',
+  endDate: raw?.endDate || '',
+  machineType: raw?.machineType || '',
+  machineId: raw?.machineId || '',
+  machineName: raw?.machineName || '',
+  groupId: raw?.groupId || '',
+  groupName: raw?.groupName || '',
+});
+
+const loadPlanItems = (): PlanItem[] => {
+  if (typeof window === 'undefined') return PLAN_SEED;
+
+  try {
+    const stored = localStorage.getItem(ORDER_PLAN_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as any[];
+      const normalized = parsed.map((item, idx) => normalizePlanItem(item, idx));
+      const reskaPlans = normalized.filter((plan) => plan.machineType === 'reska');
+      if (reskaPlans.length) return reskaPlans;
+    }
+
+    const legacy = localStorage.getItem(LEGACY_ORDER_PLAN_STORAGE_KEY);
+    if (legacy) {
+      const parsed = JSON.parse(legacy) as any[];
+      const normalized = parsed.map((item, idx) => normalizePlanItem(item, idx));
+      const reskaPlans = normalized.filter((plan) => plan.machineType === 'reska');
+      if (reskaPlans.length) return reskaPlans;
+    }
+  } catch {
+    // ignore parse errors
+  }
+
+  return PLAN_SEED;
+};
 
 const readLocalArray = (key: string, fallback: any[]) => {
   if (typeof window === 'undefined') return fallback;
@@ -76,7 +118,7 @@ export default function ReskaOverviewPage() {
   const [selectedMachineId, setSelectedMachineId] = useState<string>('');
   const [brigadas, setBrigadas] = useState<any[]>([]);
   const [selectedBrigadaId, setSelectedBrigadaId] = useState<string>('');
-  const [plans, setPlans] = useState<PlanItem[]>([]);
+  const [plans, setPlans] = useState<PlanItem[]>(() => loadPlanItems());
 
   useEffect(() => {
     const loadMachines = () => setMachines(readLocalArray('stanok-reska', stanokReskaSeed as any[]));
@@ -87,19 +129,29 @@ export default function ReskaOverviewPage() {
           : readLocalArray('stanok-brigada-reska', brigadaReskaSeed as any[])
       );
     };
+    const loadPlansFromStorage = () => setPlans(loadPlanItems());
 
     loadMachines();
     loadBrigadas();
+    loadPlansFromStorage();
 
     const onStorage = (event: StorageEvent) => {
       if (!event.key) return;
       if (event.key === 'stanok-reska') loadMachines();
       if (event.key.startsWith('stanok-brigada-reska')) loadBrigadas();
+      if (
+        event.key === ORDER_PLAN_STORAGE_KEY ||
+        event.key === LEGACY_ORDER_PLAN_STORAGE_KEY ||
+        event.key === null
+      ) {
+        loadPlansFromStorage();
+      }
     };
 
     const onFocus = () => {
       loadMachines();
       loadBrigadas();
+      loadPlansFromStorage();
     };
 
     if (typeof window !== 'undefined') {
@@ -136,40 +188,6 @@ export default function ReskaOverviewPage() {
       setSelectedBrigadaId(brigadas[0]?.id || '');
     }
   }, [brigadas, selectedBrigadaId]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      setPlans(PLAN_SEED);
-      return;
-    }
-
-    try {
-      const stored = localStorage.getItem(PLAN_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as any[];
-        const mapped = parsed.map((p, idx) => ({
-          id: p?.id || `plan-${idx}`,
-          orderNumber: p?.orderNumber || '',
-          clientName: p?.clientName || '',
-          title: p?.title || '',
-          quantityKg: Number(p?.quantityKg) || 0,
-          startDate: p?.startDate || '',
-          endDate: p?.endDate || '',
-          machineType: p?.machineType || '',
-          machineId: p?.machineId || '',
-          machineName: p?.machineName || '',
-          groupId: p?.groupId || '',
-          groupName: p?.groupName || '',
-        }));
-        setPlans(mapped.length ? mapped : PLAN_SEED);
-        return;
-      }
-    } catch {
-      // ignore parse errors
-    }
-
-    setPlans(PLAN_SEED);
-  }, []);
 
   const filteredPlans = useMemo(
     () =>

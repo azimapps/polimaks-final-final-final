@@ -1068,7 +1068,7 @@
     "noBrigadas": "No brigadas found",
     "overview": {
       "heading": "Reska overview",
-      "description": "Empty space reserved for reska overview.",
+      "description": "Orders from the planner assigned to Reska for the selected machine and brigada.",
       "placeholder": "This page is intentionally empty for now.",
       "selection": "Selected: {{machine}} · {{brigada}}"
     },
@@ -1095,6 +1095,11 @@
       "heading": "Reska panel",
       "description": "Focused view for the cutting operator.",
       "cta": "Enter Reska panel"
+    },
+    "pechat": {
+      "heading": "Pechat panel",
+      "description": "Printing operator view for Pechat stanok.",
+      "cta": "Enter Pechat panel"
     }
   },
   "clientsAgreements": {

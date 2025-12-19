@@ -45,5 +45,7 @@
   "reska_panel": "Reska panel",
   "reska_panel_overview": "Overview",
   "reska_panel_queue": "Queue",
-  "reska_panel_reports": "Reports"
+  "reska_panel_reports": "Reports",
+  "pechat_panel": "Pechat panel",
+  "pechat_panel_overview": "Overview"
 }

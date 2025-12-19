@@ -5,6 +5,7 @@ import { lazy, Suspense } from 'react';
 
 import { DashboardLayout } from 'src/layouts/dashboard';
 import { useReskaNavData } from 'src/layouts/nav-config-reska';
+import { usePechatNavData } from 'src/layouts/nav-config-pechat';
 
 import { LoadingScreen } from 'src/components/loading-screen';
 
@@ -98,6 +99,15 @@ const ReskaPanelLayout = () => {
   );
 };
 
+const PechatPanelLayout = () => {
+  const pechatNavData = usePechatNavData();
+  return (
+    <DashboardLayout slotProps={{ nav: { data: pechatNavData } }}>
+      <SuspenseOutlet />
+    </DashboardLayout>
+  );
+};
+
 // ----------------------------------------------------------------------
 
 const Page404 = lazy(() => import('src/pages/error/404'));
@@ -125,16 +135,15 @@ export const routesSection: RouteObject[] = [
           { path: 'tayyor-mahsulotlar-angren', element: <TayyorMahsulotlarAngrenPage /> },
         ],
       },
-      {
-        path: 'stanok',
-        children: [
-          { index: true, element: <StanokIndexPage /> },
-          { path: 'pechat', element: <PechatPage /> },
-          { path: 'pechat/:machineId/profile', element: <PechatProfilePage /> },
-          { path: 'reska', element: <ReskaPage /> },
-          { path: 'laminatsiya', element: <LaminatsiyaPage /> },
-          { path: 'pechat/:machineId/brigada', element: <BrigadaPechatPage /> },
-          { path: 'reska/:machineId/brigada', element: <BrigadaReskaPage /> },
+          {
+            path: 'stanok',
+            children: [
+              { index: true, element: <StanokIndexPage /> },
+              { path: 'pechat/:machineId/profile', element: <PechatProfilePage /> },
+              { path: 'reska', element: <ReskaPage /> },
+              { path: 'laminatsiya', element: <LaminatsiyaPage /> },
+              { path: 'pechat/:machineId/brigada', element: <BrigadaPechatPage /> },
+              { path: 'reska/:machineId/brigada', element: <BrigadaReskaPage /> },
           { path: 'laminatsiya/:machineId/brigada', element: <BrigadaLaminatsiyaPage /> },
           { path: 'materials-pechat', element: <MaterialsPechatPage /> },
           { path: 'materials-reska', element: <MaterialsReskaPage /> },
@@ -201,6 +210,15 @@ export const routesSection: RouteObject[] = [
       { path: 'queue', element: <ReskaPanelQueuePage /> },
       { path: 'reports', element: <ReskaPanelReportsPage /> },
     ],
+  },
+  {
+    path: 'stanok/pechat',
+    element: (
+      <AuthGuard>
+        <PechatPanelLayout />
+      </AuthGuard>
+    ),
+    children: [{ index: true, element: <PechatPage /> }],
   },
 
   // Auth
