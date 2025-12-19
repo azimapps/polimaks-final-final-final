@@ -468,6 +468,11 @@
     "deleteHint": "You can add it back later.",
     "empty": "No paint entries yet.",
     "actions": "Actions",
+    "transactions": "Transactions",
+    "transactionsSearchTitle": "Select a paint",
+    "transactionsSearchLabel": "Search paint",
+    "transactionsSearchPlaceholder": "Seriya, color, supplier, or ID",
+    "transactionsSearchEmpty": "No paint entries match your search.",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "totalPrice": "Total price",
     "currency": {
@@ -476,6 +481,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kraskaTransactionsPage": {
+    "title": "Transactions for {{seriya}}",
+    "subtitle": "Incoming/outgoing notes for this paint. Data is local for now.",
+    "summaryTitle": "Paint details",
+    "notFound": "Paint not found. Go back to the list.",
+    "back": "Back to list",
+    "add": "Add transaction",
+    "empty": "No transactions yet.",
+    "unknown": "unknown",
+    "typeIn": "Inbound",
+    "typeOut": "Outbound",
+    "generatedFromStock": "Auto-generated from the current balance",
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "machine": "Machine",
+      "amount": "Amount (kg)",
+      "note": "Note"
+    },
+    "form": {
+      "type": "Type",
+      "date": "Date",
+      "machineType": "Machine type",
+      "machine": "Machine",
+      "amount": "Amount (kg)",
+      "note": "Note",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "localHint": "Saved locally in your browser. Hook this up to your API later."
+    },
+    "deleteConfirm": "Delete this transaction?",
+    "initial": "Initial balance",
+    "deleteTitle": "Delete transaction"
   },
   "suyuqKraskaPage": {
     "title": "Liquid paint",
@@ -503,6 +544,11 @@
     "deleteHint": "You can add it back later.",
     "empty": "No entries yet.",
     "actions": "Actions",
+    "transactions": "Transactions",
+    "transactionsSearchTitle": "Select a liquid paint",
+    "transactionsSearchLabel": "Search liquid paint",
+    "transactionsSearchPlaceholder": "Seriya, color, supplier, or ID",
+    "transactionsSearchEmpty": "No liquid paint entries match your search.",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "currency": {
       "uzs": "UZS",
@@ -510,6 +556,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "suyuqKraskaTransactionsPage": {
+    "title": "Transactions for {{seriya}}",
+    "subtitle": "Incoming/outgoing notes for this liquid paint. Data is local for now.",
+    "summaryTitle": "Liquid paint details",
+    "notFound": "Liquid paint not found. Go back to the list.",
+    "back": "Back to list",
+    "add": "Add transaction",
+    "empty": "No transactions yet.",
+    "unknown": "unknown",
+    "typeIn": "Inbound",
+    "typeOut": "Outbound",
+    "generatedFromStock": "Auto-generated from the current balance",
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "machine": "Machine",
+      "amount": "Amount (kg)",
+      "note": "Note"
+    },
+    "form": {
+      "type": "Type",
+      "date": "Date",
+      "machineType": "Machine type",
+      "machine": "Machine",
+      "amount": "Amount (kg)",
+      "note": "Note",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "localHint": "Saved locally in your browser. Hook this up to your API later."
+    },
+    "deleteConfirm": "Delete this transaction?",
+    "initial": "Initial balance",
+    "deleteTitle": "Delete transaction"
   },
   "razvaritelPage": {
     "title": "Thinner",
@@ -533,6 +615,11 @@
     "deleteHint": "You can add it back later.",
     "empty": "No entries yet.",
     "actions": "Actions",
+    "transactions": "Transactions",
+    "transactionsSearchTitle": "Select a thinner",
+    "transactionsSearchLabel": "Search thinner",
+    "transactionsSearchPlaceholder": "Seriya, type, supplier, or ID",
+    "transactionsSearchEmpty": "No thinners match your search.",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "totalPrice": "Total price",
     "currency": {
@@ -541,6 +628,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "razvaritelTransactionsPage": {
+    "title": "Transactions for {{seriya}}",
+    "subtitle": "Incoming/outgoing notes for this thinner. Data is local for now.",
+    "summaryTitle": "Thinner details",
+    "notFound": "Thinner not found. Go back to the list.",
+    "back": "Back to list",
+    "add": "Add transaction",
+    "empty": "No transactions yet.",
+    "unknown": "unknown",
+    "typeIn": "Inbound",
+    "typeOut": "Outbound",
+    "generatedFromStock": "Auto-generated from the current balance",
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "machine": "Machine",
+      "amount": "Amount (L)",
+      "note": "Note"
+    },
+    "form": {
+      "type": "Type",
+      "date": "Date",
+      "machineType": "Machine type",
+      "machine": "Machine",
+      "amount": "Amount (L)",
+      "note": "Note",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "localHint": "Saved locally in your browser. Hook this up to your API later."
+    },
+    "deleteConfirm": "Delete this transaction?",
+    "initial": "Initial balance",
+    "deleteTitle": "Delete transaction"
   },
   "silindirPage": {
     "title": "Cylinders",

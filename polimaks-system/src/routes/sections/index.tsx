@@ -26,8 +26,17 @@ const PlyonkaTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/plyonka-transaksiyalar')
 );
 const KraskaPage = lazy(() => import('src/pages/dashboard/ombor/kraska'));
+const KraskaTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/kraska-transaksiyalar')
+);
 const SuyuqKraskaPage = lazy(() => import('src/pages/dashboard/ombor/suyuq-kraska'));
+const SuyuqKraskaTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/suyuq-kraska-transaksiyalar')
+);
 const RazvaritelPage = lazy(() => import('src/pages/dashboard/ombor/razvaritel'));
+const RazvaritelTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/razvaritel-transaksiyalar')
+);
 const SilindirPage = lazy(() => import('src/pages/dashboard/ombor/silindir'));
 const KleyPage = lazy(() => import('src/pages/dashboard/ombor/kley'));
 const ZapchastlarPage = lazy(() => import('src/pages/dashboard/ombor/zapchastlar'));
@@ -142,8 +151,11 @@ export const routesSection: RouteObject[] = [
           { path: 'plyonka', element: <PlyonkaPage /> },
           { path: 'plyonka/:plyonkaId/transaksiyalar', element: <PlyonkaTransactionsPage /> },
           { path: 'kraska', element: <KraskaPage /> },
+          { path: 'kraska/:kraskaId/transaksiyalar', element: <KraskaTransactionsPage /> },
           { path: 'suyuq-kraska', element: <SuyuqKraskaPage /> },
+          { path: 'suyuq-kraska/:suyuqKraskaId/transaksiyalar', element: <SuyuqKraskaTransactionsPage /> },
           { path: 'razvaritel', element: <RazvaritelPage /> },
+          { path: 'razvaritel/:razvaritelId/transaksiyalar', element: <RazvaritelTransactionsPage /> },
           { path: 'silindir', element: <SilindirPage /> },
           { path: 'kley', element: <KleyPage /> },
           { path: 'zapchastlar', element: <ZapchastlarPage /> },

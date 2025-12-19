@@ -471,6 +471,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Kraska tanlang",
+    "transactionsSearchLabel": "Kraska qidirish",
+    "transactionsSearchPlaceholder": "Seriya, rang, yetkazib beruvchi yoki ID",
+    "transactionsSearchEmpty": "Kraska topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",
@@ -478,6 +483,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kraskaTransactionsPage": {
+    "title": "Transaksiyalar: {{seriya}}",
+    "subtitle": "Ushbu kraska uchun kirim/chiqim yozuvlari. Hozircha ma'lumotlar lokal.",
+    "summaryTitle": "Kraska haqida",
+    "notFound": "Kraska topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "add": "Transaksiya qo'shish",
+    "empty": "Hozircha transaksiyalar yo'q.",
+    "unknown": "noma'lum",
+    "typeIn": "Kirim",
+    "typeOut": "Chiqim",
+    "generatedFromStock": "Joriy balansdan avtomatik qo'shildi",
+    "table": {
+      "date": "Sana",
+      "type": "Turi",
+      "machine": "Stanok",
+      "amount": "Miqdor (kg)",
+      "note": "Izoh"
+    },
+    "form": {
+      "type": "Turi",
+      "date": "Sana",
+      "machineType": "Stanok turi",
+      "machine": "Stanok",
+      "amount": "Miqdor (kg)",
+      "note": "Izoh",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+    },
+    "deleteConfirm": "Ushbu transaksiyani o'chirasizmi?",
+    "initial": "Boshlang'ich qoldiq",
+    "deleteTitle": "Transaksiyani o'chirish"
   },
   "suyuqKraskaPage": {
     "title": "Suyuq kraska",
@@ -505,6 +546,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Suyuq kraska tanlang",
+    "transactionsSearchLabel": "Suyuq kraska qidirish",
+    "transactionsSearchPlaceholder": "Seriya, rang, yetkazib beruvchi yoki ID",
+    "transactionsSearchEmpty": "Suyuq kraska topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",
@@ -512,6 +558,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "suyuqKraskaTransactionsPage": {
+    "title": "Transaksiyalar: {{seriya}}",
+    "subtitle": "Ushbu suyuq kraska uchun kirim/chiqim yozuvlari. Hozircha ma'lumotlar lokal.",
+    "summaryTitle": "Suyuq kraska haqida",
+    "notFound": "Suyuq kraska topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "add": "Transaksiya qo'shish",
+    "empty": "Hozircha transaksiyalar yo'q.",
+    "unknown": "noma'lum",
+    "typeIn": "Kirim",
+    "typeOut": "Chiqim",
+    "generatedFromStock": "Joriy balansdan avtomatik qo'shildi",
+    "table": {
+      "date": "Sana",
+      "type": "Turi",
+      "machine": "Stanok",
+      "amount": "Miqdor (kg)",
+      "note": "Izoh"
+    },
+    "form": {
+      "type": "Turi",
+      "date": "Sana",
+      "machineType": "Stanok turi",
+      "machine": "Stanok",
+      "amount": "Miqdor (kg)",
+      "note": "Izoh",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+    },
+    "deleteConfirm": "Ushbu transaksiyani o'chirasizmi?",
+    "initial": "Boshlang'ich qoldiq",
+    "deleteTitle": "Transaksiyani o'chirish"
   },
   "razvaritelPage": {
     "title": "Razvaritel",
@@ -535,6 +617,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Razvaritel tanlang",
+    "transactionsSearchLabel": "Razvaritel qidirish",
+    "transactionsSearchPlaceholder": "Seriya, turi, yetkazib beruvchi yoki ID",
+    "transactionsSearchEmpty": "Razvaritel topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "totalPrice": "Jami qiymat",
     "currency": {
@@ -543,6 +630,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "razvaritelTransactionsPage": {
+    "title": "Transaksiyalar: {{seriya}}",
+    "subtitle": "Ushbu razvaritel uchun kirim/chiqim yozuvlari. Hozircha ma'lumotlar lokal.",
+    "summaryTitle": "Razvaritel haqida",
+    "notFound": "Razvaritel topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "add": "Transaksiya qo'shish",
+    "empty": "Hozircha transaksiyalar yo'q.",
+    "unknown": "noma'lum",
+    "typeIn": "Kirim",
+    "typeOut": "Chiqim",
+    "generatedFromStock": "Joriy balansdan avtomatik qo'shildi",
+    "table": {
+      "date": "Sana",
+      "type": "Turi",
+      "machine": "Stanok",
+      "amount": "Miqdor (l)",
+      "note": "Izoh"
+    },
+    "form": {
+      "type": "Turi",
+      "date": "Sana",
+      "machineType": "Stanok turi",
+      "machine": "Stanok",
+      "amount": "Miqdor (l)",
+      "note": "Izoh",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+    },
+    "deleteConfirm": "Ushbu transaksiyani o'chirasizmi?",
+    "initial": "Boshlang'ich qoldiq",
+    "deleteTitle": "Transaksiyani o'chirish"
   },
   "silindirPage": {
     "title": "Silindr",

@@ -469,6 +469,11 @@
     "deleteHint": "Вы сможете добавить её снова позже.",
     "empty": "Записей пока нет.",
     "actions": "Действия",
+    "transactions": "Транзакции",
+    "transactionsSearchTitle": "Выберите краску",
+    "transactionsSearchLabel": "Поиск краски",
+    "transactionsSearchPlaceholder": "Серия, цвет, поставщик или ID",
+    "transactionsSearchEmpty": "Краска не найдена.",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "totalPrice": "Общая сумма",
     "currency": {
@@ -477,6 +482,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kraskaTransactionsPage": {
+    "title": "Транзакции по {{seriya}}",
+    "subtitle": "Приход/расход для этой краски. Данные пока локальные.",
+    "summaryTitle": "Информация о краске",
+    "notFound": "Краска не найдена. Вернитесь к списку.",
+    "back": "Вернуться к списку",
+    "add": "Добавить транзакцию",
+    "empty": "Пока нет транзакций.",
+    "unknown": "неизвестно",
+    "typeIn": "Приход",
+    "typeOut": "Расход",
+    "generatedFromStock": "Автозапись из текущего остатка",
+    "table": {
+      "date": "Дата",
+      "type": "Тип",
+      "machine": "Станок",
+      "amount": "Количество (кг)",
+      "note": "Примечание"
+    },
+    "form": {
+      "type": "Тип",
+      "date": "Дата",
+      "machineType": "Тип станка",
+      "machine": "Станок",
+      "amount": "Количество (кг)",
+      "note": "Примечание",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "localHint": "Данные сохраняются локально в браузере. Позже подключите API."
+    },
+    "deleteConfirm": "Удалить эту транзакцию?",
+    "initial": "Начальный остаток",
+    "deleteTitle": "Удалить транзакцию"
   },
   "suyuqKraskaPage": {
     "title": "Жидкая краска",
@@ -504,6 +545,11 @@
     "deleteHint": "Вы сможете добавить её снова позже.",
     "empty": "Записей пока нет.",
     "actions": "Действия",
+    "transactions": "Транзакции",
+    "transactionsSearchTitle": "Выберите жидкую краску",
+    "transactionsSearchLabel": "Поиск жидкой краски",
+    "transactionsSearchPlaceholder": "Серия, цвет, поставщик или ID",
+    "transactionsSearchEmpty": "Жидкая краска не найдена.",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "currency": {
       "uzs": "UZS",
@@ -511,6 +557,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "suyuqKraskaTransactionsPage": {
+    "title": "Транзакции по {{seriya}}",
+    "subtitle": "Приход/расход для этой жидкой краски. Данные пока локальные.",
+    "summaryTitle": "Информация о жидкой краске",
+    "notFound": "Жидкая краска не найдена. Вернитесь к списку.",
+    "back": "Вернуться к списку",
+    "add": "Добавить транзакцию",
+    "empty": "Пока нет транзакций.",
+    "unknown": "неизвестно",
+    "typeIn": "Приход",
+    "typeOut": "Расход",
+    "generatedFromStock": "Автозапись из текущего остатка",
+    "table": {
+      "date": "Дата",
+      "type": "Тип",
+      "machine": "Станок",
+      "amount": "Количество (кг)",
+      "note": "Примечание"
+    },
+    "form": {
+      "type": "Тип",
+      "date": "Дата",
+      "machineType": "Тип станка",
+      "machine": "Станок",
+      "amount": "Количество (кг)",
+      "note": "Примечание",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "localHint": "Данные сохраняются локально в браузере. Позже подключите API."
+    },
+    "deleteConfirm": "Удалить эту транзакцию?",
+    "initial": "Начальный остаток",
+    "deleteTitle": "Удалить транзакцию"
   },
   "razvaritelPage": {
     "title": "Разбавитель",
@@ -534,6 +616,11 @@
     "deleteHint": "Вы сможете добавить её снова позже.",
     "empty": "Записей пока нет.",
     "actions": "Действия",
+    "transactions": "Транзакции",
+    "transactionsSearchTitle": "Выберите разбавитель",
+    "transactionsSearchLabel": "Поиск разбавителя",
+    "transactionsSearchPlaceholder": "Серия, тип, поставщик или ID",
+    "transactionsSearchEmpty": "Разбавитель не найден.",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "totalPrice": "Общая сумма",
     "currency": {
@@ -542,6 +629,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "razvaritelTransactionsPage": {
+    "title": "Транзакции по {{seriya}}",
+    "subtitle": "Приход/расход для этого разбавителя. Данные пока локальные.",
+    "summaryTitle": "Информация о разбавителе",
+    "notFound": "Разбавитель не найден. Вернитесь к списку.",
+    "back": "Вернуться к списку",
+    "add": "Добавить транзакцию",
+    "empty": "Пока нет транзакций.",
+    "unknown": "неизвестно",
+    "typeIn": "Приход",
+    "typeOut": "Расход",
+    "generatedFromStock": "Автозапись из текущего остатка",
+    "table": {
+      "date": "Дата",
+      "type": "Тип",
+      "machine": "Станок",
+      "amount": "Количество (л)",
+      "note": "Примечание"
+    },
+    "form": {
+      "type": "Тип",
+      "date": "Дата",
+      "machineType": "Тип станка",
+      "machine": "Станок",
+      "amount": "Количество (л)",
+      "note": "Примечание",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "localHint": "Данные сохраняются локально в браузере. Позже подключите API."
+    },
+    "deleteConfirm": "Удалить эту транзакцию?",
+    "initial": "Начальный остаток",
+    "deleteTitle": "Удалить транзакцию"
   },
   "silindirPage": {
     "title": "Цилиндры",

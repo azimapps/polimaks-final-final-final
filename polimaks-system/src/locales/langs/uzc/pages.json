@@ -471,6 +471,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Краска танланг",
+    "transactionsSearchLabel": "Краска қидириш",
+    "transactionsSearchPlaceholder": "Серия, ранг, етказиб берувчи ёки ID",
+    "transactionsSearchEmpty": "Краска топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {
       "uzs": "СЎМ",
@@ -478,6 +483,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kraskaTransactionsPage": {
+    "title": "Транзакциялар: {{seriya}}",
+    "subtitle": "Ушбу краска учун кирим/чиқим ёзувлари. Ҳозирча маълумотлар локал.",
+    "summaryTitle": "Краска ҳақида",
+    "notFound": "Краска топилмади. Рўйхатга қайтинг.",
+    "back": "Рўйхатга қайтиш",
+    "add": "Транзакция қўшиш",
+    "empty": "Ҳозирча транзакциялар йўқ.",
+    "unknown": "номаълум",
+    "typeIn": "Кирим",
+    "typeOut": "Чиқим",
+    "generatedFromStock": "Жорий балансдан автоматик қўшилди",
+    "table": {
+      "date": "Сана",
+      "type": "Тури",
+      "machine": "Станок",
+      "amount": "Миқдор (кг)",
+      "note": "Изоҳ"
+    },
+    "form": {
+      "type": "Тури",
+      "date": "Сана",
+      "machineType": "Станок тури",
+      "machine": "Станок",
+      "amount": "Миқдор (кг)",
+      "note": "Изоҳ",
+      "cancel": "Бекор қилиш",
+      "save": "Сақлаш",
+      "edit": "Таҳрирлаш",
+      "delete": "Ўчириш",
+      "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг."
+    },
+    "deleteConfirm": "Ушбу транзакцияни ўчирасизми?",
+    "initial": "Бошланғич қолдиқ",
+    "deleteTitle": "Транзакцияни ўчириш"
   },
   "suyuqKraskaPage": {
     "title": "Суюқ краска",
@@ -505,6 +546,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Суюқ краска танланг",
+    "transactionsSearchLabel": "Суюқ краска қидириш",
+    "transactionsSearchPlaceholder": "Серия, ранг, етказиб берувчи ёки ID",
+    "transactionsSearchEmpty": "Суюқ краска топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {
       "uzs": "СЎМ",
@@ -512,6 +558,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "suyuqKraskaTransactionsPage": {
+    "title": "Транзакциялар: {{seriya}}",
+    "subtitle": "Ушбу суюқ краска учун кирим/чиқим ёзувлари. Ҳозирча маълумотлар локал.",
+    "summaryTitle": "Суюқ краска ҳақида",
+    "notFound": "Суюқ краска топилмади. Рўйхатга қайтинг.",
+    "back": "Рўйхатга қайтиш",
+    "add": "Транзакция қўшиш",
+    "empty": "Ҳозирча транзакциялар йўқ.",
+    "unknown": "номаълум",
+    "typeIn": "Кирим",
+    "typeOut": "Чиқим",
+    "generatedFromStock": "Жорий балансдан автоматик қўшилди",
+    "table": {
+      "date": "Сана",
+      "type": "Тури",
+      "machine": "Станок",
+      "amount": "Миқдор (кг)",
+      "note": "Изоҳ"
+    },
+    "form": {
+      "type": "Тури",
+      "date": "Сана",
+      "machineType": "Станок тури",
+      "machine": "Станок",
+      "amount": "Миқдор (кг)",
+      "note": "Изоҳ",
+      "cancel": "Бекор қилиш",
+      "save": "Сақлаш",
+      "edit": "Таҳрирлаш",
+      "delete": "Ўчириш",
+      "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг."
+    },
+    "deleteConfirm": "Ушбу транзакцияни ўчирасизми?",
+    "initial": "Бошланғич қолдиқ",
+    "deleteTitle": "Транзакцияни ўчириш"
   },
   "razvaritelPage": {
     "title": "Развартел",
@@ -535,6 +617,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Разварител танланг",
+    "transactionsSearchLabel": "Разварител қидириш",
+    "transactionsSearchPlaceholder": "Серия, тури, етказиб берувчи ёки ID",
+    "transactionsSearchEmpty": "Разварител топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "totalPrice": "Жами қиймат",
     "currency": {
@@ -543,6 +630,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "razvaritelTransactionsPage": {
+    "title": "Транзакциялар: {{seriya}}",
+    "subtitle": "Ушбу разварител учун кирим/чиқим ёзувлари. Ҳозирча маълумотлар локал.",
+    "summaryTitle": "Разварител ҳақида",
+    "notFound": "Разварител топилмади. Рўйхатга қайтинг.",
+    "back": "Рўйхатга қайтиш",
+    "add": "Транзакция қўшиш",
+    "empty": "Ҳозирча транзакциялар йўқ.",
+    "unknown": "номаълум",
+    "typeIn": "Кирим",
+    "typeOut": "Чиқим",
+    "generatedFromStock": "Жорий балансдан автоматик қўшилди",
+    "table": {
+      "date": "Сана",
+      "type": "Тури",
+      "machine": "Станок",
+      "amount": "Миқдор (л)",
+      "note": "Изоҳ"
+    },
+    "form": {
+      "type": "Тури",
+      "date": "Сана",
+      "machineType": "Станок тури",
+      "machine": "Станок",
+      "amount": "Миқдор (л)",
+      "note": "Изоҳ",
+      "cancel": "Бекор қилиш",
+      "save": "Сақлаш",
+      "edit": "Таҳрирлаш",
+      "delete": "Ўчириш",
+      "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг."
+    },
+    "deleteConfirm": "Ушбу транзакцияни ўчирасизми?",
+    "initial": "Бошланғич қолдиқ",
+    "deleteTitle": "Транзакцияни ўчириш"
   },
   "silindirPage": {
     "title": "Силиндр",

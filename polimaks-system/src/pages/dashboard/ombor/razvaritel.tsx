@@ -1,8 +1,10 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -29,6 +31,7 @@ import Typography from '@mui/material/Typography';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import seedData from 'src/data/razvaritel.json';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -70,6 +73,7 @@ const normalizeItems = (items: (Partial<RazvaritelItem> & { id?: string })[]): R
 
 export default function RazvaritelPage() {
   const { t } = useTranslate('pages');
+  const navigate = useNavigate();
 
   const title = `${t('inventory.items.razvaritel.title')} | ${CONFIG.appName}`;
 
@@ -92,6 +96,7 @@ export default function RazvaritelPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<RazvaritelItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<RazvaritelItem | null>(null);
+  const [transactionsTarget, setTransactionsTarget] = useState<RazvaritelItem | null>(null);
   const [form, setForm] = useState<
     Omit<RazvaritelItem, 'id' | 'totalLiter' | 'pricePerLiter'> & {
       totalLiter: string;
@@ -110,6 +115,7 @@ export default function RazvaritelPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+  const transactionsDialog = useBoolean();
 
   const setItemsAndPersist = (updater: (prev: RazvaritelItem[]) => RazvaritelItem[]) => {
     setItems((prev) => {
@@ -134,6 +140,11 @@ export default function RazvaritelPage() {
       description: '',
     });
     dialog.onTrue();
+  };
+
+  const openTransactionsSearch = () => {
+    setTransactionsTarget(null);
+    transactionsDialog.onTrue();
   };
 
   const openEdit = (item: RazvaritelItem) => {
@@ -215,6 +226,16 @@ export default function RazvaritelPage() {
     }
   };
 
+  const transactionsFilterOptions = createFilterOptions<RazvaritelItem>({
+    stringify: (option) =>
+      `${option.id} ${option.seriyaNumber} ${option.type} ${option.supplier}`,
+  });
+
+  const formatTransactionsOption = (item: RazvaritelItem) => {
+    const seriya = item.seriyaNumber || item.id;
+    return `${seriya} · ${item.type.toUpperCase()}`;
+  };
+
   return (
     <>
       <title>{title}</title>
@@ -229,9 +250,14 @@ export default function RazvaritelPage() {
               </Typography>
             </Box>
 
-            <Button variant="contained" onClick={openAdd}>
-              {t('razvaritelPage.add')}
-            </Button>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Button variant="outlined" onClick={openTransactionsSearch}>
+                {t('razvaritelPage.transactions')}
+              </Button>
+              <Button variant="contained" onClick={openAdd}>
+                {t('razvaritelPage.add')}
+              </Button>
+            </Stack>
           </Stack>
 
           <Card>
@@ -474,6 +500,45 @@ export default function RazvaritelPage() {
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
             {t('razvaritelPage.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={transactionsDialog.value}
+        onClose={transactionsDialog.onFalse}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('razvaritelPage.transactionsSearchTitle')}</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            autoHighlight
+            options={items}
+            value={transactionsTarget}
+            onChange={(_event, value) => {
+              setTransactionsTarget(value);
+              if (value?.id) {
+                transactionsDialog.onFalse();
+                navigate(paths.dashboard.inventory.razvaritelTransactions(value.id));
+              }
+            }}
+            getOptionLabel={formatTransactionsOption}
+            filterOptions={transactionsFilterOptions}
+            noOptionsText={t('razvaritelPage.transactionsSearchEmpty')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                autoFocus
+                label={t('razvaritelPage.transactionsSearchLabel')}
+                placeholder={t('razvaritelPage.transactionsSearchPlaceholder')}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={transactionsDialog.onFalse} color="inherit">
+            {t('razvaritelPage.cancel')}
           </Button>
         </DialogActions>
       </Dialog>

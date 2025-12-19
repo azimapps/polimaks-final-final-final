@@ -1,8 +1,10 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -29,6 +31,7 @@ import Typography from '@mui/material/Typography';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import seedData from 'src/data/kraska.json';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -70,6 +73,7 @@ const normalizeItems = (items: (Partial<KraskaItem> & { id?: string })[]): Krask
 
 export default function KraskaPage() {
   const { t } = useTranslate('pages');
+  const navigate = useNavigate();
 
   const title = `${t('inventory.items.kraska.title')} | ${CONFIG.appName}`;
 
@@ -92,6 +96,7 @@ export default function KraskaPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<KraskaItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<KraskaItem | null>(null);
+  const [transactionsTarget, setTransactionsTarget] = useState<KraskaItem | null>(null);
   const [form, setForm] = useState<
     Omit<KraskaItem, 'id' | 'totalKg' | 'pricePerKg'> & {
       totalKg: string;
@@ -112,6 +117,7 @@ export default function KraskaPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+  const transactionsDialog = useBoolean();
 
   const setItemsAndPersist = (updater: (prev: KraskaItem[]) => KraskaItem[]) => {
     setItems((prev) => {
@@ -138,6 +144,11 @@ export default function KraskaPage() {
       description: '',
     });
     dialog.onTrue();
+  };
+
+  const openTransactionsSearch = () => {
+    setTransactionsTarget(null);
+    transactionsDialog.onTrue();
   };
 
   const openEdit = (item: KraskaItem) => {
@@ -225,6 +236,17 @@ export default function KraskaPage() {
     }
   };
 
+  const transactionsFilterOptions = createFilterOptions<KraskaItem>({
+    stringify: (option) =>
+      `${option.id} ${option.seriyaNumber} ${option.colorName} ${option.colorHex} ${option.marka} ${option.supplier}`,
+  });
+
+  const formatTransactionsOption = (item: KraskaItem) => {
+    const seriya = item.seriyaNumber || item.id;
+    const colorLabel = item.colorName || item.colorHex;
+    return `${seriya} · ${colorLabel}`;
+  };
+
   return (
     <>
       <title>{title}</title>
@@ -239,9 +261,14 @@ export default function KraskaPage() {
               </Typography>
             </Box>
 
-            <Button variant="contained" onClick={openAdd}>
-              {t('kraskaPage.add')}
-            </Button>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Button variant="outlined" onClick={openTransactionsSearch}>
+                {t('kraskaPage.transactions')}
+              </Button>
+              <Button variant="contained" onClick={openAdd}>
+                {t('kraskaPage.add')}
+              </Button>
+            </Stack>
           </Stack>
 
           <Card>
@@ -516,6 +543,45 @@ export default function KraskaPage() {
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
             {t('kraskaPage.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={transactionsDialog.value}
+        onClose={transactionsDialog.onFalse}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('kraskaPage.transactionsSearchTitle')}</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            autoHighlight
+            options={items}
+            value={transactionsTarget}
+            onChange={(_event, value) => {
+              setTransactionsTarget(value);
+              if (value?.id) {
+                transactionsDialog.onFalse();
+                navigate(paths.dashboard.inventory.kraskaTransactions(value.id));
+              }
+            }}
+            getOptionLabel={formatTransactionsOption}
+            filterOptions={transactionsFilterOptions}
+            noOptionsText={t('kraskaPage.transactionsSearchEmpty')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                autoFocus
+                label={t('kraskaPage.transactionsSearchLabel')}
+                placeholder={t('kraskaPage.transactionsSearchPlaceholder')}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={transactionsDialog.onFalse} color="inherit">
+            {t('kraskaPage.cancel')}
           </Button>
         </DialogActions>
       </Dialog>

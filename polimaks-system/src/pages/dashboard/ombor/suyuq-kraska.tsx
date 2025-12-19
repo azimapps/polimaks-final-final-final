@@ -1,8 +1,10 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -29,6 +31,7 @@ import Typography from '@mui/material/Typography';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import seedData from 'src/data/suyuq-kraska.json';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -71,6 +74,7 @@ const normalizeItems = (items: (Partial<SuyuqKraskaItem> & { id?: string })[]): 
 
 export default function SuyuqKraskaPage() {
   const { t } = useTranslate('pages');
+  const navigate = useNavigate();
 
   const title = `${t('inventory.items.suyuq_kraska.title')} | ${CONFIG.appName}`;
 
@@ -93,6 +97,7 @@ export default function SuyuqKraskaPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<SuyuqKraskaItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SuyuqKraskaItem | null>(null);
+  const [transactionsTarget, setTransactionsTarget] = useState<SuyuqKraskaItem | null>(null);
   const [form, setForm] = useState<
     Omit<SuyuqKraskaItem, 'id' | 'totalKg' | 'pricePerKg'> & {
       totalKg: string;
@@ -113,6 +118,7 @@ export default function SuyuqKraskaPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+  const transactionsDialog = useBoolean();
 
   const setItemsAndPersist = (updater: (prev: SuyuqKraskaItem[]) => SuyuqKraskaItem[]) => {
     setItems((prev) => {
@@ -139,6 +145,11 @@ export default function SuyuqKraskaPage() {
       description: '',
     });
     dialog.onTrue();
+  };
+
+  const openTransactionsSearch = () => {
+    setTransactionsTarget(null);
+    transactionsDialog.onTrue();
   };
 
   const openEdit = (item: SuyuqKraskaItem) => {
@@ -226,6 +237,17 @@ export default function SuyuqKraskaPage() {
     }
   };
 
+  const transactionsFilterOptions = createFilterOptions<SuyuqKraskaItem>({
+    stringify: (option) =>
+      `${option.id} ${option.seriyaNumber} ${option.colorName} ${option.colorHex} ${option.marka} ${option.supplier}`,
+  });
+
+  const formatTransactionsOption = (item: SuyuqKraskaItem) => {
+    const seriya = item.seriyaNumber || item.id;
+    const colorLabel = item.colorName || item.colorHex;
+    return `${seriya} · ${colorLabel}`;
+  };
+
   return (
     <>
       <title>{title}</title>
@@ -240,9 +262,14 @@ export default function SuyuqKraskaPage() {
               </Typography>
             </Box>
 
-            <Button variant="contained" onClick={openAdd}>
-              {t('suyuqKraskaPage.add')}
-            </Button>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Button variant="outlined" onClick={openTransactionsSearch}>
+                {t('suyuqKraskaPage.transactions')}
+              </Button>
+              <Button variant="contained" onClick={openAdd}>
+                {t('suyuqKraskaPage.add')}
+              </Button>
+            </Stack>
           </Stack>
 
           <Card>
@@ -517,6 +544,45 @@ export default function SuyuqKraskaPage() {
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
             {t('suyuqKraskaPage.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={transactionsDialog.value}
+        onClose={transactionsDialog.onFalse}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('suyuqKraskaPage.transactionsSearchTitle')}</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            autoHighlight
+            options={items}
+            value={transactionsTarget}
+            onChange={(_event, value) => {
+              setTransactionsTarget(value);
+              if (value?.id) {
+                transactionsDialog.onFalse();
+                navigate(paths.dashboard.inventory.suyuqKraskaTransactions(value.id));
+              }
+            }}
+            getOptionLabel={formatTransactionsOption}
+            filterOptions={transactionsFilterOptions}
+            noOptionsText={t('suyuqKraskaPage.transactionsSearchEmpty')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                autoFocus
+                label={t('suyuqKraskaPage.transactionsSearchLabel')}
+                placeholder={t('suyuqKraskaPage.transactionsSearchPlaceholder')}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={transactionsDialog.onFalse} color="inherit">
+            {t('suyuqKraskaPage.cancel')}
           </Button>
         </DialogActions>
       </Dialog>

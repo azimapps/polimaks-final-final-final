@@ -17,8 +17,13 @@ export const paths = {
       plyonka: '/ombor/plyonka',
       plyonkaTransactions: (plyonkaId: string) => `/ombor/plyonka/${plyonkaId}/transaksiyalar`,
       kraska: '/ombor/kraska',
+      kraskaTransactions: (kraskaId: string) => `/ombor/kraska/${kraskaId}/transaksiyalar`,
       suyuqKraska: '/ombor/suyuq-kraska',
+      suyuqKraskaTransactions: (suyuqKraskaId: string) =>
+        `/ombor/suyuq-kraska/${suyuqKraskaId}/transaksiyalar`,
       razvaritel: '/ombor/razvaritel',
+      razvaritelTransactions: (razvaritelId: string) =>
+        `/ombor/razvaritel/${razvaritelId}/transaksiyalar`,
       silindir: '/ombor/silindir',
       kley: '/ombor/kley',
       zapchastlar: '/ombor/zapchastlar',
