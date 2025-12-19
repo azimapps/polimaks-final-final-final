@@ -1,16 +1,18 @@
-import { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Select from '@mui/material/Select';
+import Collapse from '@mui/material/Collapse';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
+import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 import FormControl from '@mui/material/FormControl';
@@ -21,12 +23,15 @@ import { useTranslate } from 'src/locales';
 import stanokReskaSeed from 'src/data/stanok-reska.json';
 import brigadaReskaSeed from 'src/data/stanok-brigada-reska.json';
 
+import { Iconify } from 'src/components/iconify';
+
 type PlanItem = {
   id: string;
   orderNumber: string;
   clientName: string;
   title: string;
   quantityKg: number;
+  orderDate?: string;
   startDate: string;
   endDate: string;
   machineType: string;
@@ -34,6 +39,14 @@ type PlanItem = {
   machineName?: string;
   groupId: string;
   groupName?: string;
+  material?: string;
+  subMaterial?: string;
+  filmThickness?: number;
+  filmWidth?: number;
+  cylinderLength?: number;
+  cylinderCount?: number;
+  cylinderAylanasi?: number;
+  note?: string;
 };
 
 const ORDER_PLAN_STORAGE_KEY = 'orderPlansV2';
@@ -61,6 +74,7 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   clientName: raw?.clientName || '',
   title: raw?.title || '',
   quantityKg: Number(raw?.quantityKg) || 0,
+  orderDate: raw?.orderDate,
   startDate: raw?.startDate || '',
   endDate: raw?.endDate || '',
   machineType: raw?.machineType || '',
@@ -68,6 +82,14 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   machineName: raw?.machineName || '',
   groupId: raw?.groupId || '',
   groupName: raw?.groupName || '',
+  material: raw?.material,
+  subMaterial: raw?.subMaterial,
+  filmThickness: Number(raw?.filmThickness) || undefined,
+  filmWidth: Number(raw?.filmWidth) || undefined,
+  cylinderLength: Number(raw?.cylinderLength) || undefined,
+  cylinderCount: Number(raw?.cylinderCount) || undefined,
+  cylinderAylanasi: Number(raw?.cylinderAylanasi) || undefined,
+  note: raw?.note,
 });
 
 const loadPlanItems = (): PlanItem[] => {
@@ -119,6 +141,7 @@ export default function ReskaOverviewPage() {
   const [brigadas, setBrigadas] = useState<any[]>([]);
   const [selectedBrigadaId, setSelectedBrigadaId] = useState<string>('');
   const [plans, setPlans] = useState<PlanItem[]>(() => loadPlanItems());
+  const [openPlanRows, setOpenPlanRows] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const loadMachines = () => setMachines(readLocalArray('stanok-reska', stanokReskaSeed as any[]));
@@ -200,6 +223,18 @@ export default function ReskaOverviewPage() {
     [plans, selectedMachineId, selectedBrigadaId]
   );
 
+  const togglePlanRow = (id: string) =>
+    setOpenPlanRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+
+  const formatDate = (value?: string) => {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+  };
+
   return (
     <>
       <title>{title}</title>
@@ -276,6 +311,7 @@ export default function ReskaOverviewPage() {
               <Table size="small">
                 <TableHead>
                   <TableRow>
+                    <TableCell width={56} />
                     <TableCell>{t('orderPlanPage.orderNumber')}</TableCell>
                     <TableCell>{t('orderPlanPage.client')}</TableCell>
                     <TableCell>{t('orderPlanPage.title')}</TableCell>
@@ -286,24 +322,93 @@ export default function ReskaOverviewPage() {
                 <TableBody>
                   {filteredPlans.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} align="center" sx={{ py: 3, color: 'text.disabled' }}>
+                      <TableCell colSpan={6} align="center" sx={{ py: 3, color: 'text.disabled' }}>
                         {t('orderPlanPage.empty')}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredPlans.map((plan) => (
-                      <TableRow key={plan.id} hover>
-                        <TableCell>{plan.orderNumber}</TableCell>
-                        <TableCell>{plan.clientName}</TableCell>
-                        <TableCell>{plan.title}</TableCell>
-                        <TableCell align="right">{plan.quantityKg}</TableCell>
-                        <TableCell>
-                          {plan.startDate
-                            ? new Date(plan.startDate).toLocaleDateString()
-                            : t('orderPlanPage.date')}
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    filteredPlans.map((plan) => {
+                      const isOpen = openPlanRows[plan.id];
+                      return (
+                        <React.Fragment key={plan.id}>
+                          <TableRow hover>
+                            <TableCell width={56}>
+                              <IconButton size="small" onClick={() => togglePlanRow(plan.id)}>
+                                <Iconify icon={isOpen ? 'eva:arrow-upward-fill' : 'eva:arrow-downward-fill'} />
+                              </IconButton>
+                            </TableCell>
+                            <TableCell>{plan.orderNumber}</TableCell>
+                            <TableCell>{plan.clientName}</TableCell>
+                            <TableCell>{plan.title}</TableCell>
+                            <TableCell align="right">{plan.quantityKg}</TableCell>
+                            <TableCell>
+                              {plan.startDate
+                                ? new Date(plan.startDate).toLocaleDateString()
+                                : t('orderPlanPage.date')}
+                            </TableCell>
+                          </TableRow>
+
+                          <TableRow>
+                            <TableCell colSpan={6} sx={{ py: 0, border: 0 }}>
+                              <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                                <Box sx={{ px: 2, py: 2, bgcolor: 'background.neutral', borderRadius: 1 }}>
+                                  <Stack spacing={1.25}>
+                                    <Typography variant="subtitle2">{t('orderPlanPage.details')}</Typography>
+                                    <Box
+                                      sx={{
+                                        display: 'grid',
+                                        gap: 1.5,
+                                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                                      }}
+                                    >
+                                      <DetailItem label={t('orderPlanPage.orderNumber')} value={plan.orderNumber} />
+                                      <DetailItem label={t('orderPlanPage.client')} value={plan.clientName} />
+                                      <DetailItem label={t('orderPlanPage.title')} value={plan.title} />
+                                      <DetailItem
+                                        label={t('orderPlanPage.quantityKg')}
+                                        value={
+                                          plan.quantityKg
+                                            ? `${plan.quantityKg} ${t('orderPlanPage.kg')}`
+                                            : ''
+                                        }
+                                      />
+                                      <DetailItem label={t('orderPlanPage.date')} value={formatDate(plan.orderDate || plan.startDate)} />
+                                      <DetailItem label={t('orderPlanPage.endDate')} value={formatDate(plan.endDate)} />
+                                      <DetailItem label={t('reskaPanel.machineLabel')} value={plan.machineName || plan.machineId} />
+                                      <DetailItem label={t('reskaPanel.brigadaLabel')} value={plan.groupName || plan.groupId} />
+                                      <DetailItem
+                                        label={t('orderPlanPage.material')}
+                                        value={plan.material ? `${plan.material}${plan.subMaterial ? ` · ${plan.subMaterial}` : ''}` : ''}
+                                      />
+                                      <DetailItem
+                                        label="Silindr"
+                                        value={[
+                                          plan.cylinderLength ? `L=${plan.cylinderLength} mm` : '',
+                                          plan.cylinderCount ? `Soni=${plan.cylinderCount}` : '',
+                                          plan.cylinderAylanasi ? `Ayln=${plan.cylinderAylanasi} mm` : '',
+                                        ]
+                                          .filter(Boolean)
+                                          .join(' · ')}
+                                      />
+                                      <DetailItem
+                                        label="Plyonka"
+                                        value={[
+                                          plan.filmThickness ? `${plan.filmThickness} mkm` : '',
+                                          plan.filmWidth ? `${plan.filmWidth} mm` : '',
+                                        ]
+                                          .filter(Boolean)
+                                          .join(' · ')}
+                                      />
+                                      <DetailItem label="Izoh" value={plan.note || ''} />
+                                    </Box>
+                                  </Stack>
+                                </Box>
+                              </Collapse>
+                            </TableCell>
+                          </TableRow>
+                        </React.Fragment>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
@@ -312,5 +417,19 @@ export default function ReskaOverviewPage() {
         </Card>
       </Container>
     </>
+  );
+}
+
+type DetailItemProps = { label: string; value?: string };
+
+function DetailItem({ label, value }: DetailItemProps) {
+  if (!value) return null;
+  return (
+    <Stack spacing={0.5}>
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+        {label}
+      </Typography>
+      <Typography variant="body2">{value}</Typography>
+    </Stack>
   );
 }

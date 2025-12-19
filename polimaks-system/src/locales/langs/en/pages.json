@@ -1021,6 +1021,7 @@
     "empty": "No orders yet.",
     "actions": "Actions",
     "date": "Date",
+    "endDate": "End date",
     "orderNumber": "Order Number",
     "client": "Client",
     "title": "Title",
@@ -1057,7 +1058,8 @@
     "noOrdersInOrderBook": "No orders found in Order Book",
     "noOrdersMatch": "No orders match your search",
     "importHint": "Selected orders will be imported with default status 'Planning'. You can edit them after import.",
-    "importSelected": "Import Selected"
+    "importSelected": "Import Selected",
+    "details": "Details"
   },
   "reskaPanel": {
     "title": "Reska panel",

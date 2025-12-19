@@ -1049,6 +1049,7 @@
     "microns": "mkm",
     "mm": "mm",
     "pcs": "dona",
+    "endDate": "Tugash sana",
     "importFromOrderBook": "Buyurtmalar Kitobidan Import",
     "searchOrders": "Raqam, mijoz yoki sarlavha bo'yicha buyurtma qidirish...",
     "ordersSelected": "buyurtma tanlandi",
@@ -1058,7 +1059,8 @@
     "noOrdersInOrderBook": "Buyurtmalar Kitobida buyurtmalar topilmadi",
     "noOrdersMatch": "Qidiruvga mos buyurtmalar yo'q",
     "importHint": "Tanlangan buyurtmalar 'Rejalashtirish' statusida import qilinadi. Import qilgandan so'ng ularni tahrirlashingiz mumkin.",
-    "importSelected": "Tanlanganlarni Import qilish"
+    "importSelected": "Tanlanganlarni Import qilish",
+    "details": "Tafsilotlar"
   },
   "reskaPanel": {
     "title": "Reska paneli",

@@ -212,7 +212,7 @@ export const routesSection: RouteObject[] = [
     ],
   },
   {
-    path: 'stanok/pechat',
+    path: 'pechat-paneli',
     element: (
       <AuthGuard>
         <PechatPanelLayout />
