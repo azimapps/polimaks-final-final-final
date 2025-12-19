@@ -26,6 +26,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
@@ -121,6 +122,7 @@ export default function PlyonkaPage() {
     allCategoryValue
   );
   const [filterSubcategory, setFilterSubcategory] = useState<string>(allSubcategoryValue);
+  const [transactionsTarget, setTransactionsTarget] = useState<PlyonkaItem | null>(null);
   const [form, setForm] = useState<
     Omit<PlyonkaItem, 'id' | 'totalKg' | 'pricePerKg' | 'thickness' | 'width'> & {
       totalKg: string;
@@ -144,6 +146,7 @@ export default function PlyonkaPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+  const transactionsDialog = useBoolean();
 
   const setItemsAndPersist = (updater: (prev: PlyonkaItem[]) => PlyonkaItem[]) => {
     setItems((prev) => {
@@ -171,6 +174,11 @@ export default function PlyonkaPage() {
       description: '',
     });
     dialog.onTrue();
+  };
+
+  const openTransactionsSearch = () => {
+    setTransactionsTarget(null);
+    transactionsDialog.onTrue();
   };
 
   const openEdit = (item: PlyonkaItem) => {
@@ -289,6 +297,16 @@ export default function PlyonkaPage() {
     }
   };
 
+  const transactionsFilterOptions = createFilterOptions<PlyonkaItem>({
+    stringify: (option) =>
+      `${option.id} ${option.seriyaNumber} ${option.category} ${option.subcategory} ${option.admin}`,
+  });
+
+  const formatTransactionsOption = (item: PlyonkaItem) => {
+    const seriya = item.seriyaNumber || item.id;
+    return `${seriya} · ${item.category} / ${item.subcategory}`;
+  };
+
   return (
     <>
       <title>{title}</title>
@@ -303,9 +321,14 @@ export default function PlyonkaPage() {
               </Typography>
             </Box>
 
-            <Button variant="contained" onClick={openAdd}>
-              {t('plyonkaPage.add')}
-            </Button>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Button variant="outlined" onClick={openTransactionsSearch}>
+                {t('plyonkaPage.transactions')}
+              </Button>
+              <Button variant="contained" onClick={openAdd}>
+                {t('plyonkaPage.add')}
+              </Button>
+            </Stack>
           </Stack>
 
           <Card sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -661,6 +684,45 @@ export default function PlyonkaPage() {
         </DialogActions>
       </Dialog>
 
+      <Dialog
+        open={transactionsDialog.value}
+        onClose={transactionsDialog.onFalse}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('plyonkaPage.transactionsSearchTitle')}</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            autoHighlight
+            options={items}
+            value={transactionsTarget}
+            onChange={(_event, value) => {
+              setTransactionsTarget(value);
+              if (value?.id) {
+                transactionsDialog.onFalse();
+                navigate(paths.dashboard.inventory.plyonkaTransactions(value.id));
+              }
+            }}
+            getOptionLabel={formatTransactionsOption}
+            filterOptions={transactionsFilterOptions}
+            noOptionsText={t('plyonkaPage.transactionsSearchEmpty')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                autoFocus
+                label={t('plyonkaPage.transactionsSearchLabel')}
+                placeholder={t('plyonkaPage.transactionsSearchPlaceholder')}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={transactionsDialog.onFalse} color="inherit">
+            {t('plyonkaPage.cancel')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <ActionsMenu
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
@@ -672,14 +734,8 @@ export default function PlyonkaPage() {
             deleteDialog.onTrue();
           }
         }}
-        onTransactions={() => {
-          if (menuItem?.id) {
-            navigate(paths.dashboard.inventory.plyonkaTransactions(menuItem.id));
-          }
-        }}
         labels={{
           edit: t('plyonkaPage.edit'),
-          transactions: t('plyonkaPage.transactions'),
           delete: t('plyonkaPage.delete'),
         }}
       />
@@ -693,19 +749,10 @@ type ActionsMenuProps = {
   onClose: VoidFunction;
   onEdit: VoidFunction;
   onDelete: VoidFunction;
-  onTransactions: VoidFunction;
-  labels: { edit: string; transactions: string; delete: string };
+  labels: { edit: string; delete: string };
 };
 
-function ActionsMenu({
-  anchorEl,
-  open,
-  onClose,
-  onEdit,
-  onDelete,
-  onTransactions,
-  labels,
-}: ActionsMenuProps) {
+function ActionsMenu({ anchorEl, open, onClose, onEdit, onDelete, labels }: ActionsMenuProps) {
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
       <MenuItem
@@ -716,15 +763,6 @@ function ActionsMenu({
       >
         <Iconify icon="solar:pen-bold" width={18} height={18} style={{ marginRight: 8 }} />
         {labels.edit}
-      </MenuItem>
-      <MenuItem
-        onClick={() => {
-          onTransactions();
-          onClose();
-        }}
-      >
-        <Iconify icon="solar:bill-list-bold" width={18} height={18} style={{ marginRight: 8 }} />
-        {labels.transactions}
       </MenuItem>
       <MenuItem
         onClick={() => {

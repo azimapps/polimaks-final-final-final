@@ -202,7 +202,6 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
-    "transactions": "Transaksiyalar",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",
@@ -275,6 +274,7 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",
@@ -414,6 +414,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Plyonka tanlang",
+    "transactionsSearchLabel": "Plyonka qidirish",
+    "transactionsSearchPlaceholder": "Seriya, kategoriya, yetkazib beruvchi yoki ID",
+    "transactionsSearchEmpty": "Plyonka topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",

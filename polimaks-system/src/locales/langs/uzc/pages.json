@@ -202,7 +202,6 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
-    "transactions": "Транзакциялар",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {
       "uzs": "СЎМ",
@@ -275,6 +274,7 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {
       "uzs": "СЎМ",
@@ -414,6 +414,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Плёнка танланг",
+    "transactionsSearchLabel": "Плёнка қидириш",
+    "transactionsSearchPlaceholder": "Серия, категория, етказиб берувчи ёки ID",
+    "transactionsSearchEmpty": "Плёнка топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {
       "uzs": "СЎМ",

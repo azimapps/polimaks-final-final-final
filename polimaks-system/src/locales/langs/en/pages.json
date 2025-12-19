@@ -377,6 +377,10 @@
     "empty": "No rolls yet.",
     "actions": "Actions",
     "transactions": "Transactions",
+    "transactionsSearchTitle": "Select a roll",
+    "transactionsSearchLabel": "Search roll",
+    "transactionsSearchPlaceholder": "Seriya, category, supplier, or ID",
+    "transactionsSearchEmpty": "No rolls match your search.",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "currency": {
       "uzs": "UZS",

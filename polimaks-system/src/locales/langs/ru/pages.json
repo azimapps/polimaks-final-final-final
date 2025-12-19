@@ -337,7 +337,6 @@
     "deleteHint": "Вы сможете добавить её снова позже.",
     "empty": "Пока нет записей.",
     "actions": "Действия",
-    "transactions": "Транзакции",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "currency": {
       "uzs": "UZS",
@@ -414,6 +413,11 @@
     "deleteHint": "Вы сможете добавить её снова позже.",
     "empty": "Пока нет записей.",
     "actions": "Действия",
+    "transactions": "Транзакции",
+    "transactionsSearchTitle": "Выберите плёнку",
+    "transactionsSearchLabel": "Поиск плёнки",
+    "transactionsSearchPlaceholder": "Серия, категория, поставщик или ID",
+    "transactionsSearchEmpty": "Плёнка не найдена.",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "currency": {
       "uzs": "UZS",
