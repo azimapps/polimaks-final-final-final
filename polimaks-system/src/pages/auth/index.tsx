@@ -42,6 +42,14 @@ export default function RoleSelectPage() {
       href: paths.dashboard.stanok.pechat,
       color: 'info' as const,
     },
+    {
+      key: 'laminatsiya',
+      heading: t('roleSelect.laminatsiya.heading'),
+      description: t('roleSelect.laminatsiya.description'),
+      cta: t('roleSelect.laminatsiya.cta'),
+      href: paths.dashboard.laminatsiyaPanel.root,
+      color: 'warning' as const,
+    },
   ];
 
   return (

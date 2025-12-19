@@ -6,6 +6,7 @@ import { lazy, Suspense } from 'react';
 import { DashboardLayout } from 'src/layouts/dashboard';
 import { useReskaNavData } from 'src/layouts/nav-config-reska';
 import { usePechatNavData } from 'src/layouts/nav-config-pechat';
+import { useLaminatsiyaNavData } from 'src/layouts/nav-config-laminatsiya';
 
 import { LoadingScreen } from 'src/components/loading-screen';
 
@@ -21,6 +22,9 @@ const HomePage = lazy(() => import('src/pages/dashboard/home'));
 const OmborIndexPage = lazy(() => import('src/pages/dashboard/ombor'));
 const InventoryAnalyticsPage = lazy(() => import('src/pages/dashboard/ombor/analytics'));
 const PlyonkaPage = lazy(() => import('src/pages/dashboard/ombor/plyonka'));
+const PlyonkaTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/plyonka-transaksiyalar')
+);
 const KraskaPage = lazy(() => import('src/pages/dashboard/ombor/kraska'));
 const SuyuqKraskaPage = lazy(() => import('src/pages/dashboard/ombor/suyuq-kraska'));
 const RazvaritelPage = lazy(() => import('src/pages/dashboard/ombor/razvaritel'));
@@ -73,6 +77,9 @@ const BuyurtmaPlanlashtirish = lazy(() => import('src/pages/dashboard/buyurtma-p
 const ReskaPanelOverviewPage = lazy(() => import('src/pages/dashboard/reska-panel/overview'));
 const ReskaPanelQueuePage = lazy(() => import('src/pages/dashboard/reska-panel/queue'));
 const ReskaPanelReportsPage = lazy(() => import('src/pages/dashboard/reska-panel/reports'));
+const LaminatsiyaPanelOverviewPage = lazy(
+  () => import('src/pages/dashboard/laminatsiya-panel/overview')
+);
 // ----------------------------------------------------------------------
 
 function SuspenseOutlet() {
@@ -108,6 +115,15 @@ const PechatPanelLayout = () => {
   );
 };
 
+const LaminatsiyaPanelLayout = () => {
+  const laminatsiyaNavData = useLaminatsiyaNavData();
+  return (
+    <DashboardLayout slotProps={{ nav: { data: laminatsiyaNavData } }}>
+      <SuspenseOutlet />
+    </DashboardLayout>
+  );
+};
+
 // ----------------------------------------------------------------------
 
 const Page404 = lazy(() => import('src/pages/error/404'));
@@ -124,6 +140,7 @@ export const routesSection: RouteObject[] = [
           { index: true, element: <OmborIndexPage /> },
           { path: 'analytics', element: <InventoryAnalyticsPage /> },
           { path: 'plyonka', element: <PlyonkaPage /> },
+          { path: 'plyonka/:plyonkaId/transaksiyalar', element: <PlyonkaTransactionsPage /> },
           { path: 'kraska', element: <KraskaPage /> },
           { path: 'suyuq-kraska', element: <SuyuqKraskaPage /> },
           { path: 'razvaritel', element: <RazvaritelPage /> },
@@ -210,6 +227,15 @@ export const routesSection: RouteObject[] = [
       { path: 'queue', element: <ReskaPanelQueuePage /> },
       { path: 'reports', element: <ReskaPanelReportsPage /> },
     ],
+  },
+  {
+    path: 'laminatsiya-paneli',
+    element: (
+      <AuthGuard>
+        <LaminatsiyaPanelLayout />
+      </AuthGuard>
+    ),
+    children: [{ index: true, element: <LaminatsiyaPanelOverviewPage /> }],
   },
   {
     path: 'pechat-paneli',

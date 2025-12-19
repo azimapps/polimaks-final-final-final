@@ -376,12 +376,32 @@
     "deleteHint": "You can add it back later.",
     "empty": "No rolls yet.",
     "actions": "Actions",
+    "transactions": "Transactions",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "currency": {
       "uzs": "UZS",
       "usd": "USD",
       "rub": "RUB",
       "eur": "EUR"
+    }
+  },
+  "plyonkaTransactionsPage": {
+    "title": "Transactions for {{seriya}}",
+    "subtitle": "Incoming/outgoing notes for this film roll. Data is local for now.",
+    "summaryTitle": "Roll details",
+    "notFound": "Film roll not found. Go back to the list.",
+    "back": "Back to list",
+    "add": "Add transaction",
+    "empty": "No transactions yet.",
+    "unknown": "unknown",
+    "typeIn": "Inbound",
+    "typeOut": "Outbound",
+    "generatedFromStock": "Auto-generated from the current balance",
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "amount": "Amount (kg)",
+      "note": "Note"
     }
   },
   "machines": {
@@ -1085,6 +1105,20 @@
       "placeholder": "Reports page placeholder."
     }
   },
+  "laminatsiyaPanel": {
+    "title": "Lamination panel",
+    "subtitle": "Dedicated view for lamination operator",
+    "machineLabel": "Machine",
+    "brigadaLabel": "Brigada",
+    "noMachines": "No machines found",
+    "noBrigadas": "No brigadas found",
+    "overview": {
+      "heading": "Lamination overview",
+      "description": "Orders from the planner assigned to Lamination for the selected machine and brigada.",
+      "placeholder": "This page is intentionally empty for now.",
+      "selection": "Selected: {{machine}} · {{brigada}}"
+    }
+  },
   "roleSelect": {
     "title": "Choose your workspace",
     "subtitle": "Pick which panel you want to enter.",
@@ -1102,6 +1136,11 @@
       "heading": "Pechat panel",
       "description": "Printing operator view for Pechat stanok.",
       "cta": "Enter Pechat panel"
+    },
+    "laminatsiya": {
+      "heading": "Lamination panel",
+      "description": "Lamination operator view for laminatsiya stanok.",
+      "cta": "Enter Lamination panel"
     }
   },
   "clientsAgreements": {

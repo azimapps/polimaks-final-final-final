@@ -15,6 +15,7 @@ export const paths = {
       root: '/ombor',
       analytics: '/ombor/analytics',
       plyonka: '/ombor/plyonka',
+      plyonkaTransactions: (plyonkaId: string) => `/ombor/plyonka/${plyonkaId}/transaksiyalar`,
       kraska: '/ombor/kraska',
       suyuqKraska: '/ombor/suyuq-kraska',
       razvaritel: '/ombor/razvaritel',
@@ -76,6 +77,10 @@ export const paths = {
       overview: '/reska-panel/overview',
       queue: '/reska-panel/queue',
       reports: '/reska-panel/reports',
+    },
+    laminatsiyaPanel: {
+      root: '/laminatsiya-paneli',
+      overview: '/laminatsiya-paneli',
     },
     user: {
       root: `/user`,

@@ -1,5 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
@@ -29,6 +30,7 @@ import Typography from '@mui/material/Typography';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import seedData from 'src/data/plyonka.json';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -89,6 +91,7 @@ const normalizeItems = (items: (Partial<PlyonkaItem> & { id?: string })[]): Plyo
 
 export default function PlyonkaPage() {
   const { t } = useTranslate('pages');
+  const navigate = useNavigate();
 
   const title = `${t('inventory.items.plyonka.title')} | ${CONFIG.appName}`;
 
@@ -669,7 +672,16 @@ export default function PlyonkaPage() {
             deleteDialog.onTrue();
           }
         }}
-        labels={{ edit: t('plyonkaPage.edit'), delete: t('plyonkaPage.delete') }}
+        onTransactions={() => {
+          if (menuItem?.id) {
+            navigate(paths.dashboard.inventory.plyonkaTransactions(menuItem.id));
+          }
+        }}
+        labels={{
+          edit: t('plyonkaPage.edit'),
+          transactions: t('plyonkaPage.transactions'),
+          delete: t('plyonkaPage.delete'),
+        }}
       />
     </>
   );
@@ -681,10 +693,19 @@ type ActionsMenuProps = {
   onClose: VoidFunction;
   onEdit: VoidFunction;
   onDelete: VoidFunction;
-  labels: { edit: string; delete: string };
+  onTransactions: VoidFunction;
+  labels: { edit: string; transactions: string; delete: string };
 };
 
-function ActionsMenu({ anchorEl, open, onClose, onEdit, onDelete, labels }: ActionsMenuProps) {
+function ActionsMenu({
+  anchorEl,
+  open,
+  onClose,
+  onEdit,
+  onDelete,
+  onTransactions,
+  labels,
+}: ActionsMenuProps) {
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
       <MenuItem
@@ -695,6 +716,15 @@ function ActionsMenu({ anchorEl, open, onClose, onEdit, onDelete, labels }: Acti
       >
         <Iconify icon="solar:pen-bold" width={18} height={18} style={{ marginRight: 8 }} />
         {labels.edit}
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          onTransactions();
+          onClose();
+        }}
+      >
+        <Iconify icon="solar:bill-list-bold" width={18} height={18} style={{ marginRight: 8 }} />
+        {labels.transactions}
       </MenuItem>
       <MenuItem
         onClick={() => {

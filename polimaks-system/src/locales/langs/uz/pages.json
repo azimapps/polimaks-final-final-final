@@ -202,12 +202,32 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",
       "usd": "USD",
       "rub": "RUB",
       "eur": "EUR"
+    }
+  },
+  "plyonkaTransactionsPage": {
+    "title": "Transaksiyalar: {{seriya}}",
+    "subtitle": "Ushbu plyonka uchun kirim/chiqim yozuvlari. Hozircha ma'lumotlar lokal.",
+    "summaryTitle": "Plyonka haqida",
+    "notFound": "Plyonka topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "add": "Transaksiya qo'shish",
+    "empty": "Hozircha transaksiyalar yo'q.",
+    "unknown": "noma'lum",
+    "typeIn": "Kirim",
+    "typeOut": "Chiqim",
+    "generatedFromStock": "Joriy balansdan avtomatik qo'shildi",
+    "table": {
+      "date": "Sana",
+      "type": "Turi",
+      "amount": "Miqdor (kg)",
+      "note": "Izoh"
     }
   },
   "tayyorMahsulotlarAngrenPage": {
@@ -1086,6 +1106,20 @@
       "placeholder": "Hisobotlar sahifasi hozircha bo'sh."
     }
   },
+  "laminatsiyaPanel": {
+    "title": "Laminatsiya paneli",
+    "subtitle": "Laminatsiya operatori uchun ko'rinish",
+    "machineLabel": "Stanok",
+    "brigadaLabel": "Brigada",
+    "noMachines": "Stanoklar topilmadi",
+    "noBrigadas": "Brigadalar topilmadi",
+    "overview": {
+      "heading": "Laminatsiya umumiy",
+      "description": "Rejadan laminatsiyaga biriktirilgan buyurtmalar tanlangan stanok va brigada bo'yicha ko'rinadi.",
+      "placeholder": "Bu sahifa hozircha bo'sh.",
+      "selection": "Tanlangan: {{machine}} · {{brigada}}"
+    }
+  },
   "roleSelect": {
     "title": "Panelni tanlang",
     "subtitle": "Qaysi panelga kirishni tanlang.",
@@ -1103,6 +1137,11 @@
       "heading": "Pechat paneli",
       "description": "Pechat stanogi uchun operator ko'rinishi.",
       "cta": "Pechat paneliga kirish"
+    },
+    "laminatsiya": {
+      "heading": "Laminatsiya paneli",
+      "description": "Laminatsiya stanogi uchun operator ko'rinishi.",
+      "cta": "Laminatsiya paneliga kirish"
     }
   },
   "clientsAgreements": {
