@@ -179,7 +179,7 @@ export const routesSection: RouteObject[] = [
               { path: 'pechat/:machineId/brigada', element: <BrigadaPechatPage /> },
               { path: 'reska/:machineId/brigada', element: <BrigadaReskaPage /> },
           { path: 'laminatsiya/:machineId/brigada', element: <BrigadaLaminatsiyaPage /> },
-          { path: 'materials-pechat', element: <MaterialsPechatPage /> },
+          { path: 'pechat/:machineId/materials', element: <MaterialsPechatPage /> },
           { path: 'reska/:machineId/materials', element: <MaterialsReskaPage /> },
           { path: 'laminatsiya/:machineId/materials', element: <MaterialsLaminatsiyaPage /> },
         ],

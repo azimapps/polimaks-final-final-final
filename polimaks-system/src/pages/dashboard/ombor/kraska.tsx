@@ -284,12 +284,12 @@ export default function KraskaPage() {
                   <TableRow>
                     <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.supplier')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.receivedDate')}</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.marka')}</TableCell>
                     <TableCell sx={{ minWidth: 220 }}>{t('kraskaPage.color')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('kraskaPage.totalKg')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.price')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('kraskaPage.totalPrice')}</TableCell>
-                    <TableCell sx={{ minWidth: 180 }}>{t('kraskaPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 320 }}>{t('kraskaPage.description')}</TableCell>
                     <TableCell align="right" sx={{ width: 120 }}>
                       {t('kraskaPage.actions')}
@@ -331,6 +331,9 @@ export default function KraskaPage() {
                           <Typography variant="body2">{item.createdDate}</Typography>
                         </TableCell>
                         <TableCell>
+                          <Typography variant="body2">{item.seriyaNumber}</Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="body2">{item.marka || '—'}</Typography>
                         </TableCell>
                         <TableCell>
@@ -368,9 +371,6 @@ export default function KraskaPage() {
                             {(item.totalKg * item.pricePerKg).toLocaleString()}{' '}
                             {currencyLabel(item.priceCurrency)}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{item.seriyaNumber}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography

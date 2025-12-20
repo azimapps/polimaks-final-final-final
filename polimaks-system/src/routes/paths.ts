@@ -60,7 +60,7 @@ export const paths = {
       brigadaPechat: (machineId: string) => `/stanok/pechat/${machineId}/brigada`,
       brigadaReska: (machineId: string) => `/stanok/reska/${machineId}/brigada`,
       brigadaLaminatsiya: (machineId: string) => `/stanok/laminatsiya/${machineId}/brigada`,
-      materialsPechat: '/stanok/materials-pechat',
+      materialsPechat: (machineId: string) => `/stanok/pechat/${machineId}/materials`,
       materialsReska: (machineId: string) => `/stanok/reska/${machineId}/materials`,
       materialsLaminatsiya: (machineId: string) => `/stanok/laminatsiya/${machineId}/materials`,
     },

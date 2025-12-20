@@ -52,15 +52,17 @@
     "materials": "Mahsulotlar"
   },
   "pechatMaterialsPage": {
-    "title": "Bosma materiallari",
-    "subtitle": "Ushbu bosma stanoklari bo'yicha chiqimlar. Ma'lumotlar lokal.",
+    "title": "Materiallar: {{machine}}",
+    "subtitle": "Ushbu bosma stanogi bo'yicha chiqimlar. Ma'lumotlar lokal.",
+    "summaryTitle": "Stanok ma'lumotlari",
+    "notFound": "Stanok topilmadi. Ro'yxatga qayting.",
     "back": "Ro'yxatga qaytish",
     "empty": "Chiqimlar hali yo'q.",
     "unknown": "noma'lum",
+    "machineId": "Stanok ID",
     "info": "Material tafsilotlari",
     "table": {
       "date": "Sana",
-      "machine": "Stanok",
       "material": "Material",
       "item": "Seriya / tavsif",
       "amount": "Miqdor",

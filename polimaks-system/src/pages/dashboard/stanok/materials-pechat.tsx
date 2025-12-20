@@ -1,6 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState, type MouseEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -19,6 +19,7 @@ import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
+import { FlagIcon } from 'src/components/flag-icon';
 import { Iconify } from 'src/components/iconify';
 import { CustomPopover } from 'src/components/custom-popover';
 import { CONFIG } from 'src/global-config';
@@ -96,8 +97,6 @@ type MaterialInfo = {
 type MaterialRow = {
   id: string;
   date: string;
-  machineLabel: string;
-  machineId: string;
   materialLabel: string;
   itemLabel: string;
   amountLabel: string;
@@ -107,6 +106,14 @@ type MaterialRow = {
 };
 
 const STORAGE_KEY = 'stanok-pechat';
+
+const LANGUAGE_OPTIONS = [
+  { code: 'cn', labelKey: 'languages.cn', country: 'CN' },
+  { code: 'de', labelKey: 'languages.de', country: 'DE' },
+  { code: 'uz', labelKey: 'languages.uz', country: 'UZ' },
+  { code: 'ru', labelKey: 'languages.ru', country: 'RU' },
+  { code: 'en', labelKey: 'languages.en', country: 'GB' },
+];
 
 const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
   if (typeof window === 'undefined') return fallback;
@@ -135,18 +142,24 @@ const formatAmount = (value: number, unit: string) =>
 export default function MaterialsPechatPage() {
   const { t } = useTranslate('pages');
   const navigate = useNavigate();
+  const { machineId } = useParams();
 
   const machines = useMemo(
     () => readLocalArray<Machine>(STORAGE_KEY, machineSeed as Machine[]),
     []
   );
 
-  const machinesById = useMemo(
-    () => new Map(machines.map((machine) => [machine.id, machine])),
-    [machines]
+  const machine = useMemo(
+    () => machines.find((item) => item.id === machineId) ?? null,
+    [machines, machineId]
   );
 
+  const getCountryCode = (code: string) =>
+    LANGUAGE_OPTIONS.find((opt) => opt.code === code)?.country ?? '';
+
   const rows = useMemo<MaterialRow[]>(() => {
+    if (!machineId) return [];
+
     const unknownLabel = t('pechatMaterialsPage.unknown');
     const formatSize = (value?: number) =>
       typeof value === 'number' && value > 0 ? `${value} ${t('silindirPage.mm')}` : unknownLabel;
@@ -174,15 +187,6 @@ export default function MaterialsPechatPage() {
     let fallbackIndex = 0;
     const results: MaterialRow[] = [];
 
-    const getMachineMeta = (machineId?: string) => {
-      if (!machineId) return { machineLabel: unknownLabel, machineId: '' };
-      const machine = machinesById.get(machineId);
-      return {
-        machineLabel: machine?.name || machineId || unknownLabel,
-        machineId: machine?.id || machineId,
-      };
-    };
-
     const pushRow = (row: Omit<MaterialRow, 'createdAt'>, tx: BaseTx) => {
       results.push({
         ...row,
@@ -193,7 +197,7 @@ export default function MaterialsPechatPage() {
     const handlePlyonka = () => {
       const txs = readTransactions<PlyonkaTx>('ombor-plyonka-transactions');
       txs.forEach((tx) => {
-        if (tx.type !== 'out' || tx.machineType !== 'pechat') return;
+        if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
         const item = plyonkaItems.get(tx.plyonkaId);
         const parts = [
           item?.seriyaNumber || unknownLabel,
@@ -201,12 +205,10 @@ export default function MaterialsPechatPage() {
           item?.subcategory || '',
         ].filter(Boolean);
         const label = parts.join(' / ');
-        const machineMeta = getMachineMeta(tx.machineId);
         pushRow(
           {
             id: `plyonka-${tx.id}`,
             date: tx.date || '',
-            ...machineMeta,
             materialLabel: t('plyonkaPage.title'),
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountKg) || 0, t('plyonkaPage.kg')),
@@ -225,7 +227,7 @@ export default function MaterialsPechatPage() {
     const handleKraska = () => {
       const txs = readTransactions<KraskaTx>('ombor-kraska-transactions');
       txs.forEach((tx) => {
-        if (tx.type !== 'out' || tx.machineType !== 'pechat') return;
+        if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
         const item = kraskaItems.get(tx.kraskaId);
         const parts = [
           item?.seriyaNumber || unknownLabel,
@@ -233,12 +235,10 @@ export default function MaterialsPechatPage() {
           item?.marka || '',
         ].filter(Boolean);
         const label = parts.join(' / ');
-        const machineMeta = getMachineMeta(tx.machineId);
         pushRow(
           {
             id: `kraska-${tx.id}`,
             date: tx.date || '',
-            ...machineMeta,
             materialLabel: t('kraskaPage.title'),
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountKg) || 0, t('kraskaPage.kg')),
@@ -257,7 +257,7 @@ export default function MaterialsPechatPage() {
     const handleSuyuqKraska = () => {
       const txs = readTransactions<SuyuqKraskaTx>('ombor-suyuq-kraska-transactions');
       txs.forEach((tx) => {
-        if (tx.type !== 'out' || tx.machineType !== 'pechat') return;
+        if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
         const item = suyuqKraskaItems.get(tx.suyuqKraskaId);
         const parts = [
           item?.seriyaNumber || unknownLabel,
@@ -265,12 +265,10 @@ export default function MaterialsPechatPage() {
           item?.marka || '',
         ].filter(Boolean);
         const label = parts.join(' / ');
-        const machineMeta = getMachineMeta(tx.machineId);
         pushRow(
           {
             id: `suyuq-kraska-${tx.id}`,
             date: tx.date || '',
-            ...machineMeta,
             materialLabel: t('suyuqKraskaPage.title'),
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountKg) || 0, t('suyuqKraskaPage.kg')),
@@ -289,16 +287,14 @@ export default function MaterialsPechatPage() {
     const handleRazvaritel = () => {
       const txs = readTransactions<RazvaritelTx>('ombor-razvaritel-transactions');
       txs.forEach((tx) => {
-        if (tx.type !== 'out' || tx.machineType !== 'pechat') return;
+        if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
         const item = razvaritelItems.get(tx.razvaritelId);
         const parts = [item?.seriyaNumber || unknownLabel, item?.type || ''].filter(Boolean);
         const label = parts.join(' / ');
-        const machineMeta = getMachineMeta(tx.machineId);
         pushRow(
           {
             id: `razvaritel-${tx.id}`,
             date: tx.date || '',
-            ...machineMeta,
             materialLabel: t('razvaritelPage.title'),
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountLiter) || 0, t('razvaritelPage.liter')),
@@ -316,7 +312,7 @@ export default function MaterialsPechatPage() {
     const handleSilindir = () => {
       const txs = readTransactions<SilindirTx>('ombor-silindir-transactions');
       txs.forEach((tx) => {
-        if (tx.type !== 'out' || tx.machineType !== 'pechat') return;
+        if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
         const item = silindirItems.get(tx.silindirId);
         const originLabel = item?.origin ? t(`silindirPage.origin.${item.origin}`) : '';
         const sizeParts = [
@@ -326,12 +322,10 @@ export default function MaterialsPechatPage() {
         const sizeLabel = sizeParts.length ? `${sizeParts.join('x')} ${t('silindirPage.mm')}` : '';
         const parts = [item?.seriyaNumber || unknownLabel, originLabel, sizeLabel].filter(Boolean);
         const label = parts.join(' / ');
-        const machineMeta = getMachineMeta(tx.machineId);
         pushRow(
           {
             id: `silindir-${tx.id}`,
             date: tx.date || '',
-            ...machineMeta,
             materialLabel: t('silindirPage.title'),
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountQty) || 0, ''),
@@ -355,7 +349,7 @@ export default function MaterialsPechatPage() {
     handleSilindir();
 
     return results.sort((a, b) => b.createdAt - a.createdAt);
-  }, [machinesById, t]);
+  }, [machineId, t]);
 
   const [infoAnchorEl, setInfoAnchorEl] = useState<HTMLElement | null>(null);
   const [infoRow, setInfoRow] = useState<MaterialRow | null>(null);
@@ -371,8 +365,11 @@ export default function MaterialsPechatPage() {
     setInfoRow(null);
   };
 
-  const heading = t('pechatMaterialsPage.title');
+  const heading = t('pechatMaterialsPage.title', {
+    machine: machine?.name || machineId || t('pechatMaterialsPage.unknown'),
+  });
   const pageTitle = `${heading} | ${CONFIG.appName}`;
+  const languageLabel = machine?.language_code ? t(`languages.${machine.language_code}`) : '-';
 
   return (
     <>
@@ -396,120 +393,148 @@ export default function MaterialsPechatPage() {
             </Button>
           </Stack>
 
-          <Card>
-            <TableContainer>
-              <Table size="medium">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ minWidth: 120 }}>{t('pechatMaterialsPage.table.date')}</TableCell>
-                    <TableCell sx={{ minWidth: 180 }}>
-                      {t('pechatMaterialsPage.table.machine')}
-                    </TableCell>
-                    <TableCell sx={{ minWidth: 140 }}>
-                      {t('pechatMaterialsPage.table.material')}
-                    </TableCell>
-                    <TableCell sx={{ minWidth: 220 }}>{t('pechatMaterialsPage.table.item')}</TableCell>
-                    <TableCell sx={{ minWidth: 140 }}>
-                      {t('pechatMaterialsPage.table.amount')}
-                    </TableCell>
-                    <TableCell>{t('pechatMaterialsPage.table.note')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6}>
-                        <Box
-                          sx={{
-                            py: 6,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexDirection: 'column',
-                            gap: 1,
-                          }}
-                        >
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {t('pechatMaterialsPage.empty')}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    rows.map((row) => (
-                      <TableRow key={row.id} hover>
-                        <TableCell>{row.date || '-'}</TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{row.machineLabel}</Typography>
-                          {row.machineId && row.machineLabel !== row.machineId && (
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              {row.machineId}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Chip size="small" label={row.materialLabel} variant="outlined" />
-                        </TableCell>
-                        <TableCell>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <Typography variant="body2">{row.itemLabel || '-'}</Typography>
-                            {row.info.length > 0 && (
-                              <Tooltip title={t('pechatMaterialsPage.info')}>
-                                <IconButton
-                                  size="small"
-                                  onClick={(event) => handleOpenInfo(event, row)}
-                                  aria-label={t('pechatMaterialsPage.info')}
-                                >
-                                  <Iconify icon="eva:info-outline" width={16} />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Stack>
-                        </TableCell>
-                        <TableCell>{row.amountLabel}</TableCell>
-                        <TableCell>{row.note || '-'}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            <CustomPopover
-              open={infoOpen}
-              anchorEl={infoAnchorEl}
-              onClose={handleCloseInfo}
-              slotProps={{
-                arrow: { placement: 'top-left' },
-                paper: { sx: { p: 2, minWidth: 240, maxWidth: 320 } },
-              }}
-            >
-              {infoRow && (
-                <Stack spacing={1}>
-                  <Typography variant="subtitle2">{infoRow.materialLabel}</Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {infoRow.itemLabel || '-'}
-                  </Typography>
-                  <Divider />
-                  <Stack spacing={0.75}>
-                    {infoRow.info.map((detail, index) => (
-                      <Stack
-                        key={`${detail.label}-${index}`}
-                        direction="row"
-                        spacing={2}
-                        justifyContent="space-between"
-                      >
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                          {detail.label}
-                        </Typography>
-                        <Typography variant="body2">{detail.value}</Typography>
-                      </Stack>
-                    ))}
+          {!machine ? (
+            <Card sx={{ p: 3 }}>
+              <Typography variant="body1">{t('pechatMaterialsPage.notFound')}</Typography>
+            </Card>
+          ) : (
+            <>
+              <Card sx={{ p: 3 }}>
+                <Typography variant="h6">{t('pechatMaterialsPage.summaryTitle')}</Typography>
+                <Divider sx={{ my: 2 }} />
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={2}
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                >
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <FlagIcon
+                      code={getCountryCode(machine.language_code)}
+                      sx={{ width: 46, height: 30, borderRadius: 0.75 }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle1">{machine.name || '-'}</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {t('pechatPage.languageCode')}: {languageLabel}
+                      </Typography>
+                    </Box>
                   </Stack>
+                  <Divider flexItem orientation="vertical" sx={{ display: { xs: 'none', sm: 'block' } }} />
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {t('pechatMaterialsPage.machineId')}: {machine.id}
+                  </Typography>
                 </Stack>
-              )}
-            </CustomPopover>
-          </Card>
+              </Card>
+
+              <Card>
+                <TableContainer>
+                  <Table size="medium">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ minWidth: 120 }}>
+                          {t('pechatMaterialsPage.table.date')}
+                        </TableCell>
+                        <TableCell sx={{ minWidth: 140 }}>
+                          {t('pechatMaterialsPage.table.material')}
+                        </TableCell>
+                        <TableCell sx={{ minWidth: 220 }}>
+                          {t('pechatMaterialsPage.table.item')}
+                        </TableCell>
+                        <TableCell sx={{ minWidth: 140 }}>
+                          {t('pechatMaterialsPage.table.amount')}
+                        </TableCell>
+                        <TableCell>{t('pechatMaterialsPage.table.note')}</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {rows.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5}>
+                            <Box
+                              sx={{
+                                py: 6,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column',
+                                gap: 1,
+                              }}
+                            >
+                              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                {t('pechatMaterialsPage.empty')}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        rows.map((row) => (
+                          <TableRow key={row.id} hover>
+                            <TableCell>{row.date || '-'}</TableCell>
+                            <TableCell>
+                              <Chip size="small" label={row.materialLabel} variant="outlined" />
+                            </TableCell>
+                            <TableCell>
+                              <Stack direction="row" alignItems="center" spacing={1}>
+                                <Typography variant="body2">{row.itemLabel || '-'}</Typography>
+                                {row.info.length > 0 && (
+                                  <Tooltip title={t('pechatMaterialsPage.info')}>
+                                    <IconButton
+                                      size="small"
+                                      onClick={(event) => handleOpenInfo(event, row)}
+                                      aria-label={t('pechatMaterialsPage.info')}
+                                    >
+                                      <Iconify icon="eva:info-outline" width={16} />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                              </Stack>
+                            </TableCell>
+                            <TableCell>{row.amountLabel}</TableCell>
+                            <TableCell>{row.note || '-'}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <CustomPopover
+                  open={infoOpen}
+                  anchorEl={infoAnchorEl}
+                  onClose={handleCloseInfo}
+                  slotProps={{
+                    arrow: { placement: 'top-left' },
+                    paper: { sx: { p: 2, minWidth: 240, maxWidth: 320 } },
+                  }}
+                >
+                  {infoRow && (
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">{infoRow.materialLabel}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {infoRow.itemLabel || '-'}
+                      </Typography>
+                      <Divider />
+                      <Stack spacing={0.75}>
+                        {infoRow.info.map((detail, index) => (
+                          <Stack
+                            key={`${detail.label}-${index}`}
+                            direction="row"
+                            spacing={2}
+                            justifyContent="space-between"
+                          >
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                              {detail.label}
+                            </Typography>
+                            <Typography variant="body2">{detail.value}</Typography>
+                          </Stack>
+                        ))}
+                      </Stack>
+                    </Stack>
+                  )}
+                </CustomPopover>
+              </Card>
+            </>
+          )}
         </Stack>
       </Container>
     </>

@@ -52,15 +52,17 @@
     "materials": "Materials"
   },
   "pechatMaterialsPage": {
-    "title": "Printing materials",
-    "subtitle": "Outbound material transactions for printing machines.",
+    "title": "Materials for {{machine}}",
+    "subtitle": "Outbound material transactions for this press.",
+    "summaryTitle": "Machine details",
+    "notFound": "Machine not found. Go back to the list.",
     "back": "Back to list",
     "empty": "No outgoing materials yet.",
     "unknown": "unknown",
+    "machineId": "Machine ID",
     "info": "Material details",
     "table": {
       "date": "Date",
-      "machine": "Machine",
       "material": "Material",
       "item": "Item",
       "amount": "Amount",
