@@ -38,6 +38,9 @@ const RazvaritelTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/razvaritel-transaksiyalar')
 );
 const SilindirPage = lazy(() => import('src/pages/dashboard/ombor/silindir'));
+const SilindirTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/silindir-transaksiyalar')
+);
 const KleyPage = lazy(() => import('src/pages/dashboard/ombor/kley'));
 const ZapchastlarPage = lazy(() => import('src/pages/dashboard/ombor/zapchastlar'));
 const OtxotPage = lazy(() => import('src/pages/dashboard/ombor/otxot'));
@@ -157,6 +160,7 @@ export const routesSection: RouteObject[] = [
           { path: 'razvaritel', element: <RazvaritelPage /> },
           { path: 'razvaritel/:razvaritelId/transaksiyalar', element: <RazvaritelTransactionsPage /> },
           { path: 'silindir', element: <SilindirPage /> },
+          { path: 'silindir/:silindirId/transaksiyalar', element: <SilindirTransactionsPage /> },
           { path: 'kley', element: <KleyPage /> },
           { path: 'zapchastlar', element: <ZapchastlarPage /> },
           { path: 'otxot', element: <OtxotPage /> },

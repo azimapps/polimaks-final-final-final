@@ -202,6 +202,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Silindr tanlang",
+    "transactionsSearchLabel": "Silindr qidirish",
+    "transactionsSearchPlaceholder": "Seriya, kelib chiqishi, o'lcham yoki ID",
+    "transactionsSearchEmpty": "Silindr topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",
@@ -209,6 +214,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "silindirTransactionsPage": {
+    "title": "Transaksiyalar: {{seriya}}",
+    "subtitle": "Ushbu silindr uchun kirim/chiqim yozuvlari. Hozircha ma'lumotlar lokal.",
+    "summaryTitle": "Silindr haqida",
+    "notFound": "Silindr topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "add": "Transaksiya qo'shish",
+    "empty": "Hozircha transaksiyalar yo'q.",
+    "unknown": "noma'lum",
+    "typeIn": "Kirim",
+    "typeOut": "Chiqim",
+    "generatedFromStock": "Joriy balansdan avtomatik qo'shildi",
+    "table": {
+      "date": "Sana",
+      "type": "Turi",
+      "machine": "Stanok",
+      "amount": "Miqdor",
+      "note": "Izoh"
+    },
+    "form": {
+      "type": "Turi",
+      "date": "Sana",
+      "machineType": "Stanok turi",
+      "machine": "Stanok",
+      "amount": "Miqdor",
+      "note": "Izoh",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+    },
+    "deleteConfirm": "Ushbu transaksiyani o'chirasizmi?",
+    "initial": "Boshlang'ich qoldiq",
+    "deleteTitle": "Transaksiyani o'chirish"
   },
   "plyonkaTransactionsPage": {
     "title": "Transaksiyalar: {{seriya}}",

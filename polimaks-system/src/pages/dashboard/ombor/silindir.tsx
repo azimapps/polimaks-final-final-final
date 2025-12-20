@@ -1,8 +1,10 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -29,6 +31,7 @@ import Typography from '@mui/material/Typography';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import seedData from 'src/data/silindir.json';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -56,6 +59,7 @@ const todayISO = () => new Date().toISOString().slice(0, 10);
 
 export default function SilindirPage() {
   const { t } = useTranslate('pages');
+  const navigate = useNavigate();
 
   const title = `${t('inventory.items.silindir.title')} | ${CONFIG.appName}`;
 
@@ -88,6 +92,7 @@ export default function SilindirPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<SilindirItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SilindirItem | null>(null);
+  const [transactionsTarget, setTransactionsTarget] = useState<SilindirItem | null>(null);
   const [filterLengthMin, setFilterLengthMin] = useState('');
   const [filterDiameterMin, setFilterDiameterMin] = useState('');
   const [filterQuantityMin, setFilterQuantityMin] = useState('');
@@ -119,6 +124,7 @@ export default function SilindirPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+  const transactionsDialog = useBoolean();
 
   const setItemsAndPersist = (updater: (prev: SilindirItem[]) => SilindirItem[]) => {
     setItems((prev) => {
@@ -146,6 +152,11 @@ export default function SilindirPage() {
       description: '',
     });
     dialog.onTrue();
+  };
+
+  const openTransactionsSearch = () => {
+    setTransactionsTarget(null);
+    transactionsDialog.onTrue();
   };
 
   const openEdit = (item: SilindirItem) => {
@@ -245,6 +256,16 @@ export default function SilindirPage() {
     }
   };
 
+  const transactionsFilterOptions = createFilterOptions<SilindirItem>({
+    stringify: (option) =>
+      `${option.id} ${option.seriyaNumber} ${option.origin} ${option.length} ${option.diameter}`,
+  });
+
+  const formatTransactionsOption = (item: SilindirItem) => {
+    const seriya = item.seriyaNumber || item.id;
+    return `${seriya} · ${originLabel(item.origin)} · ${item.length}×${item.diameter}`;
+  };
+
   const filteredItems = items.filter((item) => {
     const lengthOk = filterLengthMin ? item.length >= Number(filterLengthMin) : true;
     const diameterOk = filterDiameterMin ? item.diameter >= Number(filterDiameterMin) : true;
@@ -266,9 +287,14 @@ export default function SilindirPage() {
               </Typography>
             </Box>
 
-            <Button variant="contained" onClick={openAdd}>
-              {t('silindirPage.add')}
-            </Button>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Button variant="outlined" onClick={openTransactionsSearch}>
+                {t('silindirPage.transactions')}
+              </Button>
+              <Button variant="contained" onClick={openAdd}>
+                {t('silindirPage.add')}
+              </Button>
+            </Stack>
           </Stack>
 
           <Card sx={{ p: 2, display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' } }}>
@@ -578,6 +604,45 @@ export default function SilindirPage() {
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
             {t('silindirPage.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={transactionsDialog.value}
+        onClose={transactionsDialog.onFalse}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('silindirPage.transactionsSearchTitle')}</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            autoHighlight
+            options={items}
+            value={transactionsTarget}
+            onChange={(_event, value) => {
+              setTransactionsTarget(value);
+              if (value?.id) {
+                transactionsDialog.onFalse();
+                navigate(paths.dashboard.inventory.silindirTransactions(value.id));
+              }
+            }}
+            getOptionLabel={formatTransactionsOption}
+            filterOptions={transactionsFilterOptions}
+            noOptionsText={t('silindirPage.transactionsSearchEmpty')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                autoFocus
+                label={t('silindirPage.transactionsSearchLabel')}
+                placeholder={t('silindirPage.transactionsSearchPlaceholder')}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={transactionsDialog.onFalse} color="inherit">
+            {t('silindirPage.cancel')}
           </Button>
         </DialogActions>
       </Dialog>

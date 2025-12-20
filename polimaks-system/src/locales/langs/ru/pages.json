@@ -691,6 +691,11 @@
     "deleteHint": "Вы сможете добавить её снова позже.",
     "empty": "Записей пока нет.",
     "actions": "Действия",
+    "transactions": "Транзакции",
+    "transactionsSearchTitle": "Выберите цилиндр",
+    "transactionsSearchLabel": "Поиск цилиндра",
+    "transactionsSearchPlaceholder": "Серия, происхождение, размер или ID",
+    "transactionsSearchEmpty": "Цилиндры не найдены.",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "origin": {
       "china": "Китай",
@@ -702,6 +707,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "silindirTransactionsPage": {
+    "title": "Транзакции по {{seriya}}",
+    "subtitle": "Приход/расход для этого цилиндра. Данные пока локальные.",
+    "summaryTitle": "Информация о цилиндре",
+    "notFound": "Цилиндр не найден. Вернитесь к списку.",
+    "back": "Вернуться к списку",
+    "add": "Добавить транзакцию",
+    "empty": "Пока нет транзакций.",
+    "unknown": "неизвестно",
+    "typeIn": "Приход",
+    "typeOut": "Расход",
+    "generatedFromStock": "Автозапись из текущего остатка",
+    "table": {
+      "date": "Дата",
+      "type": "Тип",
+      "machine": "Станок",
+      "amount": "Количество",
+      "note": "Примечание"
+    },
+    "form": {
+      "type": "Тип",
+      "date": "Дата",
+      "machineType": "Тип станка",
+      "machine": "Станок",
+      "amount": "Количество",
+      "note": "Примечание",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "localHint": "Данные сохраняются локально в браузере. Позже подключите API."
+    },
+    "deleteConfirm": "Удалить эту транзакцию?",
+    "initial": "Начальный остаток",
+    "deleteTitle": "Удалить транзакцию"
   },
   "finance": {
     "title": "Финансы",

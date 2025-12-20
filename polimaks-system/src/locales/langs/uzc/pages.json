@@ -202,6 +202,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Силиндр танланг",
+    "transactionsSearchLabel": "Силиндр қидириш",
+    "transactionsSearchPlaceholder": "Серия, келиб чиқиши, ўлчам ёки ID",
+    "transactionsSearchEmpty": "Силиндр топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {
       "uzs": "СЎМ",
@@ -209,6 +214,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "silindirTransactionsPage": {
+    "title": "Транзакциялар: {{seriya}}",
+    "subtitle": "Ушбу силиндр учун кирим/чиқим ёзувлари. Ҳозирча маълумотлар локал.",
+    "summaryTitle": "Силиндр ҳақида",
+    "notFound": "Силиндр топилмади. Рўйхатга қайтинг.",
+    "back": "Рўйхатга қайтиш",
+    "add": "Транзакция қўшиш",
+    "empty": "Ҳозирча транзакциялар йўқ.",
+    "unknown": "номаълум",
+    "typeIn": "Кирим",
+    "typeOut": "Чиқим",
+    "generatedFromStock": "Жорий балансдан автоматик қўшилди",
+    "table": {
+      "date": "Сана",
+      "type": "Тури",
+      "machine": "Станок",
+      "amount": "Миқдор",
+      "note": "Изоҳ"
+    },
+    "form": {
+      "type": "Тури",
+      "date": "Сана",
+      "machineType": "Станок тури",
+      "machine": "Станок",
+      "amount": "Миқдор",
+      "note": "Изоҳ",
+      "cancel": "Бекор қилиш",
+      "save": "Сақлаш",
+      "edit": "Таҳрирлаш",
+      "delete": "Ўчириш",
+      "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг."
+    },
+    "deleteConfirm": "Ушбу транзакцияни ўчирасизми?",
+    "initial": "Бошланғич қолдиқ",
+    "deleteTitle": "Транзакцияни ўчириш"
   },
   "plyonkaTransactionsPage": {
     "title": "Транзакциялар: {{seriya}}",

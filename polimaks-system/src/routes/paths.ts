@@ -25,6 +25,8 @@ export const paths = {
       razvaritelTransactions: (razvaritelId: string) =>
         `/ombor/razvaritel/${razvaritelId}/transaksiyalar`,
       silindir: '/ombor/silindir',
+      silindirTransactions: (silindirId: string) =>
+        `/ombor/silindir/${silindirId}/transaksiyalar`,
       kley: '/ombor/kley',
       zapchastlar: '/ombor/zapchastlar',
       otxot: '/ombor/otxot',

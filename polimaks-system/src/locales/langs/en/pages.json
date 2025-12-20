@@ -690,6 +690,11 @@
     "deleteHint": "You can add it back later.",
     "empty": "No entries yet.",
     "actions": "Actions",
+    "transactions": "Transactions",
+    "transactionsSearchTitle": "Select a cylinder",
+    "transactionsSearchLabel": "Search cylinder",
+    "transactionsSearchPlaceholder": "Seriya, origin, size, or ID",
+    "transactionsSearchEmpty": "No cylinders match your search.",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "origin": {
       "china": "Chinese",
@@ -701,6 +706,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "silindirTransactionsPage": {
+    "title": "Transactions for {{seriya}}",
+    "subtitle": "Incoming/outgoing notes for this cylinder. Data is local for now.",
+    "summaryTitle": "Cylinder details",
+    "notFound": "Cylinder not found. Go back to the list.",
+    "back": "Back to list",
+    "add": "Add transaction",
+    "empty": "No transactions yet.",
+    "unknown": "unknown",
+    "typeIn": "Inbound",
+    "typeOut": "Outbound",
+    "generatedFromStock": "Auto-generated from the current balance",
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "machine": "Machine",
+      "amount": "Quantity",
+      "note": "Note"
+    },
+    "form": {
+      "type": "Type",
+      "date": "Date",
+      "machineType": "Machine type",
+      "machine": "Machine",
+      "amount": "Quantity",
+      "note": "Note",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "localHint": "Saved locally in your browser. Hook this up to your API later."
+    },
+    "deleteConfirm": "Delete this transaction?",
+    "initial": "Initial balance",
+    "deleteTitle": "Delete transaction"
   },
   "finance": {
     "title": "Finance",
