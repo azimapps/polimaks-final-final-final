@@ -931,6 +931,7 @@
     "empty": "Chiqimlar hali yo'q.",
     "unknown": "noma'lum",
     "machineId": "Stanok ID",
+    "info": "Material tafsilotlari",
     "table": {
       "date": "Sana",
       "material": "Material",

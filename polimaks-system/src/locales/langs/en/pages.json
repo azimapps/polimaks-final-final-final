@@ -929,6 +929,7 @@
     "empty": "No outgoing materials yet.",
     "unknown": "unknown",
     "machineId": "Machine ID",
+    "info": "Material details",
     "table": {
       "date": "Date",
       "material": "Material",
