@@ -53,7 +53,7 @@ export const paths = {
     },
     stanok: {
       root: '/stanok',
-      pechat: '/pechat-paneli',
+      pechat: '/stanok/pechat',
       pechatProfile: (machineId: string) => `/stanok/pechat/${machineId}/profile`,
       reska: '/stanok/reska',
       laminatsiya: '/stanok/laminatsiya',
@@ -84,6 +84,10 @@ export const paths = {
       overview: '/reska-panel/overview',
       queue: '/reska-panel/queue',
       reports: '/reska-panel/reports',
+    },
+    pechatPanel: {
+      root: '/pechat-paneli',
+      overview: '/pechat-paneli',
     },
     laminatsiyaPanel: {
       root: '/laminatsiya-paneli',

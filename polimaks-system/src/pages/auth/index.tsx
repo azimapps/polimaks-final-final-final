@@ -39,7 +39,7 @@ export default function RoleSelectPage() {
       heading: t('roleSelect.pechat.heading'),
       description: t('roleSelect.pechat.description'),
       cta: t('roleSelect.pechat.cta'),
-      href: paths.dashboard.stanok.pechat,
+      href: paths.dashboard.pechatPanel.root,
       color: 'info' as const,
     },
     {

@@ -172,6 +172,7 @@ export const routesSection: RouteObject[] = [
             path: 'stanok',
             children: [
               { index: true, element: <StanokIndexPage /> },
+              { path: 'pechat', element: <PechatPage /> },
               { path: 'pechat/:machineId/profile', element: <PechatProfilePage /> },
               { path: 'reska', element: <ReskaPage /> },
               { path: 'laminatsiya', element: <LaminatsiyaPage /> },

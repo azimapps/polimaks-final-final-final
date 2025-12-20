@@ -31,7 +31,7 @@ export const usePechatNavData = (): NavSectionProps['data'] => {
         items: [
           {
             title: t('pechat_panel_overview'),
-            path: paths.dashboard.stanok.pechat,
+            path: paths.dashboard.pechatPanel.overview,
             icon: ICONS.overview,
           },
         ],
