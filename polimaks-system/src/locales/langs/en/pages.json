@@ -51,6 +51,22 @@
     "brigada": "Brigade / groups",
     "materials": "Materials"
   },
+  "pechatMaterialsPage": {
+    "title": "Printing materials",
+    "subtitle": "Outbound material transactions for printing machines.",
+    "back": "Back to list",
+    "empty": "No outgoing materials yet.",
+    "unknown": "unknown",
+    "info": "Material details",
+    "table": {
+      "date": "Date",
+      "machine": "Machine",
+      "material": "Material",
+      "item": "Item",
+      "amount": "Amount",
+      "note": "Note"
+    }
+  },
   "placeholder": {
     "title": "Blank workspace",
     "description": "This screen is ready for your data. Add tables, forms, or charts once the workflow is defined."

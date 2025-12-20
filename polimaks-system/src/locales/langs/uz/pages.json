@@ -51,6 +51,22 @@
     "brigada": "Brigada / guruhlar",
     "materials": "Mahsulotlar"
   },
+  "pechatMaterialsPage": {
+    "title": "Bosma materiallari",
+    "subtitle": "Ushbu bosma stanoklari bo'yicha chiqimlar. Ma'lumotlar lokal.",
+    "back": "Ro'yxatga qaytish",
+    "empty": "Chiqimlar hali yo'q.",
+    "unknown": "noma'lum",
+    "info": "Material tafsilotlari",
+    "table": {
+      "date": "Sana",
+      "machine": "Stanok",
+      "material": "Material",
+      "item": "Seriya / tavsif",
+      "amount": "Miqdor",
+      "note": "Izoh"
+    }
+  },
   "placeholder": {
     "title": "Bo'sh sahifa",
     "description": "Jarayon aniq bo'lgach, bu yerga jadval, forma yoki grafik qo'shishingiz mumkin."
