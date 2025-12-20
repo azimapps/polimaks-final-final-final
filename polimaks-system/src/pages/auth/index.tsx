@@ -21,7 +21,6 @@ export default function RoleSelectPage() {
     {
       key: 'ceo',
       heading: t('roleSelect.ceo.heading'),
-      description: t('roleSelect.ceo.description'),
       cta: t('roleSelect.ceo.cta'),
       href: paths.dashboard.root,
       color: 'primary' as const,
@@ -29,7 +28,6 @@ export default function RoleSelectPage() {
     {
       key: 'reska',
       heading: t('roleSelect.reska.heading'),
-      description: t('roleSelect.reska.description'),
       cta: t('roleSelect.reska.cta'),
       href: paths.dashboard.reskaPanel.root,
       color: 'secondary' as const,
@@ -37,7 +35,6 @@ export default function RoleSelectPage() {
     {
       key: 'pechat',
       heading: t('roleSelect.pechat.heading'),
-      description: t('roleSelect.pechat.description'),
       cta: t('roleSelect.pechat.cta'),
       href: paths.dashboard.pechatPanel.root,
       color: 'info' as const,
@@ -45,7 +42,6 @@ export default function RoleSelectPage() {
     {
       key: 'laminatsiya',
       heading: t('roleSelect.laminatsiya.heading'),
-      description: t('roleSelect.laminatsiya.description'),
       cta: t('roleSelect.laminatsiya.cta'),
       href: paths.dashboard.laminatsiyaPanel.root,
       color: 'warning' as const,
@@ -56,51 +52,59 @@ export default function RoleSelectPage() {
     <>
       <title>{title}</title>
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Stack spacing={3} sx={{ textAlign: 'center', mb: 2 }}>
-          <Typography variant="h3">{t('roleSelect.title')}</Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+        <Stack spacing={1.5} sx={{ textAlign: 'center', mb: 2.5 }}>
+          <Typography variant="h3" sx={{ fontSize: { xs: '1.85rem', md: '2.2rem' } }}>
+            {t('roleSelect.title')}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {t('roleSelect.subtitle')}
           </Typography>
         </Stack>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 3,
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          }}
-        >
-          {roles.map((role) => (
-            <Card
-              key={role.key}
-              variant="outlined"
-              sx={{
-                p: 3,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: 2,
-              }}
-            >
-              <Stack spacing={1}>
-                <Typography variant="h5">{role.heading}</Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {role.description}
-                </Typography>
-              </Stack>
-              <Button
-                component={RouterLink}
-                href={role.href}
-                variant="contained"
-                color={role.color || 'primary'}
+        <Card variant="outlined" sx={{ p: { xs: 2.5, sm: 3.5 }, borderRadius: 3 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: { xs: 2, sm: 2.5 },
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+            }}
+          >
+            {roles.map((role) => (
+              <Card
+                key={role.key}
+                variant="outlined"
+                sx={(theme) => ({
+                  p: { xs: 3, sm: 3.5 },
+                  height: '100%',
+                  minHeight: { xs: 150, sm: 180 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  borderRadius: 2,
+                  borderTop: '3px solid',
+                  borderTopColor: theme.palette[role.color].main,
+                })}
               >
-                {role.cta}
-              </Button>
-            </Card>
-          ))}
-        </Box>
+                <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', sm: '1.3rem' } }}>
+                  {role.heading}
+                </Typography>
+                <Button
+                  component={RouterLink}
+                  href={role.href}
+                  variant="contained"
+                  color={role.color || 'primary'}
+                  size="medium"
+                  fullWidth
+                  sx={{ whiteSpace: 'normal' }}
+                >
+                  {role.cta}
+                </Button>
+              </Card>
+            ))}
+          </Box>
+        </Card>
       </Container>
     </>
   );
