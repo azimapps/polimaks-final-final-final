@@ -920,6 +920,23 @@
     "deleteHint": "You can add it back later.",
     "empty": "No cutting machines yet."
   },
+  "reskaMaterialsPage": {
+    "title": "Materials for {{machine}}",
+    "subtitle": "Outbound material transactions for this cutting machine.",
+    "summaryTitle": "Machine details",
+    "notFound": "Machine not found. Go back to the list.",
+    "back": "Back to list",
+    "empty": "No outgoing materials yet.",
+    "unknown": "unknown",
+    "machineId": "Machine ID",
+    "table": {
+      "date": "Date",
+      "material": "Material",
+      "item": "Item",
+      "amount": "Amount",
+      "note": "Note"
+    }
+  },
   "laminatsiyaPage": {
     "title": "Lamination machines",
     "subtitle": "Manage country codes and names for each laminator. Data is local for now (TODO: connect API).",
@@ -936,6 +953,23 @@
     "deleteConfirm": "Delete this machine?",
     "deleteHint": "You can add it back later.",
     "empty": "No lamination machines yet."
+  },
+  "laminatsiyaMaterialsPage": {
+    "title": "Materials for {{machine}}",
+    "subtitle": "Outbound material transactions for this laminator.",
+    "summaryTitle": "Machine details",
+    "notFound": "Machine not found. Go back to the list.",
+    "back": "Back to list",
+    "empty": "No outgoing materials yet.",
+    "unknown": "unknown",
+    "machineId": "Machine ID",
+    "table": {
+      "date": "Date",
+      "material": "Material",
+      "item": "Item",
+      "amount": "Amount",
+      "note": "Note"
+    }
   },
   "clients": {
     "title": "Clients",

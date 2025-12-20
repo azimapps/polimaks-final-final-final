@@ -290,7 +290,9 @@ export default function LaminatsiyaPage() {
         onOpenBrigada={() =>
           menuItem && navigate(paths.dashboard.stanok.brigadaLaminatsiya(menuItem.id))
         }
-        onOpenMaterials={() => navigate(paths.dashboard.stanok.materialsLaminatsiya)}
+        onOpenMaterials={() =>
+          menuItem && navigate(paths.dashboard.stanok.materialsLaminatsiya(menuItem.id))
+        }
         labels={{
           edit: t('laminatsiyaPage.edit'),
           delete: t('laminatsiyaPage.delete'),

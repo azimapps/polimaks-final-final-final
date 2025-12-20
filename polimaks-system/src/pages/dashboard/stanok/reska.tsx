@@ -288,7 +288,9 @@ export default function ReskaPage() {
           }
         }}
         onOpenBrigada={() => menuItem && navigate(paths.dashboard.stanok.brigadaReska(menuItem.id))}
-        onOpenMaterials={() => navigate(paths.dashboard.stanok.materialsReska)}
+        onOpenMaterials={() =>
+          menuItem && navigate(paths.dashboard.stanok.materialsReska(menuItem.id))
+        }
         labels={{
           edit: t('reskaPage.edit'),
           delete: t('reskaPage.delete'),

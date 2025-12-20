@@ -922,6 +922,23 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha stanoklar yo'q."
   },
+  "reskaMaterialsPage": {
+    "title": "Mahsulotlar: {{machine}}",
+    "subtitle": "Ushbu reska stanogi bo'yicha chiqimlar. Ma'lumotlar lokal.",
+    "summaryTitle": "Stanok ma'lumotlari",
+    "notFound": "Stanok topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "empty": "Chiqimlar hali yo'q.",
+    "unknown": "noma'lum",
+    "machineId": "Stanok ID",
+    "table": {
+      "date": "Sana",
+      "material": "Material",
+      "item": "Seriya / tavsif",
+      "amount": "Miqdor",
+      "note": "Izoh"
+    }
+  },
   "laminatsiyaPage": {
     "title": "Laminatsiya stanoklari",
     "subtitle": "Har bir stanok uchun davlat kodi va nomi. Hozircha ma'lumotlar lokal (TODO: API ulash).",
@@ -938,6 +955,23 @@
     "deleteConfirm": "Ushbu stanokni o'chirishni xohlaysizmi?",
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha stanoklar yo'q."
+  },
+  "laminatsiyaMaterialsPage": {
+    "title": "Mahsulotlar: {{machine}}",
+    "subtitle": "Ushbu laminatsiya stanogi bo'yicha chiqimlar. Ma'lumotlar lokal.",
+    "summaryTitle": "Stanok ma'lumotlari",
+    "notFound": "Stanok topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "empty": "Chiqimlar hali yo'q.",
+    "unknown": "noma'lum",
+    "machineId": "Stanok ID",
+    "table": {
+      "date": "Sana",
+      "material": "Material",
+      "item": "Seriya / tavsif",
+      "amount": "Miqdor",
+      "note": "Izoh"
+    }
   },
   "clients": {
     "title": "Klientlar",

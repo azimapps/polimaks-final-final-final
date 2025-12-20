@@ -61,8 +61,8 @@ export const paths = {
       brigadaReska: (machineId: string) => `/stanok/reska/${machineId}/brigada`,
       brigadaLaminatsiya: (machineId: string) => `/stanok/laminatsiya/${machineId}/brigada`,
       materialsPechat: '/stanok/materials-pechat',
-      materialsReska: '/stanok/materials-reska',
-      materialsLaminatsiya: '/stanok/materials-laminatsiya',
+      materialsReska: (machineId: string) => `/stanok/reska/${machineId}/materials`,
+      materialsLaminatsiya: (machineId: string) => `/stanok/laminatsiya/${machineId}/materials`,
     },
     ishlabChiqarish: {
       root: '/ishlab-chiqarish',
