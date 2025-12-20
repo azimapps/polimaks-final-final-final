@@ -1,5 +1,5 @@
 /* eslint-disable perfectionist/sort-imports */
-import { useMemo } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import Box from '@mui/material/Box';
@@ -8,6 +8,7 @@ import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -15,10 +16,12 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import { FlagIcon } from 'src/components/flag-icon';
 import { Iconify } from 'src/components/iconify';
+import { CustomPopover } from 'src/components/custom-popover';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import { paths } from 'src/routes/paths';
@@ -86,6 +89,11 @@ type SuyuqKraskaTx = BaseTx & { suyuqKraskaId: string; amountKg?: number };
 type RazvaritelTx = BaseTx & { razvaritelId: string; amountLiter?: number };
 type SilindirTx = BaseTx & { silindirId: string; amountQty?: number };
 
+type MaterialInfo = {
+  label: string;
+  value: string;
+};
+
 type MaterialRow = {
   id: string;
   date: string;
@@ -94,6 +102,7 @@ type MaterialRow = {
   amountLabel: string;
   note: string;
   createdAt: number;
+  info: MaterialInfo[];
 };
 
 const STORAGE_KEY = 'stanok-reska';
@@ -152,6 +161,8 @@ export default function MaterialsReskaPage() {
     if (!machineId) return [];
 
     const unknownLabel = t('reskaMaterialsPage.unknown');
+    const formatSize = (value?: number) =>
+      typeof value === 'number' && value > 0 ? `${value} ${t('silindirPage.mm')}` : unknownLabel;
     const itemsById = <T extends { id: string }>(items: T[]) =>
       new Map(items.map((item) => [item.id, item]));
 
@@ -201,6 +212,11 @@ export default function MaterialsReskaPage() {
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountKg) || 0, t('plyonkaPage.kg')),
             note: tx.note || '',
+            info: [
+              { label: t('plyonkaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+              { label: t('plyonkaPage.category'), value: item?.category || unknownLabel },
+              { label: t('plyonkaPage.subcategory'), value: item?.subcategory || unknownLabel },
+            ],
           },
           tx
         );
@@ -226,6 +242,11 @@ export default function MaterialsReskaPage() {
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountKg) || 0, t('kraskaPage.kg')),
             note: tx.note || '',
+            info: [
+              { label: t('kraskaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+              { label: t('kraskaPage.colorName'), value: item?.colorName || unknownLabel },
+              { label: t('kraskaPage.marka'), value: item?.marka || unknownLabel },
+            ],
           },
           tx
         );
@@ -252,6 +273,11 @@ export default function MaterialsReskaPage() {
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountKg) || 0, t('suyuqKraskaPage.kg')),
             note: tx.note || '',
+            info: [
+              { label: t('suyuqKraskaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+              { label: t('suyuqKraskaPage.colorName'), value: item?.colorName || unknownLabel },
+              { label: t('suyuqKraskaPage.marka'), value: item?.marka || unknownLabel },
+            ],
           },
           tx
         );
@@ -274,6 +300,10 @@ export default function MaterialsReskaPage() {
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountLiter) || 0, t('razvaritelPage.liter')),
             note: tx.note || '',
+            info: [
+              { label: t('razvaritelPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+              { label: t('razvaritelPage.type'), value: item?.type || unknownLabel },
+            ],
           },
           tx
         );
@@ -302,6 +332,12 @@ export default function MaterialsReskaPage() {
             itemLabel: label,
             amountLabel: formatAmount(Number(tx.amountQty) || 0, ''),
             note: tx.note || '',
+            info: [
+              { label: t('silindirPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+              { label: t('silindirPage.originLabel'), value: originLabel || unknownLabel },
+              { label: t('silindirPage.length'), value: formatSize(item?.length) },
+              { label: t('silindirPage.diameter'), value: formatSize(item?.diameter) },
+            ],
           },
           tx
         );
@@ -316,6 +352,20 @@ export default function MaterialsReskaPage() {
 
     return results.sort((a, b) => b.createdAt - a.createdAt);
   }, [machineId, t]);
+
+  const [infoAnchorEl, setInfoAnchorEl] = useState<HTMLElement | null>(null);
+  const [infoRow, setInfoRow] = useState<MaterialRow | null>(null);
+  const infoOpen = Boolean(infoAnchorEl);
+
+  const handleOpenInfo = (event: MouseEvent<HTMLButtonElement>, row: MaterialRow) => {
+    setInfoRow(row);
+    setInfoAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseInfo = () => {
+    setInfoAnchorEl(null);
+    setInfoRow(null);
+  };
 
   const heading = t('reskaMaterialsPage.title', {
     machine: machine?.name || machineId || t('reskaMaterialsPage.unknown'),
@@ -425,7 +475,22 @@ export default function MaterialsReskaPage() {
                             <TableCell>
                               <Chip size="small" label={row.materialLabel} variant="outlined" />
                             </TableCell>
-                            <TableCell>{row.itemLabel || '-'}</TableCell>
+                            <TableCell>
+                              <Stack direction="row" alignItems="center" spacing={1}>
+                                <Typography variant="body2">{row.itemLabel || '-'}</Typography>
+                                {row.info.length > 0 && (
+                                  <Tooltip title={t('reskaMaterialsPage.info')}>
+                                    <IconButton
+                                      size="small"
+                                      onClick={(event) => handleOpenInfo(event, row)}
+                                      aria-label={t('reskaMaterialsPage.info')}
+                                    >
+                                      <Iconify icon="eva:info-outline" width={16} />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                              </Stack>
+                            </TableCell>
                             <TableCell>{row.amountLabel}</TableCell>
                             <TableCell>{row.note || '-'}</TableCell>
                           </TableRow>
@@ -434,6 +499,41 @@ export default function MaterialsReskaPage() {
                     </TableBody>
                   </Table>
                 </TableContainer>
+
+                <CustomPopover
+                  open={infoOpen}
+                  anchorEl={infoAnchorEl}
+                  onClose={handleCloseInfo}
+                  slotProps={{
+                    arrow: { placement: 'top-left' },
+                    paper: { sx: { p: 2, minWidth: 240, maxWidth: 320 } },
+                  }}
+                >
+                  {infoRow && (
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">{infoRow.materialLabel}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {infoRow.itemLabel || '-'}
+                      </Typography>
+                      <Divider />
+                      <Stack spacing={0.75}>
+                        {infoRow.info.map((detail, index) => (
+                          <Stack
+                            key={`${detail.label}-${index}`}
+                            direction="row"
+                            spacing={2}
+                            justifyContent="space-between"
+                          >
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                              {detail.label}
+                            </Typography>
+                            <Typography variant="body2">{detail.value}</Typography>
+                          </Stack>
+                        ))}
+                      </Stack>
+                    </Stack>
+                  )}
+                </CustomPopover>
               </Card>
             </>
           )}
