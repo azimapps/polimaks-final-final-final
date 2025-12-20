@@ -16,12 +16,14 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
@@ -30,10 +32,12 @@ import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
 type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
+type IncomeType = 'cash' | 'transfer';
 
 type IncomeItem = {
   id: string;
   name: string;
+  type: IncomeType;
   amount: number;
   currency: Currency;
   date: string;
@@ -47,6 +51,10 @@ const DEFAULT_RATES: Record<Currency, number> = { USD: 1, EUR: 0.92, RUB: 90, UZ
 export default function FinanceIncomePage() {
   const { t } = useTranslate('pages');
   const title = `${t('finance.income.title')} | ${CONFIG.appName}`;
+  const incomeTypes: { value: IncomeType; label: string }[] = [
+    { value: 'cash', label: t('finance.income.types.cash') },
+    { value: 'transfer', label: t('finance.income.types.transfer') },
+  ];
 
   const initialData = useMemo<IncomeItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -56,6 +64,7 @@ export default function FinanceIncomePage() {
           return (JSON.parse(stored) as IncomeItem[]).map((item, index) => ({
             id: item.id || `income-${index}`,
             name: item.name || '',
+            type: (item.type as IncomeType) || 'cash',
             amount: typeof item.amount === 'number' ? item.amount : Number(item.amount) || 0,
             currency: (item.currency as Currency) || 'UZS',
             date: item.date || todayISO(),
@@ -74,8 +83,17 @@ export default function FinanceIncomePage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<IncomeItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<IncomeItem | null>(null);
-  const [form, setForm] = useState<{ name: string; amount: string; currency: Currency; date: string; note: string }>({
+  const [activeType, setActiveType] = useState<IncomeType>('cash');
+  const [form, setForm] = useState<{
+    name: string;
+    type: IncomeType;
+    amount: string;
+    currency: Currency;
+    date: string;
+    note: string;
+  }>({
     name: '',
+    type: 'cash',
     amount: '',
     currency: 'UZS',
     date: todayISO(),
@@ -101,7 +119,7 @@ export default function FinanceIncomePage() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ name: '', amount: '', currency: 'UZS', date: todayISO(), note: '' });
+    setForm({ name: '', type: activeType, amount: '', currency: 'UZS', date: todayISO(), note: '' });
     dialog.onTrue();
   };
 
@@ -109,6 +127,7 @@ export default function FinanceIncomePage() {
     setEditing(item);
     setForm({
       name: item.name,
+      type: item.type,
       amount: item.amount ? String(item.amount) : '',
       currency: item.currency,
       date: item.date || todayISO(),
@@ -121,6 +140,7 @@ export default function FinanceIncomePage() {
     const payload: IncomeItem = {
       id: editing ? editing.id : uuidv4(),
       name: form.name.trim(),
+      type: form.type,
       amount: parseFloat(form.amount) || 0,
       currency: form.currency,
       date: form.date || todayISO(),
@@ -156,19 +176,24 @@ export default function FinanceIncomePage() {
 
   const canSave = form.name.trim() && parseFloat(form.amount) > 0 && form.date;
 
+  const filteredItems = useMemo(
+    () => items.filter((item) => item.type === activeType),
+    [items, activeType]
+  );
+
   const totalInDisplay = useMemo(() => {
     const toRate = rates[displayCurrency] ?? 1;
-    return items.reduce((sum, item) => {
+    return filteredItems.reduce((sum, item) => {
       const fromRate = rates[item.currency] ?? 1;
       const converted = item.currency === displayCurrency ? item.amount : (item.amount / fromRate) * toRate;
       return sum + converted;
     }, 0);
-  }, [items, displayCurrency, rates]);
+  }, [filteredItems, displayCurrency, rates]);
 
   const latestDate = useMemo(() => {
-    if (!items.length) return null;
-    return items.map((i) => i.date).sort().at(-1);
-  }, [items]);
+    if (!filteredItems.length) return null;
+    return filteredItems.map((i) => i.date).sort().at(-1);
+  }, [filteredItems]);
 
   useEffect(() => {
     let active = true;
@@ -223,7 +248,7 @@ export default function FinanceIncomePage() {
                 <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                   {t('finance.income.totalEntries')}
                 </Typography>
-                <Typography variant="h5">{items.length}</Typography>
+                <Typography variant="h5">{filteredItems.length}</Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   {t('finance.income.latestDate')} {latestDate || '—'}
                 </Typography>
@@ -259,6 +284,15 @@ export default function FinanceIncomePage() {
             </Grid>
           </Grid>
 
+          <Tabs
+            value={activeType}
+            onChange={(_event, value) => setActiveType(value as IncomeType)}
+            sx={{ px: 1, borderBottom: 1, borderColor: 'divider' }}
+          >
+            {incomeTypes.map((type) => (
+              <Tab key={type.value} value={type.value} label={type.label} />
+            ))}
+          </Tabs>
 
           <Card>
             <TableContainer>
@@ -282,7 +316,7 @@ export default function FinanceIncomePage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {items.length === 0 ? (
+                  {filteredItems.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6}>
                         <Box
@@ -305,7 +339,7 @@ export default function FinanceIncomePage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    items.map((item) => (
+                    filteredItems.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell>
                           <Typography variant="subtitle2">{item.name}</Typography>
@@ -360,7 +394,7 @@ export default function FinanceIncomePage() {
               autoFocus
             />
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   fullWidth
                   type="number"
@@ -370,7 +404,7 @@ export default function FinanceIncomePage() {
                   inputProps={{ min: 0, step: '0.01', placeholder: '0' }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   select
                   fullWidth
@@ -381,6 +415,21 @@ export default function FinanceIncomePage() {
                   {(['UZS', 'USD', 'RUB', 'EUR'] as Currency[]).map((cur) => (
                     <MenuItem key={cur} value={cur}>
                       {cur}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  select
+                  fullWidth
+                  label={t('finance.income.type')}
+                  value={form.type}
+                  onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value as IncomeType }))}
+                >
+                  {incomeTypes.map((type) => (
+                    <MenuItem key={type.value} value={type.value}>
+                      {type.label}
                     </MenuItem>
                   ))}
                 </TextField>
