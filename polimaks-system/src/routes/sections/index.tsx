@@ -69,6 +69,7 @@ const FinancePage = lazy(() => import('src/pages/dashboard/finance'));
 const FinanceIncomePage = lazy(() => import('src/pages/dashboard/finance/income'));
 const FinanceExpensePage = lazy(() => import('src/pages/dashboard/finance/expense'));
 const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
+const ClientsCrmPage = lazy(() => import('src/pages/dashboard/clients/crm'));
 const ClientTransactionsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-transactions')
 );
@@ -206,6 +207,7 @@ export const routesSection: RouteObject[] = [
         path: 'clients',
         children: [
           { index: true, element: <ClientsPage /> },
+          { path: 'crm', element: <ClientsCrmPage /> },
           { path: ':clientId', element: <ClientDetailPage /> },
           { path: 'agreements/:clientId', element: <ClientAgreementsPage /> },
           { path: 'complaints/:clientId', element: <ClientComplaintsPage /> },

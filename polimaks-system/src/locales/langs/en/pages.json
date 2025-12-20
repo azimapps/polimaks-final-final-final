@@ -1017,6 +1017,30 @@
       }
     }
   },
+  "clientsCrm": {
+    "title": "CRM leads",
+    "subtitle": "Quick list of potential clients and follow-up notes.",
+    "fullName": "Full name",
+    "phone": "Phone",
+    "status": "Status",
+    "company": "Company",
+    "note": "Note",
+    "add": "Add lead",
+    "edit": "Edit lead",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this lead?",
+    "deleteHint": "You can add it back later.",
+    "empty": "No leads yet.",
+    "actions": "Actions",
+    "statuses": {
+      "interested": "Interested",
+      "very_interested": "Very interested",
+      "follow_up": "Follow up",
+      "not_interested": "Not interested"
+    }
+  },
   "clientsPage": {
     "title": "Clients",
     "subtitle": "Store client contacts, phone, company, and quick notes. Data is local for now.",

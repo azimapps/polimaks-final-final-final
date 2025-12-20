@@ -44,6 +44,7 @@ export const paths = {
       root: '/clients',
       detail: (clientId: string) => `/clients/${clientId}`,
       clients: '/clients',
+      crm: '/clients/crm',
       agreementsClient: (clientId: string) => `/clients/agreements/${clientId}`,
       complaintsClient: (clientId: string) => `/clients/complaints/${clientId}`,
       transactionsClient: (clientId: string) => `/clients/transactions/${clientId}`,

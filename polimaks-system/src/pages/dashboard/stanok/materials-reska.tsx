@@ -1,6 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState, type MouseEvent } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';

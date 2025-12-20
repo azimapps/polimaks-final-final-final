@@ -1019,6 +1019,30 @@
       }
     }
   },
+  "clientsCrm": {
+    "title": "CRM lidlar",
+    "subtitle": "Potensial klientlar va izohlar ro'yxati.",
+    "fullName": "To'liq ism",
+    "phone": "Telefon",
+    "status": "Holati",
+    "company": "Kompaniya",
+    "note": "Izoh",
+    "add": "Lid qo'shish",
+    "edit": "Lidni tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleteConfirm": "Ushbu lidni o'chirasizmi?",
+    "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
+    "empty": "Hozircha lidlar yo'q.",
+    "actions": "Amallar",
+    "statuses": {
+      "interested": "Qiziqishi bor",
+      "very_interested": "Juda qiziqadi",
+      "follow_up": "Qayta aloqa kerak",
+      "not_interested": "Qiziqmaydi"
+    }
+  },
   "clientsPage": {
     "title": "Klientlar",
     "subtitle": "Klient aloqa ma'lumotlari, telefon, kompaniya va izohlarni saqlang. Hozircha ma'lumotlar lokal.",

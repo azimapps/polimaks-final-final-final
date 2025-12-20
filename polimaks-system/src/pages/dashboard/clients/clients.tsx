@@ -343,7 +343,6 @@ export default function ClientsPage() {
   };
 
   const onPhoneChange = (value: string) => setForm((prev) => ({ ...prev, phone: formatPhone(value) }));
-
   const canSave = form.fullName.trim() && getRawPhone(form.phone).length === 9;
   const canSaveComplaint = complaintText.trim().length > 0;
   const canSavePlan = plan.month >= currentMonth && Number(plan.limitKg) > 0;
