@@ -235,13 +235,13 @@ const loadPlanItems = (): PlanItem[] => {
   return PLAN_SEED;
 };
 
-const readLocalArray = (key: string, fallback: any[]) => {
+const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
   if (typeof window === 'undefined') return fallback;
   const raw = localStorage.getItem(key);
   if (!raw) return fallback;
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : fallback;
+    return Array.isArray(parsed) ? (parsed as T[]) : fallback;
   } catch {
     return fallback;
   }
@@ -625,20 +625,21 @@ export default function PechatPanelOverviewPage() {
   const handleSaveStatus = () => {
     if (!statusPlan) return;
     const usedMaterials = usageRows
-      .map((row) => {
+      .map((row): MaterialUsage | null => {
         const option = materialOptionMap.get(row.materialId);
         const amount = Number(row.amount);
         if (!option || Number.isNaN(amount) || amount <= 0) return null;
+        const note = row.note?.trim();
         return {
           materialId: option.id,
           materialLabel: option.materialLabel,
           itemLabel: option.itemLabel,
           amount,
           unitLabel: option.unitLabel,
-          note: row.note?.trim() || '',
+          ...(note ? { note } : {}),
         };
       })
-      .filter((item): item is MaterialUsage => Boolean(item));
+      .filter((item): item is MaterialUsage => item !== null);
 
     if (!hasUsageErrors) {
       const updatedPlans = plans.map((plan) =>

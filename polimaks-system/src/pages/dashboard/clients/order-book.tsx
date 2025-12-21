@@ -7,6 +7,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -31,10 +32,18 @@ import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
+
+import plyonkaSeed from 'src/data/plyonka.json';
+import kraskaSeed from 'src/data/kraska.json';
+import suyuqKraskaSeed from 'src/data/suyuq-kraska.json';
+import razvaritelSeed from 'src/data/razvaritel.json';
+import silindirSeed from 'src/data/silindir.json';
 import type { Client } from './clients';
 
 type Material = 'BOPP' | 'CPP' | 'PE' | 'PET';
 type Currency = 'USD' | 'EUR' | 'RUB' | 'UZS';
+type MachineType = 'pechat' | 'reska' | 'laminatsiya';
+type PlanStatus = 'in_progress' | 'finished';
 
 type OrderBookItem = {
   id: string;
@@ -58,6 +67,89 @@ type OrderBookItem = {
   admin: string;
 };
 
+type MaterialUsage = {
+  materialId: string;
+  materialLabel: string;
+  itemLabel: string;
+  amount: number;
+  unitLabel: string;
+  note?: string;
+};
+
+type PlanItem = {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  machineType: MachineType;
+  machineName?: string;
+  groupName?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: PlanStatus;
+  materialsUsed?: MaterialUsage[];
+};
+
+type UsageRow = {
+  id: string;
+  planLabel: string;
+  materialLabel: string;
+  itemLabel: string;
+  amount: number;
+  unitLabel: string;
+  unitPrice?: number;
+  currency?: Currency;
+  totalPrice?: number;
+  note?: string;
+};
+
+type PlyonkaItem = {
+  id: string;
+  pricePerKg?: number;
+  priceCurrency?: Currency;
+};
+
+type KraskaItem = {
+  id: string;
+  pricePerKg?: number;
+  priceCurrency?: Currency;
+};
+
+type SuyuqKraskaItem = {
+  id: string;
+  pricePerKg?: number;
+  priceCurrency?: Currency;
+};
+
+type RazvaritelItem = {
+  id: string;
+  pricePerLiter?: number;
+  priceCurrency?: Currency;
+};
+
+type SilindirItem = {
+  id: string;
+  price?: number;
+  priceCurrency?: Currency;
+};
+
+type FinishedProductItem = {
+  id: string;
+  receivedDate: string;
+  numberIdentifier: string;
+  type: string;
+  supplier: string;
+  client: string;
+  name: string;
+  quantity: number;
+  netWeight: number;
+  grossWeight: number;
+  totalNetWeight: number;
+  totalGrossWeight: number;
+  price: number;
+  priceCurrency: Currency;
+  description: string;
+};
+
 const MATERIALS: Material[] = ['BOPP', 'CPP', 'PE', 'PET'];
 const PRICE_CURRENCIES: Currency[] = ['USD', 'EUR', 'RUB', 'UZS'];
 
@@ -70,6 +162,8 @@ const MATERIAL_CATEGORIES: Record<Material, string[]> = {
 
 const STORAGE_KEY = 'clients-order-book';
 const CLIENTS_STORAGE_KEY = 'clients-main';
+const PLAN_STORAGE_KEY = 'orderPlansV2';
+const FINISHED_STORAGE_KEY = 'ombor-tayyor-mahsulotlar-angren';
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -78,6 +172,35 @@ const generateOrderNumber = () => {
   const year = now.getFullYear();
   const timestamp = now.getTime().toString().slice(-4);
   return `ORD-${year}-${timestamp}`;
+};
+
+const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
+  if (typeof window === 'undefined') return fallback;
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const formatMoney = (value?: number, currency?: Currency) => {
+  if (!currency || typeof value !== 'number' || value <= 0) return '—';
+  const formatter = new Intl.NumberFormat('uz-UZ', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: currency === 'USD' || currency === 'EUR' ? 2 : 0,
+  });
+  return formatter.format(value);
+};
+
+const machineTypeLabel = (value?: MachineType) => {
+  if (value === 'pechat') return 'Pechat';
+  if (value === 'reska') return 'Reska';
+  if (value === 'laminatsiya') return 'Laminatsiya';
+  return value || '';
 };
 
 const normalizeItems = (items: (Partial<OrderBookItem> & { id?: string; client?: string })[]): OrderBookItem[] =>
@@ -212,6 +335,10 @@ export default function ClientsOrderBookPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<OrderBookItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<OrderBookItem | null>(null);
+  const [pendingFinish, setPendingFinish] = useState<OrderBookItem | null>(null);
+  const [detailItem, setDetailItem] = useState<OrderBookItem | null>(null);
+  const [detailPlans, setDetailPlans] = useState<PlanItem[]>([]);
+  const [detailMaterials, setDetailMaterials] = useState<UsageRow[]>([]);
   const [form, setForm] = useState<
     Omit<
       OrderBookItem,
@@ -257,6 +384,8 @@ export default function ClientsOrderBookPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+  const finishDialog = useBoolean();
+  const infoDialog = useBoolean();
 
   const setItemsAndPersist = (updater: (prev: OrderBookItem[]) => OrderBookItem[]) => {
     setItems((prev) => {
@@ -376,6 +505,151 @@ export default function ClientsOrderBookPage() {
 
   const closeMenu = () => {
     setMenuAnchor(null);
+    setMenuItem(null);
+  };
+
+  const buildPriceLookup = () => {
+    const map = new Map<string, { price?: number; currency?: Currency; unitLabel: string }>();
+    const plyonkaItems = readLocalArray<PlyonkaItem>('ombor-plyonka', plyonkaSeed as PlyonkaItem[]);
+    const kraskaItems = readLocalArray<KraskaItem>('ombor-kraska', kraskaSeed as KraskaItem[]);
+    const suyuqKraskaItems = readLocalArray<SuyuqKraskaItem>(
+      'ombor-suyuq-kraska',
+      suyuqKraskaSeed as SuyuqKraskaItem[]
+    );
+    const razvaritelItems = readLocalArray<RazvaritelItem>(
+      'ombor-razvaritel',
+      razvaritelSeed as RazvaritelItem[]
+    );
+    const silindirItems = readLocalArray<SilindirItem>('ombor-silindir', silindirSeed as SilindirItem[]);
+
+    plyonkaItems.forEach((item) => {
+      map.set(`plyonka:${item.id}`, {
+        price: item.pricePerKg,
+        currency: item.priceCurrency,
+        unitLabel: t('plyonkaPage.kg'),
+      });
+    });
+    kraskaItems.forEach((item) => {
+      map.set(`kraska:${item.id}`, {
+        price: item.pricePerKg,
+        currency: item.priceCurrency,
+        unitLabel: t('kraskaPage.kg'),
+      });
+    });
+    suyuqKraskaItems.forEach((item) => {
+      map.set(`suyuq-kraska:${item.id}`, {
+        price: item.pricePerKg,
+        currency: item.priceCurrency,
+        unitLabel: t('suyuqKraskaPage.kg'),
+      });
+    });
+    razvaritelItems.forEach((item) => {
+      map.set(`razvaritel:${item.id}`, {
+        price: item.pricePerLiter,
+        currency: item.priceCurrency,
+        unitLabel: t('razvaritelPage.liter'),
+      });
+    });
+    silindirItems.forEach((item) => {
+      map.set(`silindir:${item.id}`, {
+        price: item.price,
+        currency: item.priceCurrency,
+        unitLabel: t('orderPlanPage.pcs'),
+      });
+    });
+
+    return map;
+  };
+
+  const buildUsageRows = (plans: PlanItem[]) => {
+    const priceLookup = buildPriceLookup();
+    return plans.flatMap((plan) => {
+      const planLabelParts = [
+        machineTypeLabel(plan.machineType),
+        plan.machineName,
+        plan.groupName ? `(${plan.groupName})` : '',
+      ].filter(Boolean);
+      const planLabel = planLabelParts.join(' ');
+      return (plan.materialsUsed || []).map((usage, index) => {
+        const priceInfo = priceLookup.get(usage.materialId);
+        const unitPrice = priceInfo?.price;
+        const currency = priceInfo?.currency;
+        const amount =
+          typeof usage.amount === 'number' ? usage.amount : Number(usage.amount) || 0;
+        const totalPrice =
+          typeof unitPrice === 'number' && amount > 0 ? unitPrice * amount : undefined;
+        return {
+          id: `${plan.id}-${usage.materialId}-${index}`,
+          planLabel: planLabel || t('orderBookPage.planFallback'),
+          materialLabel: usage.materialLabel,
+          itemLabel: usage.itemLabel,
+          amount,
+          unitLabel: usage.unitLabel,
+          unitPrice,
+          currency,
+          totalPrice,
+          note: usage.note,
+        };
+      });
+    });
+  };
+
+  const openInfo = (item: OrderBookItem) => {
+    const storedPlans = readLocalArray<PlanItem>(PLAN_STORAGE_KEY, []);
+    const relatedPlans = storedPlans.filter(
+      (plan) => plan?.orderId === item.id || plan?.orderNumber === item.orderNumber
+    );
+    setDetailItem(item);
+    setDetailPlans(relatedPlans);
+    setDetailMaterials(buildUsageRows(relatedPlans));
+    infoDialog.onTrue();
+  };
+
+  const closeInfo = () => {
+    infoDialog.onFalse();
+    setDetailItem(null);
+    setDetailPlans([]);
+    setDetailMaterials([]);
+  };
+
+  const openFinish = (item: OrderBookItem) => {
+    setPendingFinish(item);
+    finishDialog.onTrue();
+  };
+
+  const handleFinish = () => {
+    if (!pendingFinish || typeof window === 'undefined') {
+      finishDialog.onFalse();
+      setPendingFinish(null);
+      return;
+    }
+
+    const existing = readLocalArray<FinishedProductItem>(FINISHED_STORAGE_KEY, []);
+    if (!existing.some((entry) => entry.numberIdentifier === pendingFinish.orderNumber)) {
+      const quantity = pendingFinish.quantityKg || 0;
+      const price = pendingFinish.pricePerKg || 0;
+      const payload: FinishedProductItem = {
+        id: uuidv4(),
+        receivedDate: pendingFinish.endDate || todayISO(),
+        numberIdentifier: pendingFinish.orderNumber,
+        type: [pendingFinish.material, pendingFinish.subMaterial].filter(Boolean).join(' '),
+        supplier: '',
+        client: pendingFinish.clientName,
+        name: pendingFinish.title,
+        quantity,
+        netWeight: quantity,
+        grossWeight: quantity,
+        totalNetWeight: quantity,
+        totalGrossWeight: quantity,
+        price,
+        priceCurrency: pendingFinish.priceCurrency || 'UZS',
+        description: `${pendingFinish.orderNumber} - ${pendingFinish.title}`.trim(),
+      };
+      localStorage.setItem(FINISHED_STORAGE_KEY, JSON.stringify([...existing, payload]));
+    }
+
+    finishDialog.onFalse();
+    setPendingFinish(null);
     setMenuItem(null);
   };
 
@@ -552,9 +826,14 @@ export default function ClientsOrderBookPage() {
                             <Typography variant="body2">{item.endDate}</Typography>
                           </TableCell>
                           <TableCell align="right">
-                            <IconButton onClick={(e) => openMenu(e, item)}>
-                              <Iconify icon="eva:more-vertical-fill" />
-                            </IconButton>
+                            <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.5}>
+                              <IconButton onClick={() => openInfo(item)} size="small">
+                                <Iconify icon="solar:info-circle-bold" />
+                              </IconButton>
+                              <IconButton onClick={(e) => openMenu(e, item)} size="small">
+                                <Iconify icon="eva:more-vertical-fill" />
+                              </IconButton>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       );
@@ -813,6 +1092,190 @@ export default function ClientsOrderBookPage() {
         </DialogActions>
       </Dialog>
 
+      <Dialog open={finishDialog.value} onClose={finishDialog.onFalse} maxWidth="xs" fullWidth>
+        <DialogTitle>{t('orderBookPage.finishConfirm')}</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {t('orderBookPage.finishHint')}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={finishDialog.onFalse} color="inherit">
+            {t('orderBookPage.cancel')}
+          </Button>
+          <Button onClick={handleFinish} variant="contained">
+            {t('orderBookPage.finish')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={infoDialog.value} onClose={closeInfo} maxWidth="lg" fullWidth>
+        <DialogTitle>{t('orderBookPage.infoTitle')}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2.5}>
+            {detailItem && (
+              <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {t('orderBookPage.orderNumber')}
+                  </Typography>
+                  <Typography variant="subtitle1">{detailItem.orderNumber}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {t('orderBookPage.client')}
+                  </Typography>
+                  <Typography variant="subtitle1">{detailItem.clientName || '—'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {t('orderBookPage.orderTitle')}
+                  </Typography>
+                  <Typography variant="subtitle1">{detailItem.title || '—'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {t('orderBookPage.quantityKg')}
+                  </Typography>
+                  <Typography variant="subtitle1">
+                    {detailItem.quantityKg.toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                    {t('orderBookPage.kg')}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            <Divider />
+
+            <Typography variant="subtitle1">{t('orderBookPage.plansTitle')}</Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('orderPlanPage.machineTypeLabel')}</TableCell>
+                    <TableCell>{t('orderPlanPage.machineLabel')}</TableCell>
+                    <TableCell>{t('pechatPanel.brigadaLabel')}</TableCell>
+                    <TableCell>{t('orderBookPage.startDate')}</TableCell>
+                    <TableCell>{t('orderBookPage.endDate')}</TableCell>
+                    <TableCell>{t('orderPlanPage.statusLabel')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {detailPlans.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {t('orderBookPage.noPlans')}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    detailPlans.map((plan) => {
+                      const statusLabel =
+                        plan.status === 'finished'
+                          ? t('orderPlanPage.status.finished')
+                          : t('orderPlanPage.status.inProgress');
+                      return (
+                        <TableRow key={plan.id}>
+                          <TableCell>
+                            <Typography variant="body2">{machineTypeLabel(plan.machineType) || '—'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{plan.machineName || '—'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{plan.groupName || '—'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{plan.startDate || '—'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{plan.endDate || '—'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              size="small"
+                              label={statusLabel}
+                              color={plan.status === 'finished' ? 'success' : 'warning'}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <Divider />
+
+            <Typography variant="subtitle1">{t('orderBookPage.materialsTitle')}</Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('orderBookPage.plan')}</TableCell>
+                    <TableCell>{t('orderBookPage.material')}</TableCell>
+                    <TableCell>{t('orderBookPage.amount')}</TableCell>
+                    <TableCell>{t('orderBookPage.unitPrice')}</TableCell>
+                    <TableCell>{t('orderBookPage.totalPrice')}</TableCell>
+                    <TableCell>{t('orderBookPage.note')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {detailMaterials.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {t('orderBookPage.noMaterials')}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    detailMaterials.map((usage) => (
+                      <TableRow key={usage.id}>
+                        <TableCell>
+                          <Typography variant="body2">{usage.planLabel}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {[usage.materialLabel, usage.itemLabel].filter(Boolean).join(' / ') || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {usage.amount} {usage.unitLabel || ''}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {usage.unitPrice ? formatMoney(usage.unitPrice, usage.currency) : '—'}
+                            {usage.unitPrice ? ` / ${usage.unitLabel || ''}` : ''}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {usage.totalPrice ? formatMoney(usage.totalPrice, usage.currency) : '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{usage.note || '—'}</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeInfo} color="inherit">
+            {t('orderBookPage.cancel')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
         <MenuItem
           onClick={() => {
@@ -822,6 +1285,15 @@ export default function ClientsOrderBookPage() {
         >
           <Iconify icon="solar:pen-bold" width={18} height={18} style={{ marginRight: 8 }} />
           {t('orderBookPage.edit')}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuItem) openFinish(menuItem);
+            closeMenu();
+          }}
+        >
+          <Iconify icon="solar:check-circle-bold" width={18} height={18} style={{ marginRight: 8 }} />
+          {t('orderBookPage.finish')}
         </MenuItem>
         <MenuItem
           onClick={() => {

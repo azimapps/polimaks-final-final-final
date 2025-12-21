@@ -1265,7 +1265,21 @@
     "deleteHint": "You can add it back later.",
     "empty": "No orders yet.",
     "actions": "Actions",
-    "localHint": "Data is saved in your browser for now; hook this up to your API later."
+    "localHint": "Data is saved in your browser for now; hook this up to your API later.",
+    "finish": "Finish",
+    "finishConfirm": "Mark this order as finished?",
+    "finishHint": "This will add the order to Finished Goods (Angren).",
+    "infoTitle": "Order details",
+    "plansTitle": "Plans",
+    "materialsTitle": "Materials used",
+    "noPlans": "No plans for this order yet.",
+    "noMaterials": "No materials recorded yet.",
+    "plan": "Plan",
+    "planFallback": "Plan",
+    "amount": "Amount",
+    "unitPrice": "Unit price",
+    "totalPrice": "Total price",
+    "note": "Note"
   },
   "ishlabChiqarish": {
     "title": "Production",

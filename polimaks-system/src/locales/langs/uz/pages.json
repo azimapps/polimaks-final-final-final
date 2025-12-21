@@ -1267,7 +1267,21 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha buyurtmalar yo'q.",
     "actions": "Amallar",
-    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+    "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
+    "finish": "Yakunlash",
+    "finishConfirm": "Buyurtmani yakunlang?",
+    "finishHint": "Buyurtma Tayyor mahsulotlar (Angren) bo'limiga qo'shiladi.",
+    "infoTitle": "Buyurtma tafsilotlari",
+    "plansTitle": "Rejalar",
+    "materialsTitle": "Ishlatilgan materiallar",
+    "noPlans": "Bu buyurtma uchun reja yo'q.",
+    "noMaterials": "Materiallar hali kiritilmagan.",
+    "plan": "Reja",
+    "planFallback": "Reja",
+    "amount": "Miqdor",
+    "unitPrice": "Birlik narxi",
+    "totalPrice": "Jami narx",
+    "note": "Izoh"
   },
   "ishlabChiqarish": {
     "title": "Ishlab chiqarish",
