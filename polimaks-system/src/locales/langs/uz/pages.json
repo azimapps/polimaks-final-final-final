@@ -1310,6 +1310,7 @@
     "empty": "Hozircha buyurtmalar yo'q.",
     "actions": "Amallar",
     "date": "Sana",
+    "orderDate": "Buyurtma sanasi",
     "orderNumber": "Buyurtma raqami",
     "client": "Mijoz",
     "title": "Nomi",
@@ -1323,13 +1324,16 @@
     "cylinderCount": "Silindrlar soni",
     "machineTypeLabel": "Stanok turi",
     "machineLabel": "Stanok",
+    "statusLabel": "Status",
     "printingMachine": "Bosma mashinasi",
     "selectMachine": "Mashinani tanlang",
     "responsiblePerson": "Mas'ul shaxs",
     "notes": "Izohlar",
     "status": {
+      "notStarted": "Boshlanmagan",
       "planning": "Rejalashtirish",
       "inProgress": "Jarayonda",
+      "finished": "Yakunlangan",
       "completed": "Tugallangan",
       "cancelled": "Bekor qilingan"
     },
@@ -1371,6 +1375,36 @@
     "reports": {
       "heading": "Hisobotlar",
       "description": "Reska hisobotlari uchun bo'sh joy.",
+      "placeholder": "Hisobotlar sahifasi hozircha bo'sh."
+    }
+  },
+  "pechatPanel": {
+    "title": "Pechat paneli",
+    "subtitle": "Bosma operatori uchun panel",
+    "machineLabel": "Stanok",
+    "brigadaLabel": "Brigada",
+    "noMachines": "Stanoklar topilmadi",
+    "noBrigadas": "Brigadalar topilmadi",
+    "changeStatus": "Statusni yangilash",
+    "statusDialogTitle": "Statusni yangilash",
+    "materialsUsed": "Ishlatilgan materiallar",
+    "addMaterial": "Material qo'shish",
+    "noMaterials": "Materiallar topilmadi",
+    "selectMaterial": "Material tanlang",
+    "maxAmount": "Maks: {{amount}} {{unit}}",
+    "overview": {
+      "heading": "Pechat umumiy",
+      "description": "Reja bo'yicha bosmaga biriktirilgan buyurtmalar tanlangan stanok va brigada bo'yicha ko'rinadi.",
+      "selection": "Tanlangan: {{machine}} · {{brigada}}"
+    },
+    "queue": {
+      "heading": "Navbat",
+      "description": "Bosma navbat jadvali uchun bo'sh joy.",
+      "placeholder": "Navbat sahifasi hozircha bo'sh."
+    },
+    "reports": {
+      "heading": "Hisobotlar",
+      "description": "Bosma hisobotlari uchun bo'sh joy.",
       "placeholder": "Hisobotlar sahifasi hozircha bo'sh."
     }
   },

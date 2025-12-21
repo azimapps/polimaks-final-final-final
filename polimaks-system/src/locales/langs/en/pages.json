@@ -1308,6 +1308,7 @@
     "empty": "No orders yet.",
     "actions": "Actions",
     "date": "Date",
+    "orderDate": "Order date",
     "endDate": "End date",
     "orderNumber": "Order Number",
     "client": "Client",
@@ -1322,13 +1323,16 @@
     "cylinderCount": "Number of Cylinders",
     "machineTypeLabel": "Machine type",
     "machineLabel": "Machine",
+    "statusLabel": "Status",
     "printingMachine": "Printing Machine",
     "selectMachine": "Select machine",
     "responsiblePerson": "Responsible Person",
     "notes": "Notes",
     "status": {
+      "notStarted": "Not started",
       "planning": "Planning",
       "inProgress": "In Progress",
+      "finished": "Finished",
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
@@ -1369,6 +1373,36 @@
     "reports": {
       "heading": "Reports",
       "description": "Empty area for reska reports.",
+      "placeholder": "Reports page placeholder."
+    }
+  },
+  "pechatPanel": {
+    "title": "Pechat panel",
+    "subtitle": "Dedicated view for printing operator",
+    "machineLabel": "Machine",
+    "brigadaLabel": "Brigada",
+    "noMachines": "No machines found",
+    "noBrigadas": "No brigadas found",
+    "changeStatus": "Update status",
+    "statusDialogTitle": "Update status",
+    "materialsUsed": "Used materials",
+    "addMaterial": "Add material",
+    "noMaterials": "No materials found",
+    "selectMaterial": "Select material",
+    "maxAmount": "Max: {{amount}} {{unit}}",
+    "overview": {
+      "heading": "Pechat overview",
+      "description": "Orders from the planner assigned to Pechat for the selected machine and brigada.",
+      "selection": "Selected: {{machine}} · {{brigada}}"
+    },
+    "queue": {
+      "heading": "Queue",
+      "description": "Empty slot for upcoming queue items.",
+      "placeholder": "Queue page placeholder."
+    },
+    "reports": {
+      "heading": "Reports",
+      "description": "Empty area for pechat reports.",
       "placeholder": "Reports page placeholder."
     }
   },

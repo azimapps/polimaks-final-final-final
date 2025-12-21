@@ -1309,6 +1309,7 @@
     "empty": "Заказов пока нет.",
     "actions": "Действия",
     "date": "Дата",
+    "orderDate": "Дата заказа",
     "orderNumber": "Номер заказа",
     "client": "Клиент",
     "title": "Название",
@@ -1322,13 +1323,16 @@
     "cylinderCount": "Количество цилиндров",
     "machineTypeLabel": "Тип станка",
     "machineLabel": "Станок",
+    "statusLabel": "Статус",
     "printingMachine": "Печатная машина",
     "selectMachine": "Выберите машину",
     "responsiblePerson": "Ответственное лицо",
     "notes": "Примечание",
     "status": {
+      "notStarted": "Не начато",
       "planning": "Планирование",
       "inProgress": "В работе",
+      "finished": "Завершено",
       "completed": "Завершено",
       "cancelled": "Отменено"
     },
@@ -1370,6 +1374,36 @@
     "reports": {
       "heading": "Отчеты",
       "description": "Место для отчетов резки.",
+      "placeholder": "Страница отчетов пока пустая."
+    }
+  },
+  "pechatPanel": {
+    "title": "Панель печати",
+    "subtitle": "Отдельная панель для оператора печати",
+    "machineLabel": "Станок",
+    "brigadaLabel": "Бригада",
+    "noMachines": "Станки не найдены",
+    "noBrigadas": "Бригады не найдены",
+    "changeStatus": "Обновить статус",
+    "statusDialogTitle": "Обновить статус",
+    "materialsUsed": "Использованные материалы",
+    "addMaterial": "Добавить материал",
+    "noMaterials": "Материалы не найдены",
+    "selectMaterial": "Выберите материал",
+    "maxAmount": "Макс: {{amount}} {{unit}}",
+    "overview": {
+      "heading": "Обзор печати",
+      "description": "Заказы из планировщика для печати по выбранному станку и бригаде.",
+      "selection": "Выбрано: {{machine}} · {{brigada}}"
+    },
+    "queue": {
+      "heading": "Очередь",
+      "description": "Место для очереди печати.",
+      "placeholder": "Страница очереди пока пустая."
+    },
+    "reports": {
+      "heading": "Отчеты",
+      "description": "Место для отчетов печати.",
       "placeholder": "Страница отчетов пока пустая."
     }
   },

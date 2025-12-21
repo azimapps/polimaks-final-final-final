@@ -1310,6 +1310,7 @@
     "empty": "Ҳозирча буюртмалар йўқ.",
     "actions": "Амаллар",
     "date": "Сана",
+    "orderDate": "Буюртма санаси",
     "orderNumber": "Буюртма рақами",
     "client": "Мижоз",
     "title": "Номи",
@@ -1323,13 +1324,16 @@
     "cylinderCount": "Силиндрлар сони",
     "machineTypeLabel": "Станок тури",
     "machineLabel": "Станок",
+    "statusLabel": "Статус",
     "printingMachine": "Босма машинаси",
     "selectMachine": "Машинани танланг",
     "responsiblePerson": "Масъул шахс",
     "notes": "Изоҳлар",
     "status": {
+      "notStarted": "Бошланмаган",
       "planning": "Режалаштириш",
       "inProgress": "Жараёнда",
+      "finished": "Якунланган",
       "completed": "Тугалланган",
       "cancelled": "Бекор қилинган"
     },
@@ -1371,6 +1375,36 @@
     "reports": {
       "heading": "Ҳисоботлар",
       "description": "Реска ҳисоботлари учун бўш жой.",
+      "placeholder": "Ҳисоботлар саҳифаси ҳозирча бўш."
+    }
+  },
+  "pechatPanel": {
+    "title": "Печат панели",
+    "subtitle": "Босма оператори учун панел",
+    "machineLabel": "Станок",
+    "brigadaLabel": "Бригада",
+    "noMachines": "Станоклар топилмади",
+    "noBrigadas": "Бригада топилмади",
+    "changeStatus": "Статусни янгилаш",
+    "statusDialogTitle": "Статусни янгилаш",
+    "materialsUsed": "Ишлатилган материаллар",
+    "addMaterial": "Материал қўшиш",
+    "noMaterials": "Материаллар топилмади",
+    "selectMaterial": "Материал танланг",
+    "maxAmount": "Макс: {{amount}} {{unit}}",
+    "overview": {
+      "heading": "Печат умумий",
+      "description": "Режа бўйича босмага бириктирилган буюртмалар танланган станок ва бригада бўйича кўринади.",
+      "selection": "Танланган: {{machine}} · {{brigada}}"
+    },
+    "queue": {
+      "heading": "Навбат",
+      "description": "Босма навбат жадвали учун бўш жой.",
+      "placeholder": "Навбат саҳифаси ҳозирча бўш."
+    },
+    "reports": {
+      "heading": "Ҳисоботлар",
+      "description": "Босма ҳисоботлари учун бўш жой.",
       "placeholder": "Ҳисоботлар саҳифаси ҳозирча бўш."
     }
   },

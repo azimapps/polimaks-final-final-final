@@ -1,7 +1,7 @@
 import type { RouteObject } from 'react-router';
 
-import { Outlet } from 'react-router';
 import { lazy, Suspense } from 'react';
+import { Outlet, Navigate } from 'react-router';
 
 import { DashboardLayout } from 'src/layouts/dashboard';
 import { useReskaNavData } from 'src/layouts/nav-config-reska';
@@ -70,6 +70,7 @@ const FinanceIncomePage = lazy(() => import('src/pages/dashboard/finance/income'
 const FinanceExpensePage = lazy(() => import('src/pages/dashboard/finance/expense'));
 const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
 const ClientsCrmPage = lazy(() => import('src/pages/dashboard/clients/crm'));
+const PechatPanelOverviewPage = lazy(() => import('src/pages/dashboard/pechat-panel/overview'));
 const ClientTransactionsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-transactions')
 );
@@ -263,7 +264,11 @@ export const routesSection: RouteObject[] = [
         <PechatPanelLayout />
       </AuthGuard>
     ),
-    children: [{ index: true, element: <PechatPage /> }],
+    children: [
+      { index: true, element: <Navigate to="jarayonda" replace /> },
+      { path: 'jarayonda', element: <PechatPanelOverviewPage /> },
+      { path: 'yakunlangan', element: <PechatPanelOverviewPage /> },
+    ],
   },
 
   // Auth

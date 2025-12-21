@@ -49,6 +49,8 @@
   "reska_panel_reports": "Отчеты",
   "pechat_panel": "Панель печати",
   "pechat_panel_overview": "Обзор",
+  "pechat_panel_in_progress": "В работе",
+  "pechat_panel_finished": "Завершено",
   "laminatsiya_panel": "Панель ламинации",
   "laminatsiya_panel_overview": "Обзор"
 }

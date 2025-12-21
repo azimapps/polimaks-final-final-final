@@ -89,6 +89,8 @@ export const paths = {
     pechatPanel: {
       root: '/pechat-paneli',
       overview: '/pechat-paneli',
+      inProgress: '/pechat-paneli/jarayonda',
+      finished: '/pechat-paneli/yakunlangan',
     },
     laminatsiyaPanel: {
       root: '/laminatsiya-paneli',

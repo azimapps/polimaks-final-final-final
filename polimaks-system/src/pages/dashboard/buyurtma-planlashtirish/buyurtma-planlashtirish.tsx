@@ -6,6 +6,7 @@ import { useBoolean } from 'minimal-shared/hooks';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -46,6 +47,16 @@ type Currency = 'USD' | 'EUR' | 'RUB' | 'UZS';
 type MachineType = 'pechat' | 'reska' | 'laminatsiya';
 type Machine = { id: string; name: string };
 type SortOption = 'default' | 'cylinderAsc' | 'cylinderDesc';
+type PlanStatus = 'in_progress' | 'finished';
+
+type MaterialUsage = {
+  materialId: string;
+  materialLabel: string;
+  itemLabel: string;
+  amount: number;
+  unitLabel: string;
+  note?: string;
+};
 
 type OrderBookItem = {
   id: string;
@@ -92,6 +103,7 @@ type PlanItem = {
   orderDate?: string;
   startDate: string;
   endDate: string;
+  status: PlanStatus;
   filmThickness?: number;
   filmWidth?: number;
   cylinderLength?: number;
@@ -101,6 +113,7 @@ type PlanItem = {
   priceCurrency?: Currency;
   admin?: string;
   note: string;
+  materialsUsed?: MaterialUsage[];
 };
 
 type FormState = {
@@ -111,6 +124,7 @@ type FormState = {
   machineId: string;
   startDate: string;
   endDate: string;
+  status: PlanStatus;
   note: string;
 };
 
@@ -134,6 +148,11 @@ const MACHINE_OPTIONS: { value: MachineType; label: string }[] = [
   { value: 'pechat', label: 'Pechat' },
   { value: 'reska', label: 'Reska' },
   { value: 'laminatsiya', label: 'Laminatsiya' },
+];
+
+const STATUS_OPTIONS: { value: PlanStatus; labelKey: string }[] = [
+  { value: 'in_progress', labelKey: 'orderPlanPage.status.inProgress' },
+  { value: 'finished', labelKey: 'orderPlanPage.status.finished' },
 ];
 
 const ORDER_BOOK_SEED: OrderBookItem[] = [
@@ -230,6 +249,11 @@ const normalizeOrderBookItem = (item: Partial<OrderBookItem>, index: number): Or
   endDate: item.endDate || item.date || todayISO(),
 });
 
+const resolvePlanStatus = (status?: string): PlanStatus => {
+  if (status === 'finished' || status === 'completed') return 'finished';
+  return 'in_progress';
+};
+
 const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   id: raw?.id || `plan-${index}`,
   orderId: raw?.orderId || '',
@@ -247,6 +271,7 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   orderDate: raw?.orderDate || raw?.date || '',
   startDate: raw?.startDate || raw?.date || todayISO(),
   endDate: raw?.endDate || raw?.date || todayISO(),
+  status: resolvePlanStatus(raw?.status),
   filmThickness: Number(raw?.filmThickness) || 0,
   filmWidth: Number(raw?.filmWidth) || 0,
   cylinderLength: Number(raw?.cylinderLength) || 0,
@@ -256,6 +281,7 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   priceCurrency: (raw?.priceCurrency as Currency) || 'UZS',
   admin: raw?.admin || '',
   note: raw?.note ?? raw?.notes ?? '',
+  materialsUsed: Array.isArray(raw?.materialsUsed) ? raw.materialsUsed : [],
 });
 
 const normalizeBrigadaGroup = (raw: any, index: number): BrigadaGroup => ({
@@ -366,6 +392,7 @@ const defaultFormState: FormState = {
   machineId: '',
   startDate: todayISO(),
   endDate: todayISO(),
+  status: 'in_progress',
   note: '',
 };
 
@@ -425,6 +452,7 @@ export default function BuyurtmaPlanlashtirish() {
         groupId: activePlan.groupId,
         startDate: activePlan.startDate,
         endDate: activePlan.endDate,
+        status: activePlan.status || 'in_progress',
         note: activePlan.note,
       });
       editDialog.onTrue();
@@ -458,6 +486,7 @@ export default function BuyurtmaPlanlashtirish() {
       return;
     }
 
+    const existingPlan = formData.id ? plans.find((plan) => plan.id === formData.id) : null;
     const groupName = availableGroups.find((group) => group.id === formData.groupId)?.name || '';
     const machineName =
       availableMachines.find((machine) => machine.id === formData.machineId)?.name || '';
@@ -479,6 +508,7 @@ export default function BuyurtmaPlanlashtirish() {
       orderDate: selectedOrder.date,
       startDate: formData.startDate || selectedOrder.startDate || todayISO(),
       endDate: formData.endDate || formData.startDate || selectedOrder.endDate || todayISO(),
+      status: formData.status,
       filmThickness: selectedOrder.filmThickness,
       filmWidth: selectedOrder.filmWidth,
       cylinderLength: selectedOrder.cylinderLength,
@@ -488,6 +518,7 @@ export default function BuyurtmaPlanlashtirish() {
       priceCurrency: selectedOrder.priceCurrency,
       admin: selectedOrder.admin,
       note: formData.note,
+      materialsUsed: existingPlan?.materialsUsed || [],
     };
 
     if (formData.id) {
@@ -517,6 +548,14 @@ export default function BuyurtmaPlanlashtirish() {
     }
     return plans;
   }, [plans, sortOption]);
+
+  const getStatusLabel = (status: PlanStatus) => {
+    const entry = STATUS_OPTIONS.find((option) => option.value === status);
+    return entry ? t(entry.labelKey) : status;
+  };
+
+  const getStatusColor = (status: PlanStatus) =>
+    status === 'finished' ? 'success' : 'warning';
 
   useEffect(() => {
     if (!formData.machineType) {
@@ -606,6 +645,7 @@ export default function BuyurtmaPlanlashtirish() {
                   <TableCell sx={{ minWidth: 150, py: 2 }}>Brigada</TableCell>
                   <TableCell sx={{ minWidth: 120, py: 2 }}>Boshlanish</TableCell>
                   <TableCell sx={{ minWidth: 120, py: 2 }}>Yakun</TableCell>
+                  <TableCell sx={{ minWidth: 140, py: 2 }}>{t('orderPlanPage.statusLabel')}</TableCell>
                   <TableCell sx={{ minWidth: 200, py: 2 }}>Izoh</TableCell>
                   <TableCell sx={{ minWidth: 80, py: 2 }}>{t('orderPlanPage.actions')}</TableCell>
                 </TableRow>
@@ -613,7 +653,7 @@ export default function BuyurtmaPlanlashtirish() {
               <TableBody>
                 {sortedPlans.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
                       <Typography variant="body2" sx={{ color: 'text.disabled' }}>
                         {t('orderPlanPage.empty')}
                       </Typography>
@@ -645,6 +685,14 @@ export default function BuyurtmaPlanlashtirish() {
                       <TableCell sx={{ py: 2 }}>{plan.groupName || '-'}</TableCell>
                       <TableCell sx={{ py: 2 }}>{formatDate(plan.startDate)}</TableCell>
                       <TableCell sx={{ py: 2 }}>{formatDate(plan.endDate)}</TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Chip
+                          size="small"
+                          variant="soft"
+                          color={getStatusColor(plan.status)}
+                          label={getStatusLabel(plan.status)}
+                        />
+                      </TableCell>
                       <TableCell sx={{ py: 2 }}>
                         <Typography
                           variant="body2"
@@ -799,6 +847,28 @@ export default function BuyurtmaPlanlashtirish() {
                       {availableGroups.map((group) => (
                         <MenuItem key={group.id} value={group.id}>
                           {group.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>{t('orderPlanPage.statusLabel')}</InputLabel>
+                    <Select
+                      value={formData.status}
+                      label={t('orderPlanPage.statusLabel')}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          status: e.target.value as PlanStatus,
+                        }))
+                      }
+                    >
+                      {STATUS_OPTIONS.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {t(option.labelKey)}
                         </MenuItem>
                       ))}
                     </Select>
@@ -1015,6 +1085,14 @@ export default function BuyurtmaPlanlashtirish() {
                       Бошланиш сана
                     </Typography>
                     <Typography variant="subtitle2">{formatDate(detailPlan.startDate)}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {t('orderPlanPage.statusLabel')}
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      {detailPlan.status ? getStatusLabel(detailPlan.status) : '—'}
+                    </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
