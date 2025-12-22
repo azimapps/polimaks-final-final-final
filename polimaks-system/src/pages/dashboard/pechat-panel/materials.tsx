@@ -1,36 +1,37 @@
-import { useEffect, useMemo, useState, type MouseEvent } from 'react';
+import { useMemo, useState, useEffect, type MouseEvent } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import FormControl from '@mui/material/FormControl';
-import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Select from '@mui/material/Select';
+import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import MenuItem from '@mui/material/MenuItem';
+import TableRow from '@mui/material/TableRow';
+import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
+import FormControl from '@mui/material/FormControl';
+import TableContainer from '@mui/material/TableContainer';
 
-import { FlagIcon } from 'src/components/flag-icon';
-import { Iconify } from 'src/components/iconify';
-import { CustomPopover } from 'src/components/custom-popover';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
-import machineSeed from 'src/data/stanok-pechat.json';
-import plyonkaSeed from 'src/data/plyonka.json';
 import kraskaSeed from 'src/data/kraska.json';
-import suyuqKraskaSeed from 'src/data/suyuq-kraska.json';
-import razvaritelSeed from 'src/data/razvaritel.json';
+import plyonkaSeed from 'src/data/plyonka.json';
 import silindirSeed from 'src/data/silindir.json';
+import machineSeed from 'src/data/stanok-pechat.json';
+import razvaritelSeed from 'src/data/razvaritel.json';
+import suyuqKraskaSeed from 'src/data/suyuq-kraska.json';
+
+import { Iconify } from 'src/components/iconify';
+import { FlagIcon } from 'src/components/flag-icon';
+import { CustomPopover } from 'src/components/custom-popover';
 
 type Machine = {
   id: string;
