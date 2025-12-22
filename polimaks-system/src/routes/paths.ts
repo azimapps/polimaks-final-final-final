@@ -91,6 +91,7 @@ export const paths = {
       overview: '/pechat-paneli',
       inProgress: '/pechat-paneli/jarayonda',
       finished: '/pechat-paneli/yakunlangan',
+      materials: '/pechat-paneli/materials',
     },
     laminatsiyaPanel: {
       root: '/laminatsiya-paneli',

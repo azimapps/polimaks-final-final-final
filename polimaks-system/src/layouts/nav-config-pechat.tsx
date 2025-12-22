@@ -18,6 +18,7 @@ const icon = (name: string) => (
 const ICONS = {
   inProgress: icon('ic-analytics'),
   finished: icon('ic-analytics'),
+  materials: icon('ic-odd'),
 };
 
 // ----------------------------------------------------------------------
@@ -39,6 +40,11 @@ export const usePechatNavData = (): NavSectionProps['data'] => {
             title: t('pechat_panel_finished'),
             path: paths.dashboard.pechatPanel.finished,
             icon: ICONS.finished,
+          },
+          {
+            title: t('pechat_panel_materials'),
+            path: paths.dashboard.pechatPanel.materials,
+            icon: ICONS.materials,
           },
         ],
       },

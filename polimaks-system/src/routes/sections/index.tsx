@@ -71,6 +71,7 @@ const FinanceExpensePage = lazy(() => import('src/pages/dashboard/finance/expens
 const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
 const ClientsCrmPage = lazy(() => import('src/pages/dashboard/clients/crm'));
 const PechatPanelOverviewPage = lazy(() => import('src/pages/dashboard/pechat-panel/overview'));
+const PechatPanelMaterialsPage = lazy(() => import('src/pages/dashboard/pechat-panel/materials'));
 const ClientTransactionsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-transactions')
 );
@@ -268,6 +269,7 @@ export const routesSection: RouteObject[] = [
       { index: true, element: <Navigate to="jarayonda" replace /> },
       { path: 'jarayonda', element: <PechatPanelOverviewPage /> },
       { path: 'yakunlangan', element: <PechatPanelOverviewPage /> },
+      { path: 'materials', element: <PechatPanelMaterialsPage /> },
     ],
   },
 

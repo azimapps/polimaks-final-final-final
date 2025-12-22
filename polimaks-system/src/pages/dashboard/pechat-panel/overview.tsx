@@ -156,6 +156,7 @@ const buildUsageId = (prefix: string) =>
 
 const ORDER_PLAN_STORAGE_KEY = 'orderPlansV2';
 const LEGACY_ORDER_PLAN_STORAGE_KEY = 'orderPlans';
+const PECHAT_SELECTED_MACHINE_KEY = 'pechat-panel-selected-machine';
 const PLAN_SEED: PlanItem[] = [
   {
     id: 'pechat-plan-1',
@@ -419,7 +420,10 @@ export default function PechatPanelOverviewPage() {
   const title = `${t('pechatPanel.title')} | ${CONFIG.appName}`;
 
   const [machines, setMachines] = useState<any[]>([]);
-  const [selectedMachineId, setSelectedMachineId] = useState<string>('');
+  const [selectedMachineId, setSelectedMachineId] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem(PECHAT_SELECTED_MACHINE_KEY) || '';
+  });
   const [brigadas, setBrigadas] = useState<any[]>([]);
   const [selectedBrigadaId, setSelectedBrigadaId] = useState<string>('');
   const [plans, setPlans] = useState<PlanItem[]>(() => loadPlanItems());
@@ -509,6 +513,12 @@ export default function PechatPanelOverviewPage() {
       setSelectedMachineId(machines[0].id);
     }
   }, [machines, selectedMachineId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !selectedMachineId) return;
+    localStorage.setItem(PECHAT_SELECTED_MACHINE_KEY, selectedMachineId);
+    window.dispatchEvent(new Event('pechat-panel-machine-change'));
+  }, [selectedMachineId]);
 
   useEffect(() => {
     const nextBrigadas = selectedMachineId
