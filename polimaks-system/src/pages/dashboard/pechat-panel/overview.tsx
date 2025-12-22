@@ -250,6 +250,88 @@ const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
 
 const readTransactions = <T,>(key: string): T[] => readLocalArray<T>(key, []);
 
+const buildUsageTotals = (items: MaterialUsage[]) => {
+  const totals = new Map<string, number>();
+  items.forEach((usage) => {
+    totals.set(usage.materialId, (totals.get(usage.materialId) || 0) + usage.amount);
+  });
+  return totals;
+};
+
+const buildUsageNotes = (items: MaterialUsage[]) => {
+  const notes = new Map<string, string[]>();
+  items.forEach((usage) => {
+    const note = usage.note?.trim();
+    if (!note) return;
+    const values = notes.get(usage.materialId) || [];
+    if (!values.includes(note)) values.push(note);
+    notes.set(usage.materialId, values);
+  });
+  const merged = new Map<string, string>();
+  notes.forEach((values, materialId) => {
+    merged.set(materialId, values.join('; '));
+  });
+  return merged;
+};
+
+const appendTransactions = <T,>(storageKey: string, next: T[]) => {
+  if (typeof window === 'undefined' || next.length === 0) return;
+  const existing = readLocalArray<T>(storageKey, []);
+  localStorage.setItem(storageKey, JSON.stringify([...existing, ...next]));
+};
+
+const createMaterialTransaction = (
+  materialId: string,
+  amount: number,
+  note: string,
+  machineId: string
+) => {
+  const [materialType, itemId] = materialId.split(':');
+  if (!materialType || !itemId) return null;
+  const base = {
+    id: buildUsageId('tx'),
+    date: new Date().toISOString().slice(0, 10),
+    type: 'out' as const,
+    machineType: 'pechat' as const,
+    machineId,
+    note,
+    createdAt: Date.now(),
+  };
+
+  if (materialType === 'plyonka') {
+    return {
+      storageKey: 'ombor-plyonka-transactions',
+      transaction: { ...base, plyonkaId: itemId, amountKg: amount },
+    };
+  }
+  if (materialType === 'kraska') {
+    return {
+      storageKey: 'ombor-kraska-transactions',
+      transaction: { ...base, kraskaId: itemId, amountKg: amount },
+    };
+  }
+  if (materialType === 'suyuq-kraska') {
+    return {
+      storageKey: 'ombor-suyuq-kraska-transactions',
+      transaction: { ...base, suyuqKraskaId: itemId, amountKg: amount },
+    };
+  }
+  if (materialType === 'razvaritel') {
+    return {
+      storageKey: 'ombor-razvaritel-transactions',
+      transaction: { ...base, razvaritelId: itemId, amountLiter: amount },
+    };
+  }
+  if (materialType === 'silindir') {
+    return {
+      storageKey: 'ombor-silindir-transactions',
+      transaction: { ...base, silindirId: itemId, amountQty: amount },
+    };
+  }
+
+  return null;
+};
+
 const buildMaterialOptions = (machineId: string | undefined, t: (key: string, vars?: any) => string) => {
   if (!machineId) return [];
 
@@ -652,6 +734,27 @@ export default function PechatPanelOverviewPage() {
       .filter((item): item is MaterialUsage => item !== null);
 
     if (!hasUsageErrors) {
+      const previousTotals = buildUsageTotals(statusPlan.materialsUsed || []);
+      const nextTotals = buildUsageTotals(usedMaterials);
+      const notesByMaterial = buildUsageNotes(usedMaterials);
+      const planMachineId = statusPlan.machineId || selectedMachineId;
+      const pendingTransactions = new Map<string, any[]>();
+
+      nextTotals.forEach((amount, materialId) => {
+        const delta = amount - (previousTotals.get(materialId) || 0);
+        if (delta <= 0) return;
+        const note = notesByMaterial.get(materialId) || statusPlan.orderNumber || '';
+        const result = createMaterialTransaction(materialId, delta, note, planMachineId);
+        if (!result) return;
+        const bucket = pendingTransactions.get(result.storageKey) || [];
+        bucket.push(result.transaction);
+        pendingTransactions.set(result.storageKey, bucket);
+      });
+
+      pendingTransactions.forEach((transactions, storageKey) =>
+        appendTransactions(storageKey, transactions)
+      );
+
       const updatedPlans = plans.map((plan) =>
         plan.id === statusPlan.id
           ? { ...plan, status: statusValue, materialsUsed: usedMaterials }
