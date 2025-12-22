@@ -250,6 +250,14 @@ const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
 
 const readTransactions = <T,>(key: string): T[] => readLocalArray<T>(key, []);
 
+const TRANSACTION_STORAGE_KEYS = [
+  'ombor-plyonka-transactions',
+  'ombor-kraska-transactions',
+  'ombor-suyuq-kraska-transactions',
+  'ombor-razvaritel-transactions',
+  'ombor-silindir-transactions',
+];
+
 const buildUsageTotals = (items: MaterialUsage[]) => {
   const totals = new Map<string, number>();
   items.forEach((usage) => {
@@ -274,20 +282,29 @@ const buildUsageNotes = (items: MaterialUsage[]) => {
   return merged;
 };
 
-const appendTransactions = <T,>(storageKey: string, next: T[]) => {
-  if (typeof window === 'undefined' || next.length === 0) return;
-  const existing = readLocalArray<T>(storageKey, []);
-  localStorage.setItem(storageKey, JSON.stringify([...existing, ...next]));
+const getMaterialKeyFromTransaction = (storageKey: string, transaction: any) => {
+  if (storageKey === 'ombor-plyonka-transactions') return `plyonka:${transaction.plyonkaId}`;
+  if (storageKey === 'ombor-kraska-transactions') return `kraska:${transaction.kraskaId}`;
+  if (storageKey === 'ombor-suyuq-kraska-transactions') {
+    return `suyuq-kraska:${transaction.suyuqKraskaId}`;
+  }
+  if (storageKey === 'ombor-razvaritel-transactions') {
+    return `razvaritel:${transaction.razvaritelId}`;
+  }
+  if (storageKey === 'ombor-silindir-transactions') return `silindir:${transaction.silindirId}`;
+  return '';
 };
 
 const createMaterialTransaction = (
   materialId: string,
   amount: number,
   note: string,
-  machineId: string
+  machineId: string,
+  planId: string
 ) => {
   const [materialType, itemId] = materialId.split(':');
   if (!materialType || !itemId) return null;
+  const materialKey = `${materialType}:${itemId}`;
   const base = {
     id: buildUsageId('tx'),
     date: new Date().toISOString().slice(0, 10),
@@ -296,35 +313,42 @@ const createMaterialTransaction = (
     machineId,
     note,
     createdAt: Date.now(),
+    source: 'pechat-plan',
+    planId,
   };
 
   if (materialType === 'plyonka') {
     return {
       storageKey: 'ombor-plyonka-transactions',
+      materialKey,
       transaction: { ...base, plyonkaId: itemId, amountKg: amount },
     };
   }
   if (materialType === 'kraska') {
     return {
       storageKey: 'ombor-kraska-transactions',
+      materialKey,
       transaction: { ...base, kraskaId: itemId, amountKg: amount },
     };
   }
   if (materialType === 'suyuq-kraska') {
     return {
       storageKey: 'ombor-suyuq-kraska-transactions',
+      materialKey,
       transaction: { ...base, suyuqKraskaId: itemId, amountKg: amount },
     };
   }
   if (materialType === 'razvaritel') {
     return {
       storageKey: 'ombor-razvaritel-transactions',
+      materialKey,
       transaction: { ...base, razvaritelId: itemId, amountLiter: amount },
     };
   }
   if (materialType === 'silindir') {
     return {
       storageKey: 'ombor-silindir-transactions',
+      materialKey,
       transaction: { ...base, silindirId: itemId, amountQty: amount },
     };
   }
@@ -734,26 +758,59 @@ export default function PechatPanelOverviewPage() {
       .filter((item): item is MaterialUsage => item !== null);
 
     if (!hasUsageErrors) {
-      const previousTotals = buildUsageTotals(statusPlan.materialsUsed || []);
-      const nextTotals = buildUsageTotals(usedMaterials);
-      const notesByMaterial = buildUsageNotes(usedMaterials);
+      const planId = statusPlan.id;
       const planMachineId = statusPlan.machineId || selectedMachineId;
-      const pendingTransactions = new Map<string, any[]>();
+      const notesByMaterial = buildUsageNotes(usedMaterials);
+      const nextTotals = buildUsageTotals(usedMaterials);
+      const nextTransactionsByStorage = new Map<string, any[]>();
+      const existingStorage = new Map<
+        string,
+        { all: any[]; planByMaterial: Map<string, any> }
+      >();
+
+      const ensureStorage = (storageKey: string) => {
+        if (existingStorage.has(storageKey)) return existingStorage.get(storageKey)!;
+        const all = readLocalArray<any>(storageKey, []);
+        const planByMaterial = new Map<string, any>();
+        all
+          .filter((tx) => tx?.source === 'pechat-plan' && tx?.planId === planId)
+          .forEach((tx) => {
+            const materialKey = getMaterialKeyFromTransaction(storageKey, tx);
+            if (materialKey) planByMaterial.set(materialKey, tx);
+          });
+        const entry = { all, planByMaterial };
+        existingStorage.set(storageKey, entry);
+        return entry;
+      };
 
       nextTotals.forEach((amount, materialId) => {
-        const delta = amount - (previousTotals.get(materialId) || 0);
-        if (delta <= 0) return;
+        if (amount <= 0) return;
         const note = notesByMaterial.get(materialId) || statusPlan.orderNumber || '';
-        const result = createMaterialTransaction(materialId, delta, note, planMachineId);
+        const result = createMaterialTransaction(materialId, amount, note, planMachineId, planId);
         if (!result) return;
-        const bucket = pendingTransactions.get(result.storageKey) || [];
-        bucket.push(result.transaction);
-        pendingTransactions.set(result.storageKey, bucket);
+        const storage = ensureStorage(result.storageKey);
+        const existingTx = storage.planByMaterial.get(result.materialKey);
+        const transaction = existingTx
+          ? {
+              ...result.transaction,
+              id: existingTx.id,
+              date: existingTx.date,
+              createdAt: existingTx.createdAt,
+            }
+          : result.transaction;
+        const bucket = nextTransactionsByStorage.get(result.storageKey) || [];
+        bucket.push(transaction);
+        nextTransactionsByStorage.set(result.storageKey, bucket);
       });
 
-      pendingTransactions.forEach((transactions, storageKey) =>
-        appendTransactions(storageKey, transactions)
-      );
+      TRANSACTION_STORAGE_KEYS.forEach((storageKey) => {
+        const storage = ensureStorage(storageKey);
+        const withoutPlan = storage.all.filter(
+          (tx) => !(tx?.source === 'pechat-plan' && tx?.planId === planId)
+        );
+        const next = [...withoutPlan, ...(nextTransactionsByStorage.get(storageKey) || [])];
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      });
 
       const updatedPlans = plans.map((plan) =>
         plan.id === statusPlan.id
