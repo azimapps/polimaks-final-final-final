@@ -354,6 +354,11 @@
     "deleteHint": "You can add it back later.",
     "empty": "No glue records yet.",
     "actions": "Actions",
+    "transactions": "Transactions",
+    "transactionsSearchTitle": "Select a glue batch",
+    "transactionsSearchLabel": "Search glue",
+    "transactionsSearchPlaceholder": "Number, supplier, name, or ID",
+    "transactionsSearchEmpty": "No glue batches match your search.",
     "localHint": "Data is saved in your browser for now; hook this up to your API later.",
     "currency": {
       "uzs": "UZS",
@@ -361,6 +366,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kleyTransactionsPage": {
+    "title": "Transactions for {{number}}",
+    "subtitle": "Incoming/outgoing notes for this glue batch. Data is local for now.",
+    "summaryTitle": "Glue details",
+    "notFound": "Glue batch not found. Go back to the list.",
+    "back": "Back to list",
+    "add": "Add transaction",
+    "empty": "No transactions yet.",
+    "unknown": "unknown",
+    "typeIn": "Inbound",
+    "typeOut": "Outbound",
+    "generatedFromStock": "Auto-generated from the current balance",
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "machine": "Machine",
+      "amount": "Barrels",
+      "note": "Note"
+    },
+    "form": {
+      "type": "Type",
+      "date": "Date",
+      "machineType": "Machine type",
+      "machine": "Machine",
+      "amount": "Barrels",
+      "note": "Note",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "localHint": "Saved locally in your browser. Hook this up to your API later."
+    },
+    "deleteConfirm": "Delete this transaction?",
+    "initial": "Initial balance",
+    "deleteTitle": "Delete transaction"
   },
   "plyonkaPage": {
     "title": "Film rolls",
@@ -768,6 +809,13 @@
     "analytics": {
       "title": "Cashflow analytics",
       "subtitle": "Quick charts for income (kirim) and expense (chiqim).",
+      "profitByDay": "Profit by day",
+      "dateRange": "Date range",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "quickRange": "Quick range",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
       "flowTitle": "Kirim vs chiqim over time",
       "shareTitle": "Income vs expense share",
       "categoryTitle": "Top categories",

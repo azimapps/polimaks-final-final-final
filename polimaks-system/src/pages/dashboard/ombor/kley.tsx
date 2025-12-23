@@ -1,8 +1,10 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -29,6 +31,7 @@ import Typography from '@mui/material/Typography';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import seedData from 'src/data/kley.json';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -82,6 +85,7 @@ const normalizeItems = (items: (Partial<KleyItem> & { id?: string })[]): KleyIte
 
 export default function KleyPage() {
   const { t } = useTranslate('pages');
+  const navigate = useNavigate();
 
   const title = `${t('inventory.items.kley.title')} | ${CONFIG.appName}`;
 
@@ -104,6 +108,7 @@ export default function KleyPage() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<KleyItem | null>(null);
   const [pendingDelete, setPendingDelete] = useState<KleyItem | null>(null);
+  const [transactionsTarget, setTransactionsTarget] = useState<KleyItem | null>(null);
   const [form, setForm] = useState<
     Omit<KleyItem, 'id' | 'barrels' | 'netWeight' | 'grossWeight' | 'totalNetWeight' | 'totalGrossWeight' | 'price'> & {
       barrels: string;
@@ -131,6 +136,7 @@ export default function KleyPage() {
 
   const dialog = useBoolean();
   const deleteDialog = useBoolean();
+  const transactionsDialog = useBoolean();
 
   const setItemsAndPersist = (updater: (prev: KleyItem[]) => KleyItem[]) => {
     setItems((prev) => {
@@ -160,6 +166,11 @@ export default function KleyPage() {
       description: '',
     });
     dialog.onTrue();
+  };
+
+  const openTransactionsSearch = () => {
+    setTransactionsTarget(null);
+    transactionsDialog.onTrue();
   };
 
   const openEdit = (item: KleyItem) => {
@@ -245,6 +256,18 @@ export default function KleyPage() {
     parseFloat(form.totalGrossWeight) > 0 &&
     parseFloat(form.price) > 0;
 
+  const transactionsFilterOptions = createFilterOptions<KleyItem>({
+    stringify: (option) =>
+      `${option.id} ${option.numberIdentifier} ${option.supplier} ${option.type} ${option.name}`,
+  });
+
+  const formatTransactionsOption = (item: KleyItem) => {
+    const number = item.numberIdentifier || item.id;
+    const supplier = item.supplier || '—';
+    const name = item.name || item.type || '—';
+    return `${number} · ${supplier} · ${name}`;
+  };
+
   const currencyLabel = (code: Currency) => {
     switch (code) {
       case 'UZS':
@@ -274,9 +297,14 @@ export default function KleyPage() {
               </Typography>
             </Box>
 
-            <Button variant="contained" onClick={openAdd}>
-              {t('kleyPage.add')}
-            </Button>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Button variant="outlined" onClick={openTransactionsSearch}>
+                {t('kleyPage.transactions')}
+              </Button>
+              <Button variant="contained" onClick={openAdd}>
+                {t('kleyPage.add')}
+              </Button>
+            </Stack>
           </Stack>
 
           <Card>
@@ -588,6 +616,45 @@ export default function KleyPage() {
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
             {t('kleyPage.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={transactionsDialog.value}
+        onClose={transactionsDialog.onFalse}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('kleyPage.transactionsSearchTitle')}</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            autoHighlight
+            options={items}
+            value={transactionsTarget}
+            onChange={(_event, value) => {
+              setTransactionsTarget(value);
+              if (value?.id) {
+                transactionsDialog.onFalse();
+                navigate(paths.dashboard.inventory.kleyTransactions(value.id));
+              }
+            }}
+            getOptionLabel={formatTransactionsOption}
+            filterOptions={transactionsFilterOptions}
+            noOptionsText={t('kleyPage.transactionsSearchEmpty')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                autoFocus
+                label={t('kleyPage.transactionsSearchLabel')}
+                placeholder={t('kleyPage.transactionsSearchPlaceholder')}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={transactionsDialog.onFalse} color="inherit">
+            {t('kleyPage.cancel')}
           </Button>
         </DialogActions>
       </Dialog>

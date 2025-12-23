@@ -42,6 +42,9 @@ const SilindirTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/silindir-transaksiyalar')
 );
 const KleyPage = lazy(() => import('src/pages/dashboard/ombor/kley'));
+const KleyTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/kley-transaksiyalar')
+);
 const ZapchastlarPage = lazy(() => import('src/pages/dashboard/ombor/zapchastlar'));
 const OtxotPage = lazy(() => import('src/pages/dashboard/ombor/otxot'));
 const TayyorMahsulotlarTashkentPage = lazy(
@@ -166,6 +169,7 @@ export const routesSection: RouteObject[] = [
           { path: 'silindir', element: <SilindirPage /> },
           { path: 'silindir/:silindirId/transaksiyalar', element: <SilindirTransactionsPage /> },
           { path: 'kley', element: <KleyPage /> },
+          { path: 'kley/:kleyId/transaksiyalar', element: <KleyTransactionsPage /> },
           { path: 'zapchastlar', element: <ZapchastlarPage /> },
           { path: 'otxot', element: <OtxotPage /> },
           { path: 'tayyor-mahsulotlar-tashkent', element: <TayyorMahsulotlarTashkentPage /> },

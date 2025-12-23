@@ -370,6 +370,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha kley yozuvlari yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Kley partiyasini tanlang",
+    "transactionsSearchLabel": "Kley qidirish",
+    "transactionsSearchPlaceholder": "Raqam, yetkazib beruvchi, nom yoki ID",
+    "transactionsSearchEmpty": "Kley partiyasi topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "currency": {
       "uzs": "SO'M",
@@ -377,6 +382,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kleyTransactionsPage": {
+    "title": "Transaksiyalar: {{number}}",
+    "subtitle": "Ushbu kley partiyasi uchun kirim/chiqim yozuvlari. Hozircha ma'lumotlar lokal.",
+    "summaryTitle": "Kley haqida",
+    "notFound": "Kley partiyasi topilmadi. Ro'yxatga qayting.",
+    "back": "Ro'yxatga qaytish",
+    "add": "Transaksiya qo'shish",
+    "empty": "Hozircha transaksiyalar yo'q.",
+    "unknown": "noma'lum",
+    "typeIn": "Kirim",
+    "typeOut": "Chiqim",
+    "generatedFromStock": "Joriy balansdan avtomatik qo'shildi",
+    "table": {
+      "date": "Sana",
+      "type": "Turi",
+      "machine": "Stanok",
+      "amount": "Bochka",
+      "note": "Izoh"
+    },
+    "form": {
+      "type": "Turi",
+      "date": "Sana",
+      "machineType": "Stanok turi",
+      "machine": "Stanok",
+      "amount": "Bochka",
+      "note": "Izoh",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang."
+    },
+    "deleteConfirm": "Ushbu transaksiyani o'chirasizmi?",
+    "initial": "Boshlang'ich qoldiq",
+    "deleteTitle": "Transaksiyani o'chirish"
   },
   "tayyorMahsulotlarPage": {
     "title": "Tayyor mahsulotlar",
@@ -780,6 +821,13 @@
     "analytics": {
       "title": "Kirim/chiqim analitikasi",
       "subtitle": "Kirim (kirim) va chiqim (chiqim) bo'yicha tezkor grafiklar.",
+      "profitByDay": "Kunlik foyda",
+      "dateRange": "Sana oralig'i",
+      "startDate": "Boshlanish sanasi",
+      "endDate": "Tugash sanasi",
+      "quickRange": "Tezkor tanlov",
+      "last7Days": "So'nggi 7 kun",
+      "last30Days": "So'nggi 30 kun",
       "flowTitle": "Kirim va chiqim vaqt bo'yicha",
       "shareTitle": "Kirim va chiqim ulushi",
       "categoryTitle": "Eng ko'p toifalar",

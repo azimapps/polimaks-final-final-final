@@ -28,6 +28,7 @@ export const paths = {
       silindirTransactions: (silindirId: string) =>
         `/ombor/silindir/${silindirId}/transaksiyalar`,
       kley: '/ombor/kley',
+      kleyTransactions: (kleyId: string) => `/ombor/kley/${kleyId}/transaksiyalar`,
       zapchastlar: '/ombor/zapchastlar',
       otxot: '/ombor/otxot',
       tayyorMahsulotlarTashkent: '/ombor/tayyor-mahsulotlar-tashkent',

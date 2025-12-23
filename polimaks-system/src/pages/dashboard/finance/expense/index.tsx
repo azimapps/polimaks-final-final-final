@@ -32,6 +32,8 @@ import { Iconify } from 'src/components/iconify';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
+import { notifyFinanceStorage } from '../finance-storage';
+
 type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
 type ExpenseType = 'cash' | 'transfer';
 
@@ -126,6 +128,7 @@ export function FinanceExpenseView({ embedded = false, method }: FinanceExpenseV
       const next = updater(prev);
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        notifyFinanceStorage();
       }
       return next;
     });

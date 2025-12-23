@@ -17,6 +17,7 @@ import { useTranslate } from 'src/locales';
 
 import { FinanceIncomeView } from '../income';
 import { FinanceExpenseView } from '../expense';
+import { FinanceMethodSummary } from '../finance-method-summary';
 
 type Method = 'cash' | 'transfer';
 type Flow = 'income' | 'expense';
@@ -53,23 +54,26 @@ export default function FinanceMethodPage() {
       <title>{pageTitle}</title>
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        <Stack spacing={1.5} sx={{ mb: 3 }}>
+        <Stack spacing={2} sx={{ mb: 3 }}>
           <Typography variant="overline" sx={{ color: 'text.secondary' }}>
             {methodLabel}
           </Typography>
+          <FinanceMethodSummary method={resolvedMethod} />
           <Tabs value={activeFlow} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tab value="income" label={t('finance.income.title')} />
             <Tab value="expense" label={t('finance.expense.title')} />
           </Tabs>
         </Stack>
 
-        <Box>
-          {activeFlow === 'income' ? (
-            <FinanceIncomeView embedded method={resolvedMethod} />
-          ) : (
-            <FinanceExpenseView embedded method={resolvedMethod} />
-          )}
-        </Box>
+        <Stack spacing={3}>
+          <Box>
+            {activeFlow === 'income' ? (
+              <FinanceIncomeView embedded method={resolvedMethod} />
+            ) : (
+              <FinanceExpenseView embedded method={resolvedMethod} />
+            )}
+          </Box>
+        </Stack>
       </Container>
     </>
   );

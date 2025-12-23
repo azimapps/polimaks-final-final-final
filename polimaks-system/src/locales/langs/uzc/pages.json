@@ -370,6 +370,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча клей ёзувлари йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Клей партиясини танланг",
+    "transactionsSearchLabel": "Клей қидириш",
+    "transactionsSearchPlaceholder": "Рақам, етказиб берувчи, ном ёки ID",
+    "transactionsSearchEmpty": "Клей партияси топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "currency": {
       "uzs": "СЎМ",
@@ -377,6 +382,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kleyTransactionsPage": {
+    "title": "Транзакциялар: {{number}}",
+    "subtitle": "Ушбу клей партияси учун кирим/чиқим ёзувлари. Ҳозирча маълумотлар локал.",
+    "summaryTitle": "Клей ҳақида",
+    "notFound": "Клей партияси топилмади. Рўйхатга қайтинг.",
+    "back": "Рўйхатга қайтиш",
+    "add": "Транзакция қўшиш",
+    "empty": "Ҳозирча транзакциялар йўқ.",
+    "unknown": "номаълум",
+    "typeIn": "Кирим",
+    "typeOut": "Чиқим",
+    "generatedFromStock": "Жорий балансдан автоматик қўшилди",
+    "table": {
+      "date": "Сана",
+      "type": "Тури",
+      "machine": "Станок",
+      "amount": "Бочка",
+      "note": "Изоҳ"
+    },
+    "form": {
+      "type": "Тури",
+      "date": "Сана",
+      "machineType": "Станок тури",
+      "machine": "Станок",
+      "amount": "Бочка",
+      "note": "Изоҳ",
+      "cancel": "Бекор қилиш",
+      "save": "Сақлаш",
+      "edit": "Таҳрирлаш",
+      "delete": "Ўчириш",
+      "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг."
+    },
+    "deleteConfirm": "Ушбу транзакцияни ўчирасизми?",
+    "initial": "Бошланғич қолдиқ",
+    "deleteTitle": "Транзакцияни ўчириш"
   },
   "tayyorMahsulotlarPage": {
     "title": "Тайёр маҳсулотлар",
@@ -780,6 +821,13 @@
     "analytics": {
       "title": "Кирим/чиқим аналитикаси",
       "subtitle": "Кирим (kirim) ва чиқим (chiqim) бўйича тезкор графиклар.",
+      "profitByDay": "Кунлик фойда",
+      "dateRange": "Сана оралиғи",
+      "startDate": "Бошланиш санаси",
+      "endDate": "Тугаш санаси",
+      "quickRange": "Тезкор танлов",
+      "last7Days": "Сўнгги 7 кун",
+      "last30Days": "Сўнгги 30 кун",
       "flowTitle": "Кирим ва чиқим вақт бўйича",
       "shareTitle": "Кирим ва чиқим улуши",
       "categoryTitle": "Энг катта тоифалар",

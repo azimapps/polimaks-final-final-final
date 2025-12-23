@@ -355,6 +355,11 @@
     "deleteHint": "Вы сможете добавить её снова позже.",
     "empty": "Пока нет записей.",
     "actions": "Действия",
+    "transactions": "Транзакции",
+    "transactionsSearchTitle": "Выберите партию клея",
+    "transactionsSearchLabel": "Поиск клея",
+    "transactionsSearchPlaceholder": "Номер, поставщик, название или ID",
+    "transactionsSearchEmpty": "Нет подходящих партий клея.",
     "localHint": "Данные сохраняются в браузере. Позже подключите API.",
     "currency": {
       "uzs": "UZS",
@@ -362,6 +367,42 @@
       "rub": "RUB",
       "eur": "EUR"
     }
+  },
+  "kleyTransactionsPage": {
+    "title": "Транзакции по {{number}}",
+    "subtitle": "Приход/расход по этой партии клея. Данные пока локальные.",
+    "summaryTitle": "Информация о клее",
+    "notFound": "Партия клея не найдена. Вернитесь к списку.",
+    "back": "Вернуться к списку",
+    "add": "Добавить транзакцию",
+    "empty": "Пока нет транзакций.",
+    "unknown": "неизвестно",
+    "typeIn": "Приход",
+    "typeOut": "Расход",
+    "generatedFromStock": "Автозапись из текущего остатка",
+    "table": {
+      "date": "Дата",
+      "type": "Тип",
+      "machine": "Станок",
+      "amount": "Бочки",
+      "note": "Примечание"
+    },
+    "form": {
+      "type": "Тип",
+      "date": "Дата",
+      "machineType": "Тип станка",
+      "machine": "Станок",
+      "amount": "Бочки",
+      "note": "Примечание",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "localHint": "Сохраняется локально в браузере. Позже подключите API."
+    },
+    "deleteConfirm": "Удалить эту транзакцию?",
+    "initial": "Начальный остаток",
+    "deleteTitle": "Удалить транзакцию"
   },
   "plyonkaTransactionsPage": {
     "title": "Транзакции по {{seriya}}",
@@ -769,6 +810,13 @@
     "analytics": {
       "title": "Аналитика по приходу/расходу",
       "subtitle": "Быстрые графики по приходам (kirim) и расходам (chiqim).",
+      "profitByDay": "Прибыль по дням",
+      "dateRange": "Диапазон дат",
+      "startDate": "Начальная дата",
+      "endDate": "Конечная дата",
+      "quickRange": "Быстрый выбор",
+      "last7Days": "Последние 7 дней",
+      "last30Days": "Последние 30 дней",
       "flowTitle": "Динамика прихода и расхода",
       "shareTitle": "Доля прихода и расхода",
       "categoryTitle": "Топ категорий",
