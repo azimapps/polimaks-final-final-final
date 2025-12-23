@@ -68,6 +68,7 @@ const StaffPlannerPage = lazy(() => import('src/pages/dashboard/staff/planner'))
 const FinancePage = lazy(() => import('src/pages/dashboard/finance'));
 const FinanceIncomePage = lazy(() => import('src/pages/dashboard/finance/income'));
 const FinanceExpensePage = lazy(() => import('src/pages/dashboard/finance/expense'));
+const FinanceMethodPage = lazy(() => import('src/pages/dashboard/finance/method'));
 const ClientsPage = lazy(() => import('src/pages/dashboard/clients/clients'));
 const ClientsCrmPage = lazy(() => import('src/pages/dashboard/clients/crm'));
 const PechatPanelOverviewPage = lazy(() => import('src/pages/dashboard/pechat-panel/overview'));
@@ -203,6 +204,8 @@ export const routesSection: RouteObject[] = [
           { index: true, element: <FinancePage /> },
           { path: 'income', element: <FinanceIncomePage /> },
           { path: 'expense', element: <FinanceExpensePage /> },
+          { path: ':method', element: <FinanceMethodPage /> },
+          { path: ':method/:flow', element: <FinanceMethodPage /> },
         ],
       },
       {

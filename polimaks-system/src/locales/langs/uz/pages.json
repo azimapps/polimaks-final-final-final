@@ -827,6 +827,7 @@
       "name": "Chiqim nomi",
       "amount": "Summasi",
       "currency": "Valyuta",
+      "type": "Turi",
       "note": "Izoh",
       "date": "Sana",
       "add": "Chiqim qo'shish",
@@ -844,7 +845,11 @@
       "displayCurrency": "Ko'rsatish valyutasi",
       "rateUpdated": "Kurs yangilandi: {{date}}",
       "rateUnknown": "n/a",
-      "rateError": "Onlayn kurslar yo'q (saqlangan kurslardan foydalanilyapti)."
+      "rateError": "Onlayn kurslar yo'q (saqlangan kurslardan foydalanilyapti).",
+      "types": {
+        "cash": "Naqd",
+        "transfer": "Perechisleniya"
+      }
     }
   },
   "languages": {

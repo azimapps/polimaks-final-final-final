@@ -35,6 +35,8 @@
   "clients_materials": "Tolling materials",
   "clients_order_book": "Order book",
   "finance": "Finance",
+  "finance_cash": "Cash",
+  "finance_transfer": "Transfer",
   "finance_income": "Income",
   "finance_expense": "Expense",
   "ishlab_chiqarish": "Production",

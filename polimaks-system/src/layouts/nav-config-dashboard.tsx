@@ -93,8 +93,14 @@ export const useNavData = (): NavSectionProps['data'] => {
             path: paths.dashboard.finance.root,
             icon: ICONS.finance,
             children: [
-              { title: t('finance_income'), path: paths.dashboard.finance.income },
-              { title: t('finance_expense'), path: paths.dashboard.finance.expense },
+              {
+                title: t('finance_cash'),
+                path: paths.dashboard.finance.cash.root,
+              },
+              {
+                title: t('finance_transfer'),
+                path: paths.dashboard.finance.transfer.root,
+              },
             ],
           },
           {

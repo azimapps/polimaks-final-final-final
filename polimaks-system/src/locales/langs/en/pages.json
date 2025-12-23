@@ -825,6 +825,7 @@
       "name": "Expense name",
       "amount": "Sum",
       "currency": "Currency",
+      "type": "Type",
       "note": "Note",
       "date": "Date",
       "add": "Add expense",
@@ -842,7 +843,11 @@
       "displayCurrency": "Display currency",
       "rateUpdated": "Rates updated: {{date}}",
       "rateUnknown": "n/a",
-      "rateError": "Live FX unavailable (using cached rates)."
+      "rateError": "Live FX unavailable (using cached rates).",
+      "types": {
+        "cash": "Cash",
+        "transfer": "Transfer"
+      }
     }
   },
   "languages": {

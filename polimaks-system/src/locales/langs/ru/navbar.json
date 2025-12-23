@@ -35,6 +35,8 @@
   "clients_materials": "Давальческое сырьё",
   "clients_order_book": "Книга заказов",
   "finance": "Финансы",
+  "finance_cash": "Наличные",
+  "finance_transfer": "Перечисление",
   "finance_income": "Приход",
   "finance_expense": "Расход",
   "ishlab_chiqarish": "Производство",

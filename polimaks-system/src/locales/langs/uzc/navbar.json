@@ -35,6 +35,8 @@
   "clients_materials": "Давалдилик материаллар",
   "clients_order_book": "Буюртма китоб",
   "finance": "Молия",
+  "finance_cash": "Нақд",
+  "finance_transfer": "Перечисление",
   "finance_income": "Кирим",
   "finance_expense": "Чиқим",
   "ishlab_chiqarish": "Ишлаб чиқариш",

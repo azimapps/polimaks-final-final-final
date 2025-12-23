@@ -79,6 +79,16 @@ export const paths = {
       root: '/finance',
       income: '/finance/income',
       expense: '/finance/expense',
+      cash: {
+        root: '/finance/cash',
+        income: '/finance/cash/income',
+        expense: '/finance/cash/expense',
+      },
+      transfer: {
+        root: '/finance/transfer',
+        income: '/finance/transfer/income',
+        expense: '/finance/transfer/expense',
+      },
     },
     reskaPanel: {
       root: '/reska-panel',
