@@ -400,6 +400,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Silindr tanlang",
+    "transactionsSearchLabel": "Silindr qidirish",
+    "transactionsSearchPlaceholder": "Seriya, kelib chiqishi, o'lcham yoki ID",
+    "transactionsSearchEmpty": "Silindr topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "location": {
       "angren": "Angren",
@@ -751,6 +756,11 @@
     "deleteHint": "Keyinroq yana qo'shishingiz mumkin.",
     "empty": "Hozircha yozuvlar yo'q.",
     "actions": "Amallar",
+    "transactions": "Transaksiyalar",
+    "transactionsSearchTitle": "Silindr tanlang",
+    "transactionsSearchLabel": "Silindr qidirish",
+    "transactionsSearchPlaceholder": "Seriya, kelib chiqishi, o'lcham yoki ID",
+    "transactionsSearchEmpty": "Silindr topilmadi.",
     "localHint": "Ma'lumotlar brauzeringizda saqlanadi. Keyinroq API ulang.",
     "origin": {
       "china": "Xitoy",

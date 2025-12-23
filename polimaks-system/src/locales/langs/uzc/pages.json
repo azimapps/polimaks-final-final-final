@@ -400,6 +400,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Силиндр танланг",
+    "transactionsSearchLabel": "Силиндр қидириш",
+    "transactionsSearchPlaceholder": "Серия, келиб чиқиши, ўлчам ёки ID",
+    "transactionsSearchEmpty": "Силиндр топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "location": {
       "angren": "Ангрен",
@@ -751,6 +756,11 @@
     "deleteHint": "Кейинроқ яна қўшишингиз мумкин.",
     "empty": "Ҳозирча ёзувлар йўқ.",
     "actions": "Амаллар",
+    "transactions": "Транзакциялар",
+    "transactionsSearchTitle": "Силиндр танланг",
+    "transactionsSearchLabel": "Силиндр қидириш",
+    "transactionsSearchPlaceholder": "Серия, келиб чиқиши, ўлчам ёки ID",
+    "transactionsSearchEmpty": "Силиндр топилмади.",
     "localHint": "Маълумотлар браузерингизда сақланади. Кейинроқ API уланг.",
     "origin": {
       "china": "Хитой",
