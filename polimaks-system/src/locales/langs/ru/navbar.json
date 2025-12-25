@@ -39,6 +39,7 @@
   "finance_transfer": "Перечисление",
   "finance_income": "Приход",
   "finance_expense": "Расход",
+  "finance_transactions_add": "Добавить транзакцию",
   "ishlab_chiqarish": "Производство",
   "ishlab_chiqarish_rejalashtirish": "Планирование производства",
   "ishlab_chiqarish_nazorat": "Контроль производства",

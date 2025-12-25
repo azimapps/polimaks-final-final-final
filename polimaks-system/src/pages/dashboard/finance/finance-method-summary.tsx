@@ -1,17 +1,20 @@
-import { useMemo, useState, useEffect } from 'react';
+import type { UseDateRangePickerReturn } from 'src/components/custom-date-range-picker';
 
 import dayjs from 'dayjs';
+import { useMemo, useState, useEffect } from 'react';
 
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { fNumber } from 'src/utils/format-number';
+
 import { useTranslate } from 'src/locales';
 
-import { CustomDateRangePicker, useDateRangePicker } from 'src/components/custom-date-range-picker';
+import { CustomDateRangePicker } from 'src/components/custom-date-range-picker';
 
 import { FINANCE_STORAGE_EVENT } from './finance-storage';
 
@@ -28,6 +31,7 @@ type FinanceEntry = {
 
 type FinanceMethodSummaryProps = {
   method: Method;
+  rangePicker: UseDateRangePickerReturn;
 };
 
 const STORAGE_KEYS = { income: 'finance-income', expense: 'finance-expense' };
@@ -56,7 +60,7 @@ const readFinanceStorage = (key: string, prefix: string): FinanceEntry[] => {
   }
 };
 
-export function FinanceMethodSummary({ method }: FinanceMethodSummaryProps) {
+export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSummaryProps) {
   const { t } = useTranslate('pages');
 
   const [incomeEntries, setIncomeEntries] = useState<FinanceEntry[]>(() =>
@@ -67,8 +71,6 @@ export function FinanceMethodSummary({ method }: FinanceMethodSummaryProps) {
   );
   const [displayCurrency, setDisplayCurrency] = useState<Currency>('UZS');
   const [rates, setRates] = useState<Record<Currency, number>>(DEFAULT_RATES);
-
-  const rangePicker = useDateRangePicker(dayjs().subtract(6, 'day'), dayjs());
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -175,6 +177,7 @@ export function FinanceMethodSummary({ method }: FinanceMethodSummaryProps) {
   }, [convertAmount, methodExpenses, methodIncomes, rangeEnd, rangeStart]);
 
   const finalBalance = openingBalance + rangeNet;
+  const rangeNetColor = rangeNet >= 0 ? 'success.main' : 'error.main';
 
   const rangeLabel = rangePicker.error ? t('finance.analytics.dateRange') : rangePicker.label || '';
 
@@ -191,7 +194,6 @@ export function FinanceMethodSummary({ method }: FinanceMethodSummaryProps) {
             label={t('finance.analytics.dateRange')}
             value={rangeLabel}
             onClick={rangePicker.onOpen}
-            onFocus={rangePicker.onOpen}
             size="small"
             InputProps={{ readOnly: true }}
             sx={{ minWidth: 240, cursor: 'pointer', '& input': { cursor: 'pointer' } }}
@@ -213,16 +215,41 @@ export function FinanceMethodSummary({ method }: FinanceMethodSummaryProps) {
           </TextField>
         </Stack>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="subtitle2">{t('finance.analytics.netBalance')}</Typography>
-          <Typography variant="h4">
-            {fNumber(finalBalance, { maximumFractionDigits: 0 })} {displayCurrency}
-          </Typography>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          alignItems="stretch"
+          justifyContent="space-between"
+        >
+          {[
+            { label: 'finance.analytics.startBalance', value: openingBalance },
+            { label: 'finance.analytics.rangeNet', value: rangeNet, color: rangeNetColor },
+            { label: 'finance.analytics.finishingBalance', value: finalBalance },
+          ].map(({ label, value, color }) => (
+            <Box
+              key={label}
+              sx={{
+                flex: 1,
+                minWidth: 180,
+                p: 2,
+                borderRadius: 1,
+                bgcolor: 'action.hover',
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Typography variant="caption" color="text.secondary">
+                {t(label)}
+              </Typography>
+              <Typography variant="h6" color={color}>
+                {fNumber(value, { maximumFractionDigits: 0 })} {displayCurrency}
+              </Typography>
+            </Box>
+          ))}
         </Stack>
       </Stack>
 
       <CustomDateRangePicker
-        variant="calendar"
+        variant="range"
         title={t('finance.analytics.dateRange')}
         open={rangePicker.open}
         startDate={rangePicker.startDate}

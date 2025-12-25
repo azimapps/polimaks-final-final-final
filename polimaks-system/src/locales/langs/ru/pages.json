@@ -822,6 +822,9 @@
       "categoryTitle": "Топ категорий",
       "topCategories": "Топ по сумме",
       "netBalance": "Чистый баланс",
+      "finishingBalance": "Конечный баланс",
+      "startBalance": "Стартовый баланс",
+      "rangeNet": "Баланс за период",
       "totalIncome": "Всего приход",
       "totalExpense": "Всего расход",
       "net": "Чистый итог",
@@ -834,6 +837,28 @@
         "income": "Приход",
         "expense": "Расход",
         "net": "Чистый"
+      }
+    },
+    "transactions": {
+      "filter": {
+        "all": "Все"
+      },
+      "table": {
+        "type": "Тип",
+        "name": "Название",
+        "amount": "Сумма",
+        "currency": "Валюта",
+        "date": "Дата",
+        "note": "Примечание",
+        "empty": "Пока нет транзакций."
+      },
+      "form": {
+        "name": "Название",
+        "amount": "Сумма",
+        "currency": "Валюта",
+        "date": "Дата",
+        "note": "Примечание",
+        "cancel": "Отмена"
       }
     },
     "income": {

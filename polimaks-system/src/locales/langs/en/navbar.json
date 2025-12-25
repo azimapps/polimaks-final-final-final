@@ -39,6 +39,7 @@
   "finance_transfer": "Transfer",
   "finance_income": "Income",
   "finance_expense": "Expense",
+  "finance_transactions_add": "Add transaction",
   "ishlab_chiqarish": "Production",
   "ishlab_chiqarish_rejalashtirish": "Production Planning",
   "ishlab_chiqarish_nazorat": "Production Control",

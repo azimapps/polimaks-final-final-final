@@ -821,6 +821,9 @@
       "categoryTitle": "Top categories",
       "topCategories": "Top names by amount",
       "netBalance": "Net balance",
+      "finishingBalance": "Finishing balance",
+      "startBalance": "Start balance",
+      "rangeNet": "Period net",
       "totalIncome": "Total income",
       "totalExpense": "Total expense",
       "net": "Net",
@@ -833,6 +836,28 @@
         "income": "Income",
         "expense": "Expense",
         "net": "Net"
+      }
+    },
+    "transactions": {
+      "filter": {
+        "all": "All"
+      },
+      "table": {
+        "type": "Type",
+        "name": "Name",
+        "amount": "Amount",
+        "currency": "Currency",
+        "date": "Date",
+        "note": "Note",
+        "empty": "No transactions yet."
+      },
+      "form": {
+        "name": "Name",
+        "amount": "Amount",
+        "currency": "Currency",
+        "date": "Date",
+        "note": "Note",
+        "cancel": "Cancel"
       }
     },
     "income": {

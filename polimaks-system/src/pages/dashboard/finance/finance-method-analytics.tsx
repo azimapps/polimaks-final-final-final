@@ -1,17 +1,19 @@
-import { useMemo, useState, useEffect } from 'react';
 import type { MouseEvent } from 'react';
+
+import { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { useTheme } from '@mui/material/styles';
 
 import { fNumber } from 'src/utils/format-number';
+
 import { useTranslate } from 'src/locales';
 
 import { Chart, useChart } from 'src/components/chart';
@@ -302,7 +304,7 @@ export function FinanceMethodAnalytics({ method }: FinanceMethodAnalyticsProps) 
         </Stack>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="subtitle2">{t('finance.analytics.netBalance')}</Typography>
+          <Typography variant="subtitle2">{t('finance.analytics.finishingBalance')}</Typography>
           <Typography variant="h6">
             {fNumber(profitSeries.total, { maximumFractionDigits: 0 })} {displayCurrency}
           </Typography>

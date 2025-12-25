@@ -833,6 +833,9 @@
       "categoryTitle": "Eng ko'p toifalar",
       "topCategories": "Eng ko'p summa bo'yicha nomlar",
       "netBalance": "Sof balans",
+      "finishingBalance": "Yakuni balans",
+      "startBalance": "Boshlangʻich balans",
+      "rangeNet": "Davrdagi sof",
       "totalIncome": "Jami kirim",
       "totalExpense": "Jami chiqim",
       "net": "Sof",
@@ -845,6 +848,28 @@
         "income": "Kirim",
         "expense": "Chiqim",
         "net": "Sof"
+      }
+    },
+    "transactions": {
+      "filter": {
+        "all": "Hammasi"
+      },
+      "table": {
+        "type": "Turi",
+        "name": "Nomi",
+        "amount": "Summasi",
+        "currency": "Valyuta",
+        "date": "Sana",
+        "note": "Izoh",
+        "empty": "Hozircha tranzaksiyalar yo'q."
+      },
+      "form": {
+        "name": "Nomi",
+        "amount": "Summasi",
+        "currency": "Valyuta",
+        "date": "Sana",
+        "note": "Izoh",
+        "cancel": "Bekor qilish"
       }
     },
     "income": {

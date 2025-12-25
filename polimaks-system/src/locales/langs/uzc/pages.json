@@ -833,6 +833,9 @@
       "categoryTitle": "Энг катта тоифалар",
       "topCategories": "Энг катта сумма бўйича номлар",
       "netBalance": "Соф баланс",
+      "finishingBalance": "Якуний баланс",
+      "startBalance": "Бошланғич баланс",
+      "rangeNet": "Даврдаги соф",
       "totalIncome": "Жами кирим",
       "totalExpense": "Жами чиқим",
       "net": "Соф",
@@ -845,6 +848,28 @@
         "income": "Кирим",
         "expense": "Чиқим",
         "net": "Соф"
+      }
+    },
+    "transactions": {
+      "filter": {
+        "all": "Ҳаммаси"
+      },
+      "table": {
+        "type": "Тури",
+        "name": "Номи",
+        "amount": "Суммаси",
+        "currency": "Валюта",
+        "date": "Сана",
+        "note": "Изоҳ",
+        "empty": "Ҳозирча транзакциялар йўқ."
+      },
+      "form": {
+        "name": "Номи",
+        "amount": "Суммаси",
+        "currency": "Валюта",
+        "date": "Сана",
+        "note": "Изоҳ",
+        "cancel": "Бекор қилиш"
       }
     },
     "income": {

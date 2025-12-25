@@ -24,7 +24,7 @@ export type UseDateRangePickerReturn = {
   shortLabel?: string;
   /********/
   title?: string;
-  variant?: 'calendar' | 'input';
+  variant?: 'calendar' | 'input' | 'range';
   /********/
   setStartDate?: React.Dispatch<React.SetStateAction<IDatePickerControl>>;
   setEndDate?: React.Dispatch<React.SetStateAction<IDatePickerControl>>;
