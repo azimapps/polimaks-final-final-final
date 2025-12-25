@@ -5,10 +5,22 @@ import { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
+import Dialog from '@mui/material/Dialog';
+import Button from '@mui/material/Button';
+import TableRow from '@mui/material/TableRow';
 import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
+import TableHead from '@mui/material/TableHead';
+import TableCell from '@mui/material/TableCell';
+import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TableContainer from '@mui/material/TableContainer';
 
 import { fNumber } from 'src/utils/format-number';
 
@@ -16,9 +28,11 @@ import { useTranslate } from 'src/locales';
 
 import { CustomDateRangePicker } from 'src/components/custom-date-range-picker';
 
+import { useFinanceRates } from './use-finance-rates';
 import { FINANCE_STORAGE_EVENT } from './finance-storage';
 
-type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
+import type { Currency } from './use-finance-rates';
+
 type Method = 'cash' | 'transfer';
 
 type FinanceEntry = {
@@ -37,7 +51,7 @@ type FinanceMethodSummaryProps = {
 
 const STORAGE_KEYS = { income: 'finance-income', expense: 'finance-expense' };
 const SUPPORTED: Currency[] = ['UZS', 'USD', 'RUB', 'EUR'];
-const DEFAULT_RATES: Record<Currency, number> = { USD: 1, EUR: 0.92, RUB: 90, UZS: 12500 };
+const MANUAL_CURRENCIES: Currency[] = ['USD', 'EUR', 'RUB'];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const timestampISO = () => new Date().toISOString();
@@ -65,6 +79,7 @@ const readFinanceStorage = (key: string, prefix: string): FinanceEntry[] => {
 
 export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSummaryProps) {
   const { t } = useTranslate('pages');
+  const paletteTheme = useTheme();
 
   const [incomeEntries, setIncomeEntries] = useState<FinanceEntry[]>(() =>
     readFinanceStorage(STORAGE_KEYS.income, 'income')
@@ -73,7 +88,8 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
     readFinanceStorage(STORAGE_KEYS.expense, 'expense')
   );
   const [displayCurrency, setDisplayCurrency] = useState<Currency>('UZS');
-  const [rates, setRates] = useState<Record<Currency, number>>(DEFAULT_RATES);
+  const { getRateForDate, setRateOverride, clearOverridesForDate, hasManualRate } = useFinanceRates();
+  const [rateDialogOpen, setRateDialogOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -90,30 +106,6 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
     return () => {
       window.removeEventListener(FINANCE_STORAGE_EVENT, refresh);
       window.removeEventListener('storage', refresh);
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    const fetchRates = async () => {
-      try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        if (!res.ok) throw new Error('rate fetch failed');
-        const data = (await res.json()) as { rates?: Record<string, number> };
-        const fetched: Partial<Record<Currency, number>> = {};
-        ['USD', 'EUR', 'RUB', 'UZS'].forEach((cur) => {
-          if (data.rates?.[cur]) fetched[cur as Currency] = data.rates[cur];
-        });
-        if (active && Object.keys(fetched).length) {
-          setRates((prev) => ({ ...prev, ...fetched }));
-        }
-      } catch {
-        // keep defaults when offline
-      }
-    };
-    fetchRates();
-    return () => {
-      active = false;
     };
   }, []);
 
@@ -137,26 +129,23 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
     [expenseEntries, method]
   );
 
-  const convertAmount = useMemo(() => {
-    const toRate = rates[displayCurrency] ?? 1;
-    return (amount: number, currency: Currency) => {
-      const fromRate = rates[currency] ?? 1;
-      if (!fromRate) return amount;
-      if (currency === displayCurrency) return amount;
+  const convertAmount = useMemo(() => (amount: number, currency: Currency, date: string) => {
+      const fromRate = getRateForDate(currency, date);
+      const toRate = getRateForDate(displayCurrency, date);
+      if (!fromRate || !toRate) return amount;
       return (amount / fromRate) * toRate;
-    };
-  }, [displayCurrency, rates]);
+    }, [displayCurrency, getRateForDate]);
 
   const openingBalance = useMemo(() => {
     const incomeBefore = methodIncomes.reduce((sum, item) => {
       if (item.date <= dayBeforeStart) {
-        return sum + convertAmount(item.amount, item.currency);
+        return sum + convertAmount(item.amount, item.currency, item.date);
       }
       return sum;
     }, 0);
     const expenseBefore = methodExpenses.reduce((sum, item) => {
       if (item.date <= dayBeforeStart) {
-        return sum + convertAmount(item.amount, item.currency);
+        return sum + convertAmount(item.amount, item.currency, item.date);
       }
       return sum;
     }, 0);
@@ -166,13 +155,13 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
   const rangeNet = useMemo(() => {
     const incomeRange = methodIncomes.reduce((sum, item) => {
       if (item.date >= rangeStart && item.date <= rangeEnd) {
-        return sum + convertAmount(item.amount, item.currency);
+        return sum + convertAmount(item.amount, item.currency, item.date);
       }
       return sum;
     }, 0);
     const expenseRange = methodExpenses.reduce((sum, item) => {
       if (item.date >= rangeStart && item.date <= rangeEnd) {
-        return sum + convertAmount(item.amount, item.currency);
+        return sum + convertAmount(item.amount, item.currency, item.date);
       }
       return sum;
     }, 0);
@@ -183,6 +172,27 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
   const rangeNetColor = rangeNet >= 0 ? 'success.main' : 'error.main';
 
   const rangeLabel = rangePicker.error ? t('finance.analytics.dateRange') : rangePicker.label || '';
+  const rateDialogDates = useMemo(() => {
+    const dates: string[] = [];
+    if (!rangeStart || !rangeEnd) return dates;
+    let cursor = dayjs(rangeStart);
+    const end = dayjs(rangeEnd);
+    while (cursor.isBefore(end) || cursor.isSame(end, 'day')) {
+      dates.push(cursor.format('YYYY-MM-DD'));
+      cursor = cursor.add(1, 'day');
+    }
+    return dates;
+  }, [rangeEnd, rangeStart]);
+
+  const handleRateChange = (date: string, currency: Currency, raw: string) => {
+    if (!raw.trim()) {
+      setRateOverride(date, currency, null);
+      return;
+    }
+    const parsed = Number(raw);
+    if (Number.isNaN(parsed)) return;
+    setRateOverride(date, currency, parsed);
+  };
 
   return (
     <Card sx={{ p: 2 }}>
@@ -202,20 +212,25 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
             sx={{ minWidth: 240, cursor: 'pointer', '& input': { cursor: 'pointer' } }}
           />
 
-          <TextField
-            select
-            size="small"
-            label={t('finance.income.displayCurrency')}
-            value={displayCurrency}
-            onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
-            sx={{ minWidth: 160 }}
-          >
-            {SUPPORTED.map((cur) => (
-              <MenuItem key={cur} value={cur}>
-                {cur}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <TextField
+              select
+              size="small"
+              label={t('finance.income.displayCurrency')}
+              value={displayCurrency}
+              onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
+              sx={{ minWidth: 160 }}
+            >
+              {SUPPORTED.map((cur) => (
+                <MenuItem key={cur} value={cur}>
+                  {cur}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Button size="small" variant="outlined" onClick={() => setRateDialogOpen(true)}>
+              {t('finance.analytics.rateManager')}
+            </Button>
+          </Stack>
         </Stack>
 
         <Stack
@@ -250,6 +265,79 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
           ))}
         </Stack>
       </Stack>
+
+      <Dialog open={rateDialogOpen} onClose={() => setRateDialogOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle>{t('finance.analytics.rateDialogTitle')}</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {t('finance.analytics.rateDialogHint')}
+          </Typography>
+          <TableContainer
+            sx={{
+              bgcolor: paletteTheme.palette.mode === 'dark' ? '#0f1524' : paletteTheme.palette.background.paper,
+              borderRadius: 2,
+              border: (themeValue) => `1px solid ${themeValue.palette.divider}`,
+              overflow: 'hidden',
+            }}
+          >
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600, py: 1.5, pl: 2 }}>Date</TableCell>
+                  {MANUAL_CURRENCIES.map((currency) => (
+                    <TableCell key={`head-${currency}`} align="center" sx={{ fontWeight: 600 }}>
+                      {currency}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rateDialogDates.map((date) => (
+                <TableRow
+                  key={date}
+                  sx={{
+                    backgroundColor: paletteTheme.palette.background.default,
+                    '&:nth-of-type(odd)': {
+                      backgroundColor: paletteTheme.palette.background.paper,
+                    },
+                  }}
+                >
+                    <TableCell sx={{ py: 1.5, pr: 2 }}>
+                      <Stack spacing={0.3}>
+                        <Typography variant="body2">{date}</Typography>
+                        {hasManualRate(date) && (
+                          <Button size="small" onClick={() => clearOverridesForDate(date)}>
+                            {t('finance.analytics.rateDialogReset')}
+                          </Button>
+                        )}
+                      </Stack>
+                    </TableCell>
+                    {MANUAL_CURRENCIES.map((currency) => {
+                      const fieldValue = getRateForDate(currency, date);
+                      return (
+                        <TableCell key={`${date}-${currency}`} align="center">
+                          <TextField
+                            variant="standard"
+                            type="number"
+                            size="small"
+                            value={Number.isFinite(fieldValue) ? String(fieldValue) : ''}
+                            onChange={(event) => handleRateChange(date, currency, event.target.value)}
+                            inputProps={{ step: '0.01', min: 0 }}
+                            sx={{ minWidth: 90 }}
+                          />
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRateDialogOpen(false)}>{t('finance.analytics.rateDialogClose')}</Button>
+        </DialogActions>
+      </Dialog>
 
       <CustomDateRangePicker
         variant="range"

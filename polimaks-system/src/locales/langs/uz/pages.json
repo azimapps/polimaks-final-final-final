@@ -848,8 +848,18 @@
         "income": "Kirim",
         "expense": "Chiqim",
         "net": "Sof"
-      }
+      },
+      "rateManager": "Kurslar",
+      "rateDialogTitle": "Kunlik valuta kurslari",
+      "rateDialogHint": "Tanlangan sanalar uchun USD/EUR/RUB kurslarini belgilang. Bo'sh maydonlar oxirgi olinayotgan qiymatni oladi.",
+      "rateDialogClose": "Yopish",
+      "rateDialogReset": "Qatorni tiklash"
     },
+    "rateManager": "Kurslar",
+    "rateDialogTitle": "Kunlik valuta kurslari",
+    "rateDialogHint": "Tanlangan sanalar uchun USD/EUR/RUB/UZS kurslarini belgilang. Bo'sh maydonlar oxirgi olinayotgan qiymatni oladi.",
+    "rateDialogClose": "Yopish",
+    "rateDialogReset": "Qatorni tiklash",
     "transactions": {
       "filter": {
         "all": "Hammasi"

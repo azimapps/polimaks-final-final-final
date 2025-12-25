@@ -837,8 +837,18 @@
         "income": "Приход",
         "expense": "Расход",
         "net": "Чистый"
-      }
+      },
+      "rateManager": "Курсы",
+      "rateDialogTitle": "Таблица курсов",
+      "rateDialogHint": "Укажите курсы USD/EUR/RUB для выбранных дат. Пустые поля используют последние загруженные значения.",
+      "rateDialogClose": "Закрыть",
+      "rateDialogReset": "Сбросить строку"
     },
+    "rateManager": "Курсы",
+    "rateDialogTitle": "Таблица курсов",
+    "rateDialogHint": "Укажите курсы USD/EUR/RUB/UZS для выбранных дат. Пустые поля используют последние загруженные значения.",
+    "rateDialogClose": "Закрыть",
+    "rateDialogReset": "Сбросить строку",
     "transactions": {
       "filter": {
         "all": "Все"

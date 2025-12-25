@@ -18,9 +18,11 @@ import { useTranslate } from 'src/locales';
 
 import { Chart, useChart } from 'src/components/chart';
 
+import { useFinanceRates } from './use-finance-rates';
 import { FINANCE_STORAGE_EVENT } from './finance-storage';
 
-type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
+import type { Currency } from './use-finance-rates';
+
 type Method = 'cash' | 'transfer';
 
 type FinanceEntry = {
@@ -38,7 +40,6 @@ type FinanceMethodAnalyticsProps = {
 
 const STORAGE_KEYS = { income: 'finance-income', expense: 'finance-expense' };
 const SUPPORTED: Currency[] = ['UZS', 'USD', 'RUB', 'EUR'];
-const DEFAULT_RATES: Record<Currency, number> = { USD: 1, EUR: 0.92, RUB: 90, UZS: 12500 };
 const QUICK_RANGES = [7, 30] as const;
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -97,10 +98,10 @@ export function FinanceMethodAnalytics({ method }: FinanceMethodAnalyticsProps) 
     readFinanceStorage(STORAGE_KEYS.expense, 'expense')
   );
   const [displayCurrency, setDisplayCurrency] = useState<Currency>('UZS');
-  const [rates, setRates] = useState<Record<Currency, number>>(DEFAULT_RATES);
   const [quickRange, setQuickRange] = useState<(typeof QUICK_RANGES)[number] | null>(7);
   const [startDate, setStartDate] = useState<string>(() => shiftISODate(6));
   const [endDate, setEndDate] = useState<string>(() => todayISO());
+  const { getRateForDate } = useFinanceRates();
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -117,30 +118,6 @@ export function FinanceMethodAnalytics({ method }: FinanceMethodAnalyticsProps) 
     return () => {
       window.removeEventListener(FINANCE_STORAGE_EVENT, refresh);
       window.removeEventListener('storage', refresh);
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    const fetchRates = async () => {
-      try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        if (!res.ok) throw new Error('rate fetch failed');
-        const data = (await res.json()) as { rates?: Record<string, number> };
-        const fetched: Partial<Record<Currency, number>> = {};
-        ['USD', 'EUR', 'RUB', 'UZS'].forEach((cur) => {
-          if (data.rates?.[cur]) fetched[cur as Currency] = data.rates[cur];
-        });
-        if (active && Object.keys(fetched).length) {
-          setRates((prev) => ({ ...prev, ...fetched }));
-        }
-      } catch {
-        // keep defaults when offline
-      }
-    };
-    fetchRates();
-    return () => {
-      active = false;
     };
   }, []);
 
@@ -171,23 +148,20 @@ export function FinanceMethodAnalytics({ method }: FinanceMethodAnalyticsProps) 
 
   const dates = useMemo(() => buildDateRange(rangeStart, rangeEnd), [rangeStart, rangeEnd]);
 
-  const convertAmount = useMemo(() => {
-    const toRate = rates[displayCurrency] ?? 1;
-    return (amount: number, currency: Currency) => {
-      const fromRate = rates[currency] ?? 1;
-      if (!fromRate) return amount;
-      if (currency === displayCurrency) return amount;
+  const convertAmount = useMemo(() => (amount: number, currency: Currency, date: string) => {
+      const fromRate = getRateForDate(currency, date);
+      const toRate = getRateForDate(displayCurrency, date);
+      if (!fromRate || !toRate) return amount;
       return (amount / fromRate) * toRate;
-    };
-  }, [displayCurrency, rates]);
+    }, [displayCurrency, getRateForDate]);
 
   const profitSeries = useMemo(() => {
     const incomeByDate = rangedIncomes.reduce<Record<string, number>>((acc, item) => {
-      acc[item.date] = (acc[item.date] ?? 0) + convertAmount(item.amount, item.currency);
+      acc[item.date] = (acc[item.date] ?? 0) + convertAmount(item.amount, item.currency, item.date);
       return acc;
     }, {});
     const expenseByDate = rangedExpenses.reduce<Record<string, number>>((acc, item) => {
-      acc[item.date] = (acc[item.date] ?? 0) + convertAmount(item.amount, item.currency);
+      acc[item.date] = (acc[item.date] ?? 0) + convertAmount(item.amount, item.currency, item.date);
       return acc;
     }, {});
 

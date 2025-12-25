@@ -848,8 +848,18 @@
         "income": "Кирим",
         "expense": "Чиқим",
         "net": "Соф"
-      }
+      },
+      "rateManager": "Курслар",
+      "rateDialogTitle": "Кунлик валюта курслари",
+      "rateDialogHint": "Танланган сана учун USD/EUR/RUB курсларини киритинг. Бўш майдонлар охирги олинган курсдан фойдаланади.",
+      "rateDialogClose": "Ёпиш",
+      "rateDialogReset": "Қаторни тиклаш"
     },
+    "rateManager": "Курслар",
+    "rateDialogTitle": "Кунлик валюта курслари",
+    "rateDialogHint": "Танланган сана учун USD/EUR/RUB/UZS курсларини киритинг. Бўш майдонлар охирги олинган курсдан фойдаланади.",
+    "rateDialogClose": "Ёпиш",
+    "rateDialogReset": "Қаторни тиклаш",
     "transactions": {
       "filter": {
         "all": "Ҳаммаси"

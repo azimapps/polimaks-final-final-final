@@ -6,6 +6,11 @@
       "title": "Warehouse flows",
       "body": "Materials, waste, and finished goods in one place."
     },
+    "rateManager": "Exchange rates",
+    "rateDialogTitle": "Daily FX rate table",
+    "rateDialogHint": "Specify USD/EUR/RUB/UZS conversion rates for the selected dates. Empty fields fall back to the last fetched rate.",
+    "rateDialogClose": "Close",
+    "rateDialogReset": "Reset row",
     "machinesCard": {
       "title": "Machine room",
       "body": "Track printing, cutting, and lamination tasks."
@@ -836,7 +841,12 @@
         "income": "Income",
         "expense": "Expense",
         "net": "Net"
-      }
+      },
+      "rateManager": "Exchange rates",
+      "rateDialogTitle": "Daily FX rate table",
+      "rateDialogHint": "Specify USD/EUR/RUB conversion rates for the selected dates. Empty fields fall back to the last fetched rate.",
+      "rateDialogClose": "Close",
+      "rateDialogReset": "Reset row"
     },
     "transactions": {
       "filter": {
