@@ -129,12 +129,15 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
     [expenseEntries, method]
   );
 
-  const convertAmount = useMemo(() => (amount: number, currency: Currency, date: string) => {
+  const convertAmount = useMemo(
+    () => (amount: number, currency: Currency, date: string) => {
       const fromRate = getRateForDate(currency, date);
       const toRate = getRateForDate(displayCurrency, date);
       if (!fromRate || !toRate) return amount;
-      return (amount / fromRate) * toRate;
-    }, [displayCurrency, getRateForDate]);
+      return (amount * fromRate) / toRate;
+    },
+    [displayCurrency, getRateForDate]
+  );
 
   const openingBalance = useMemo(() => {
     const incomeBefore = methodIncomes.reduce((sum, item) => {

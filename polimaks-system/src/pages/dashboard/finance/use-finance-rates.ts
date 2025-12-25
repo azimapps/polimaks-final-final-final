@@ -6,7 +6,7 @@ export type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
 export type DateRateOverrides = Record<string, Partial<Record<Currency, number>>>;
 
 const STORAGE_KEY = 'finance-rates';
-export const DEFAULT_RATES: Record<Currency, number> = { USD: 1, EUR: 0.92, RUB: 90, UZS: 12500 };
+export const DEFAULT_RATES: Record<Currency, number> = { USD: 12500, EUR: 13500, RUB: 150, UZS: 1 };
 
 const readRateOverrides = (): DateRateOverrides => {
   if (typeof window === 'undefined') return {};
@@ -37,11 +37,17 @@ export function useFinanceRates() {
         if (!res.ok) throw new Error('rate fetch failed');
         const data = (await res.json()) as { rates?: Record<string, number> };
         const fetched: Partial<Record<Currency, number>> = {};
-        ['USD', 'EUR', 'RUB', 'UZS'].forEach((cur) => {
-          if (data.rates?.[cur]) {
-            fetched[cur as Currency] = data.rates[cur];
+        const uzsPerUsd = data.rates?.UZS;
+        if (uzsPerUsd) {
+          fetched.USD = uzsPerUsd;
+          fetched.UZS = 1;
+          if (data.rates?.EUR) {
+            fetched.EUR = uzsPerUsd / data.rates.EUR;
           }
-        });
+          if (data.rates?.RUB) {
+            fetched.RUB = uzsPerUsd / data.rates.RUB;
+          }
+        }
         if (active && Object.keys(fetched).length) {
           setRates((prev) => ({ ...prev, ...fetched }));
         }

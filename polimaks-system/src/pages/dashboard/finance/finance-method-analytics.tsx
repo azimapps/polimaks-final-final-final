@@ -148,12 +148,15 @@ export function FinanceMethodAnalytics({ method }: FinanceMethodAnalyticsProps) 
 
   const dates = useMemo(() => buildDateRange(rangeStart, rangeEnd), [rangeStart, rangeEnd]);
 
-  const convertAmount = useMemo(() => (amount: number, currency: Currency, date: string) => {
+  const convertAmount = useMemo(
+    () => (amount: number, currency: Currency, date: string) => {
       const fromRate = getRateForDate(currency, date);
       const toRate = getRateForDate(displayCurrency, date);
       if (!fromRate || !toRate) return amount;
-      return (amount / fromRate) * toRate;
-    }, [displayCurrency, getRateForDate]);
+      return (amount * fromRate) / toRate;
+    },
+    [displayCurrency, getRateForDate]
+  );
 
   const profitSeries = useMemo(() => {
     const incomeByDate = rangedIncomes.reduce<Record<string, number>>((acc, item) => {
