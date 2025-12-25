@@ -29,6 +29,7 @@ type FinanceEntry = {
   amount: number;
   currency: Currency;
   date: string;
+  createdAt: string;
 };
 
 type FinanceMethodAnalyticsProps = {
@@ -41,6 +42,7 @@ const DEFAULT_RATES: Record<Currency, number> = { USD: 1, EUR: 0.92, RUB: 90, UZ
 const QUICK_RANGES = [7, 30] as const;
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
+const timestampISO = () => new Date().toISOString();
 
 const shiftISODate = (daysBack: number) => {
   const date = new Date();
@@ -55,6 +57,7 @@ const normalizeEntries = (items: any[], prefix: string): FinanceEntry[] =>
     amount: typeof item.amount === 'number' ? item.amount : Number(item.amount) || 0,
     currency: (SUPPORTED.includes(item.currency) ? item.currency : 'UZS') as Currency,
     date: item.date ? String(item.date).slice(0, 10) : todayISO(),
+    createdAt: item.createdAt || timestampISO(),
   }));
 
 const readFinanceStorage = (key: string, prefix: string): FinanceEntry[] => {

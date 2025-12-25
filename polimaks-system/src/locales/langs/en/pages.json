@@ -849,6 +849,7 @@
         "currency": "Currency",
         "date": "Date",
         "note": "Note",
+        "actions": "Actions",
         "empty": "No transactions yet."
       },
       "form": {
@@ -858,7 +859,14 @@
         "date": "Date",
         "note": "Note",
         "cancel": "Cancel"
-      }
+      },
+      "menu": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "deleteTitle": "Delete transaction",
+      "deleteConfirm": "Delete this transaction?",
+      "deleteAction": "Delete"
     },
     "income": {
       "title": "Income",

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Navigate, useParams } from 'react-router';
 import { useMemo, useState, useEffect, useCallback, type MouseEvent } from 'react';
 
+import Menu from '@mui/material/Menu';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -16,6 +17,7 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -27,6 +29,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
+import { Iconify } from 'src/components/iconify';
 import { useDateRangePicker, type UseDateRangePickerReturn } from 'src/components/custom-date-range-picker';
 
 import { FinanceMethodSummary } from '../finance-method-summary';
@@ -42,6 +45,7 @@ type FinanceStorageEntry = {
   amount: number;
   currency: Currency;
   date: string;
+  createdAt: string;
   note: string;
 };
 type CombinedEntry = FinanceStorageEntry & { direction: FinanceDirection };
@@ -54,6 +58,7 @@ const STORAGE_KEYS = {
 const SUPPORTED_CURRENCIES: Currency[] = ['UZS', 'USD', 'RUB', 'EUR'];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
+const timestampISO = () => new Date().toISOString();
 
 const normalizeFinanceEntries = (items: any[], prefix: string): FinanceStorageEntry[] =>
   items.map((item, index) => ({
@@ -63,6 +68,7 @@ const normalizeFinanceEntries = (items: any[], prefix: string): FinanceStorageEn
     amount: typeof item?.amount === 'number' ? item.amount : Number(item?.amount) || 0,
     currency: (SUPPORTED_CURRENCIES.includes(item?.currency) ? item.currency : 'UZS') as Currency,
     date: item?.date ? String(item.date) : todayISO(),
+    createdAt: item?.createdAt || timestampISO(),
     note: item?.note || '',
   }));
 
@@ -77,13 +83,44 @@ const readFinanceStorage = (key: string, prefix: string): FinanceStorageEntry[] 
   }
 };
 
-const persistFinanceEntry = (direction: FinanceDirection, entry: FinanceStorageEntry) => {
+const directionMeta = (direction: FinanceDirection) => ({
+  key: direction === 'income' ? STORAGE_KEYS.income : STORAGE_KEYS.expense,
+  prefix: direction === 'income' ? 'income' : 'expense',
+});
+
+const setFinanceEntries = (direction: FinanceDirection, entries: FinanceStorageEntry[]) => {
   if (typeof window === 'undefined') return;
-  const key = direction === 'income' ? STORAGE_KEYS.income : STORAGE_KEYS.expense;
-  const prefix = direction === 'income' ? 'income' : 'expense';
-  const existing = readFinanceStorage(key, prefix);
-  localStorage.setItem(key, JSON.stringify([...existing, entry]));
+  const { key } = directionMeta(direction);
+  localStorage.setItem(key, JSON.stringify(entries));
   notifyFinanceStorage();
+};
+
+const upsertFinanceEntry = (direction: FinanceDirection, entry: FinanceStorageEntry) => {
+  const { key, prefix } = directionMeta(direction);
+  const existing = readFinanceStorage(key, prefix);
+  const next = existing.some((item) => item.id === entry.id)
+    ? existing.map((item) => (item.id === entry.id ? entry : item))
+    : [...existing, entry];
+  setFinanceEntries(direction, next);
+};
+
+const removeFinanceEntry = (direction: FinanceDirection, id: string) => {
+  const { key, prefix } = directionMeta(direction);
+  const existing = readFinanceStorage(key, prefix);
+  const next = existing.filter((item) => item.id !== id);
+  if (next.length !== existing.length) {
+    setFinanceEntries(direction, next);
+  }
+};
+
+const persistFinanceEntry = (direction: FinanceDirection, entry: FinanceStorageEntry) => {
+  upsertFinanceEntry(direction, entry);
+};
+
+const getEntryTimestamp = (entry: FinanceStorageEntry) => {
+  const iso = entry.createdAt || `${entry.date}T00:00:00Z`;
+  const parsed = Date.parse(iso);
+  return Number.isNaN(parsed) ? 0 : parsed;
 };
 
 const normalizeMethod = (method?: string): Method => (method === 'transfer' || method === 'cash' ? method : 'cash');
@@ -140,6 +177,10 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
   const [transactions, setTransactions] = useState<CombinedEntry[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(getInitialTransactionFormState);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [menuEntry, setMenuEntry] = useState<CombinedEntry | null>(null);
+  const [editingEntry, setEditingEntry] = useState<CombinedEntry | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<CombinedEntry | null>(null);
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const start = rangePicker.startDate ?? dayjs();
@@ -162,7 +203,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
       .filter((entry) => entry.type === method && withinRange(entry))
       .map((entry) => ({ ...entry, direction: 'expense' as FinanceDirection }));
 
-    const combined = [...incomes, ...expenses].sort((a, b) => b.date.localeCompare(a.date));
+    const combined = [...incomes, ...expenses].sort((a, b) => getEntryTimestamp(b) - getEntryTimestamp(a));
     setTransactions(combined);
   }, [method, rangeEnd, rangeStart]);
 
@@ -201,20 +242,84 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
 
   const canSave = Boolean(form.name.trim()) && Number.parseFloat(form.amount) > 0 && Boolean(form.date);
 
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setEditingEntry(null);
+    setForm(getInitialTransactionFormState());
+  };
+
   const handleSave = () => {
     if (!canSave) return;
-    const entry: FinanceStorageEntry = {
-      id: uuidv4(),
+    const payload: FinanceStorageEntry = {
+      id: editingEntry ? editingEntry.id : uuidv4(),
       name: form.name.trim(),
       type: method,
       amount: Number.parseFloat(form.amount) || 0,
       currency: form.currency,
       date: form.date,
+      createdAt: editingEntry?.createdAt || timestampISO(),
       note: form.note.trim(),
     };
-    persistFinanceEntry(form.direction, entry);
-    setForm(getInitialTransactionFormState());
-    setDialogOpen(false);
+
+    if (editingEntry) {
+      if (editingEntry.direction === form.direction) {
+        upsertFinanceEntry(form.direction, payload);
+      } else {
+        removeFinanceEntry(editingEntry.direction, editingEntry.id);
+        upsertFinanceEntry(form.direction, payload);
+      }
+    } else {
+      persistFinanceEntry(form.direction, payload);
+    }
+
+    handleDialogClose();
+  };
+
+  const openRowMenu = (event: MouseEvent<HTMLElement>, entry: CombinedEntry) => {
+    event.stopPropagation();
+    setMenuAnchor(event.currentTarget);
+    setMenuEntry(entry);
+  };
+
+  const closeRowMenu = () => {
+    setMenuAnchor(null);
+    setMenuEntry(null);
+  };
+
+  const startEditEntry = (entry: CombinedEntry) => {
+    setEditingEntry(entry);
+    setForm({
+      direction: entry.direction,
+      name: entry.name,
+      amount: entry.amount ? String(entry.amount) : '',
+      currency: entry.currency,
+      date: entry.date,
+      note: entry.note,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleMenuEdit = () => {
+    const entry = menuEntry;
+    closeRowMenu();
+    if (entry) {
+      startEditEntry(entry);
+    }
+  };
+
+  const handleMenuDelete = () => {
+    const entry = menuEntry;
+    closeRowMenu();
+    if (entry) {
+      setPendingDelete(entry);
+    }
+  };
+
+  const handleDeleteConfirm = () => {
+    if (pendingDelete) {
+      removeFinanceEntry(pendingDelete.direction, pendingDelete.id);
+    }
+    setPendingDelete(null);
   };
 
   return (
@@ -244,19 +349,20 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
-          <TableRow>
-            <TableCell>{tPages('finance.transactions.table.type')}</TableCell>
-            <TableCell>{tPages('finance.transactions.table.name')}</TableCell>
-            <TableCell align="right">{tPages('finance.transactions.table.amount')}</TableCell>
-            <TableCell>{tPages('finance.transactions.table.currency')}</TableCell>
-            <TableCell>{tPages('finance.transactions.table.date')}</TableCell>
-            <TableCell>{tPages('finance.transactions.table.note')}</TableCell>
-          </TableRow>
+            <TableRow>
+              <TableCell>{tPages('finance.transactions.table.type')}</TableCell>
+              <TableCell>{tPages('finance.transactions.table.name')}</TableCell>
+              <TableCell align="right">{tPages('finance.transactions.table.amount')}</TableCell>
+              <TableCell>{tPages('finance.transactions.table.currency')}</TableCell>
+              <TableCell>{tPages('finance.transactions.table.date')}</TableCell>
+              <TableCell>{tPages('finance.transactions.table.note')}</TableCell>
+              <TableCell align="right">{tPages('finance.transactions.table.actions')}</TableCell>
+            </TableRow>
           </TableHead>
           <TableBody>
             {filteredTransactions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={7}>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                     {tPages('finance.transactions.table.empty')}
                   </Typography>
@@ -266,30 +372,70 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
               filteredTransactions.map((entry) => (
                 <TableRow
                   key={`${entry.direction}-${entry.id}`}
-                  sx={(theme) => ({
-                    backgroundColor:
-                      entry.direction === 'income'
-                        ? alpha(theme.palette.success.main, 0.08)
-                        : alpha(theme.palette.error.main, 0.08),
-                    borderLeft: `4px solid ${
-                      entry.direction === 'income' ? theme.palette.success.main : theme.palette.error.main
-                    }`,
-                  })}
-                >
-                  <TableCell>{directionLabels[entry.direction]}</TableCell>
-                  <TableCell>{entry.name || '—'}</TableCell>
-                  <TableCell align="right">{entry.amount.toLocaleString()}</TableCell>
-                  <TableCell>{entry.currency}</TableCell>
-                  <TableCell>{entry.date}</TableCell>
-                  <TableCell>{entry.note || '—'}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+                sx={(theme) => ({
+                  backgroundColor:
+                    entry.direction === 'income'
+                      ? alpha(theme.palette.success.main, 0.08)
+                      : alpha(theme.palette.error.main, 0.08),
+                  borderLeft: `4px solid ${
+                    entry.direction === 'income' ? theme.palette.success.main : theme.palette.error.main
+                  }`,
+                })}
+              >
+                <TableCell>{directionLabels[entry.direction]}</TableCell>
+                <TableCell>{entry.name || '—'}</TableCell>
+                <TableCell align="right">{entry.amount.toLocaleString()}</TableCell>
+                <TableCell>{entry.currency}</TableCell>
+                <TableCell>{entry.date}</TableCell>
+                <TableCell>{entry.note || '—'}</TableCell>
+                <TableCell align="right">
+                  <IconButton
+                    size="small"
+                    aria-label={tPages('finance.transactions.table.actions')}
+                    onClick={(event) => openRowMenu(event, entry)}
+                  >
+                    <Iconify icon="eva:more-vertical-fill" width={18} height={18} />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
         </Table>
       </TableContainer>
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={closeRowMenu}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={handleMenuEdit}>{tPages('finance.transactions.menu.edit')}</MenuItem>
+        <MenuItem onClick={handleMenuDelete}>{tPages('finance.transactions.menu.delete')}</MenuItem>
+      </Menu>
+
+      <Dialog
+        open={Boolean(pendingDelete)}
+        onClose={() => setPendingDelete(null)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>{tPages('finance.transactions.deleteTitle')}</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2">{tPages('finance.transactions.deleteConfirm')}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPendingDelete(null)}>
+            {tPages('finance.transactions.form.cancel')}
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDeleteConfirm}>
+            {tPages('finance.transactions.deleteAction')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={dialogOpen} onClose={handleDialogClose} fullWidth maxWidth="sm">
         <DialogTitle>{tNavbar('finance_transactions_add')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2} sx={{ mt: 1 }}>
@@ -347,7 +493,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>{tPages('finance.transactions.form.cancel')}</Button>
+          <Button onClick={handleDialogClose}>{tPages('finance.transactions.form.cancel')}</Button>
           <Button variant="contained" disabled={!canSave} onClick={handleSave}>
             {tNavbar('finance_transactions_add')}
           </Button>

@@ -861,6 +861,7 @@
         "currency": "Valyuta",
         "date": "Sana",
         "note": "Izoh",
+        "actions": "Amallar",
         "empty": "Hozircha tranzaksiyalar yo'q."
       },
       "form": {
@@ -870,7 +871,14 @@
         "date": "Sana",
         "note": "Izoh",
         "cancel": "Bekor qilish"
-      }
+      },
+      "menu": {
+        "edit": "Tahrirlash",
+        "delete": "O'chirish"
+      },
+      "deleteTitle": "Tranzaksiyani o'chirish",
+      "deleteConfirm": "Ushbu tranzaksiyani o'chirasizmi?",
+      "deleteAction": "O'chirish"
     },
     "income": {
       "title": "Kirim",
