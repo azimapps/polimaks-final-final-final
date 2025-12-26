@@ -192,9 +192,7 @@ const getDensity = (type: RazvaritelType): number => {
   }
 };
 
-const calculateKgFromLiter = (liter: number, type: RazvaritelType): number => {
-  return liter * getDensity(type);
-};
+const calculateKgFromLiter = (liter: number, type: RazvaritelType): number => liter * getDensity(type);
 
 export default function RazvaritelTransactionsPage() {
   const { razvaritelId } = useParams();

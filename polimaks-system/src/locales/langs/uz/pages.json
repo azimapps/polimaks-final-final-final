@@ -1526,6 +1526,18 @@
       "heading": "Hisobotlar",
       "description": "Bosma hisobotlari uchun bo'sh joy.",
       "placeholder": "Hisobotlar sahifasi hozircha bo'sh."
+    },
+    "colorMeasurements": {
+      "title": "Rang o'lchovlari",
+      "liquidPaintUsed": "Suyuq bo'yoq (ishlatilgan)",
+      "thickPaintUsed": "Quyuq bo'yoq (ishlatilgan)",
+      "thinner": "Suyultiruvchi",
+      "liquidPaintRemaining": "Qolgan suyuq bo'yoq (qoldiq)"
+    },
+    "totalProduction": {
+      "title": "Jami ishlab chiqarilgan",
+      "meters": "Metr",
+      "kg": "Kg"
     }
   },
   "laminatsiyaPanel": {

@@ -1515,6 +1515,18 @@
       "heading": "Отчеты",
       "description": "Место для отчетов печати.",
       "placeholder": "Страница отчетов пока пустая."
+    },
+    "colorMeasurements": {
+      "title": "Измерения красок",
+      "liquidPaintUsed": "Жидкая краска (использовано)",
+      "thickPaintUsed": "Густая краска (использовано)",
+      "thinner": "Разбавитель",
+      "liquidPaintRemaining": "Жидкая краска (остаток)"
+    },
+    "totalProduction": {
+      "title": "Общее производство",
+      "meters": "Метры",
+      "kg": "Кг"
     }
   },
   "laminatsiyaPanel": {

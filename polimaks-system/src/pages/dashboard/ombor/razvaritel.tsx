@@ -68,9 +68,7 @@ const getDensity = (type: RazvaritelType): number => {
   }
 };
 
-const calculateKgFromLiter = (liter: number, type: RazvaritelType): number => {
-  return liter * getDensity(type);
-};
+const calculateKgFromLiter = (liter: number, type: RazvaritelType): number => liter * getDensity(type);
 
 const normalizeItems = (items: (Partial<RazvaritelItem> & { id?: string })[]): RazvaritelItem[] =>
   items.map((item, index) => ({

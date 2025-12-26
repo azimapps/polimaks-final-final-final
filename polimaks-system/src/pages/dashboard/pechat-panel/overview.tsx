@@ -23,7 +23,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import InputAdornment from '@mui/material/InputAdornment';
 import TableContainer from '@mui/material/TableContainer';
 
 import { CONFIG } from 'src/global-config';
@@ -68,6 +67,11 @@ type PlanItem = {
   priceCurrency?: string;
   note?: string;
   materialsUsed?: MaterialUsage[];
+  numberOfColors?: number;
+  colorValues?: string[];
+  colorMeasurements?: Map<string, number[]>;
+  totalMeters?: number;
+  totalKg?: number;
 };
 
 type MaterialUsage = {
@@ -157,6 +161,13 @@ const buildUsageId = (prefix: string) =>
 const ORDER_PLAN_STORAGE_KEY = 'orderPlansV2';
 const LEGACY_ORDER_PLAN_STORAGE_KEY = 'orderPlans';
 const PECHAT_SELECTED_MACHINE_KEY = 'pechat-panel-selected-machine';
+const ORDER_BOOK_STORAGE_KEY = 'clients-order-book';
+
+type OrderBookItem = {
+  id: string;
+  orderNumber: string;
+  numberOfColors?: number;
+};
 const PLAN_SEED: PlanItem[] = [
   {
     id: 'pechat-plan-1',
@@ -208,6 +219,11 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   priceCurrency: raw?.priceCurrency,
   note: raw?.note,
   materialsUsed: Array.isArray(raw?.materialsUsed) ? raw.materialsUsed : [],
+  numberOfColors: typeof raw?.numberOfColors === 'number' ? raw.numberOfColors : Number(raw?.numberOfColors) || 1,
+  colorValues: Array.isArray(raw?.colorValues) ? raw.colorValues : [],
+  colorMeasurements: raw?.colorMeasurements instanceof Map ? raw.colorMeasurements : new Map(),
+  totalMeters: typeof raw?.totalMeters === 'number' ? raw.totalMeters : Number(raw?.totalMeters) || 0,
+  totalKg: typeof raw?.totalKg === 'number' ? raw.totalKg : Number(raw?.totalKg) || 0,
 });
 
 const loadPlanItems = (): PlanItem[] => {
@@ -521,6 +537,17 @@ const buildMaterialOptions = (machineId: string | undefined, t: (key: string, va
     .sort((a, b) => a.label.localeCompare(b.label));
 };
 
+const loadOrderBook = (): OrderBookItem[] => {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(ORDER_BOOK_STORAGE_KEY);
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored) as OrderBookItem[];
+  } catch {
+    return [];
+  }
+};
+
 export default function PechatPanelOverviewPage() {
   const { t } = useTranslate('pages');
   const title = `${t('pechatPanel.title')} | ${CONFIG.appName}`;
@@ -540,6 +567,21 @@ export default function PechatPanelOverviewPage() {
   const [statusValue, setStatusValue] = useState<PlanStatus>('in_progress');
   const [materialOptions, setMaterialOptions] = useState<MaterialOption[]>([]);
   const [usageRows, setUsageRows] = useState<MaterialUsageForm[]>([]);
+  const [colorValues, setColorValues] = useState<string[]>([]);
+  const [numberOfColors, setNumberOfColors] = useState<number>(1);
+  const [availableColors, setAvailableColors] = useState<{
+    id: string; 
+    colorName: string; 
+    seriya?: string; 
+    marka?: string; 
+    amount?: number; 
+    unit?: string;
+  }[]>([]);
+  const [colorMeasurements, setColorMeasurements] = useState<Map<string, number[]>>(new Map());
+  const [totalMeters, setTotalMeters] = useState('');
+  const [totalKg, setTotalKg] = useState('');
+  const [dispatchDestination, setDispatchDestination] = useState<'laminatsiya' | 'reska' | 'angren' | ''>('');
+  const [selectedBrigadaForDispatch, setSelectedBrigadaForDispatch] = useState('');
 
   const materialOptionMap = useMemo(
     () => new Map(materialOptions.map((option) => [option.id, option])),
@@ -643,6 +685,12 @@ export default function PechatPanelOverviewPage() {
     }
   }, [brigadas, selectedBrigadaId]);
 
+  // Reload colors when machine changes
+  useEffect(() => {
+    loadAvailableColors();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMachineId]);
+
   const persistPlans = (next: PlanItem[]) => {
     setPlans(next);
     if (typeof window !== 'undefined') {
@@ -707,12 +755,41 @@ export default function PechatPanelOverviewPage() {
       note: item.note || '',
     }));
 
+    // Load number of colors from order book data
+    const orderBook = loadOrderBook();
+    const orderItem = orderBook.find(order => 
+      order.id === plan.orderId || order.orderNumber === plan.orderNumber
+    );
+    const colorsCount = orderItem?.numberOfColors || plan.numberOfColors || 1;
+    const existingColors = plan.colorValues || [];
+    const initialColors = Array.from({ length: colorsCount }, (_, i) => 
+      existingColors[i] || ''
+    );
+
     setMaterialOptions(adjustedOptions);
     setUsageRows(
       existingUsage.length
         ? existingUsage
         : [{ id: buildUsageId('usage'), materialId: '', amount: '', note: '' }]
     );
+    setNumberOfColors(colorsCount);
+    setColorValues(initialColors);
+    
+    // Load available colors from stanok materials
+    loadAvailableColors();
+    
+    // Initialize color measurements if not already set
+    const existingMeasurements = plan.colorMeasurements || new Map();
+    setColorMeasurements(new Map(existingMeasurements));
+    
+    // Initialize total values
+    setTotalMeters(plan.totalMeters?.toString() || '');
+    setTotalKg(plan.totalKg?.toString() || '');
+    
+    // Reset dispatch selections
+    setDispatchDestination('');
+    setSelectedBrigadaForDispatch('');
+    
     setStatusPlan(plan);
     setStatusValue(plan.status || 'in_progress');
     setStatusDialogOpen(true);
@@ -736,6 +813,192 @@ export default function PechatPanelOverviewPage() {
 
   const updateUsageRow = (id: string, next: Partial<MaterialUsageForm>) => {
     setUsageRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...next } : row)));
+  };
+
+  const updateColorValue = (index: number, value: string) => {
+    setColorValues((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
+
+  const loadAvailableColors = () => {
+    const colors: {
+      id: string; 
+      colorName: string; 
+      seriya?: string; 
+      marka?: string; 
+      amount?: number; 
+      unit?: string;
+    }[] = [];
+    const machineId = selectedMachineId || 'pechat-1';
+    
+    console.log('Loading colors for machine:', machineId);
+    
+    try {
+      // Load kraska (paint) items from ombor to get color names
+      const kraskaItems = new Map();
+      const kraskaData = JSON.parse(localStorage.getItem('ombor-kraska') || '[]');
+      if (Array.isArray(kraskaData)) {
+        kraskaData.forEach((item: any) => {
+          if (item?.id) {
+            kraskaItems.set(item.id, item);
+          }
+        });
+      }
+      
+      // Load suyuq kraska items from ombor to get color names
+      const suyuqKraskaItems = new Map();
+      const suyuqKraskaData = JSON.parse(localStorage.getItem('ombor-suyuq-kraska') || '[]');
+      if (Array.isArray(suyuqKraskaData)) {
+        suyuqKraskaData.forEach((item: any) => {
+          if (item?.id) {
+            suyuqKraskaItems.set(item.id, item);
+          }
+        });
+      }
+      
+      // Load kraska transactions for this machine
+      const kraskaTxs = JSON.parse(localStorage.getItem('ombor-kraska-transactions') || '[]');
+      console.log('Kraska transactions:', kraskaTxs);
+      
+      if (Array.isArray(kraskaTxs)) {
+        kraskaTxs.forEach((tx: any) => {
+          console.log('Checking transaction:', tx);
+          if (tx.type === 'out' && tx.machineType === 'pechat' && tx.machineId === machineId) {
+            const item = kraskaItems.get(tx.kraskaId);
+            console.log('Found matching transaction, item:', item);
+            if (item?.colorName) {
+              if (!colors.find(c => c.id === item.id)) {
+                colors.push({
+                  id: item.id, 
+                  colorName: item.colorName,
+                  seriya: item.seriyaNumber,
+                  marka: item.marka,
+                  amount: tx.amountKg,
+                  unit: 'kg'
+                });
+              }
+            }
+          }
+        });
+      }
+      
+      // Load suyuq kraska transactions for this machine  
+      const suyuqTxs = JSON.parse(localStorage.getItem('ombor-suyuq-kraska-transactions') || '[]');
+      console.log('Suyuq kraska transactions:', suyuqTxs);
+      
+      if (Array.isArray(suyuqTxs)) {
+        suyuqTxs.forEach((tx: any) => {
+          if (tx.type === 'out' && tx.machineType === 'pechat' && tx.machineId === machineId) {
+            const item = suyuqKraskaItems.get(tx.suyuqKraskaId);
+            console.log('Found matching suyuq transaction, item:', item);
+            if (item?.colorName) {
+              if (!colors.find(c => c.id === item.id)) {
+                colors.push({
+                  id: item.id, 
+                  colorName: item.colorName,
+                  seriya: item.seriyaNumber,
+                  marka: item.marka,
+                  amount: tx.amountKg,
+                  unit: 'kg'
+                });
+              }
+            }
+          }
+        });
+      }
+      
+    } catch (e) {
+      console.error('Error loading colors:', e);
+    }
+    
+    console.log('Final colors loaded:', colors);
+    setAvailableColors(colors);
+  };
+
+  const updateColorMeasurement = (colorId: string, index: number, value: string) => {
+    setColorMeasurements(prev => {
+      const newMap = new Map(prev);
+      const measurements = newMap.get(colorId) || [0, 0, 0, 0];
+      measurements[index] = parseFloat(value) || 0;
+      newMap.set(colorId, measurements);
+      return newMap;
+    });
+  };
+
+  const handleDispatchProduct = (plan: PlanItem) => {
+    try {
+      const productData = {
+        id: `finished-${plan.id}-${Date.now()}`,
+        sourceOrderId: plan.id,
+        orderNumber: plan.orderNumber,
+        clientName: plan.clientName,
+        title: plan.title,
+        totalKg: parseFloat(totalKg) || plan.quantityKg || 0,
+        totalMeter: parseFloat(totalMeters) || 0,
+        colorMeasurements: Object.fromEntries(colorMeasurements),
+        colorValues: colorValues.filter(color => color.trim() !== ''),
+        completedDate: new Date().toISOString().slice(0, 10),
+        pricePerKg: plan.pricePerKg || 0,
+        priceCurrency: plan.priceCurrency || 'UZS',
+        description: `Pechat jarayonidan yakunlandi. ${plan.note || ''}`
+      };
+
+      if (dispatchDestination === 'angren') {
+        // Send to Angren warehouse
+        const angrenStorage = JSON.parse(localStorage.getItem('ombor-tayyor-mahsulotlar-angren') || '[]');
+        angrenStorage.push({ ...productData, location: 'angren' });
+        localStorage.setItem('ombor-tayyor-mahsulotlar-angren', JSON.stringify(angrenStorage));
+        
+        console.log('Product dispatched to Angren warehouse:', productData);
+      } else if (dispatchDestination === 'laminatsiya' || dispatchDestination === 'reska') {
+        // Add to next stage planning
+        const nextStorageKey = dispatchDestination === 'laminatsiya' ? 
+          'buyurtma-planlashtirish-laminatsiya' : 
+          'buyurtma-planlashtirish-reska';
+        
+        const nextStagePlanning = JSON.parse(localStorage.getItem(nextStorageKey) || '[]');
+        
+        const nextPlan = {
+          ...plan,
+          id: `${dispatchDestination}-${plan.id}-${Date.now()}`,
+          machineType: dispatchDestination,
+          groupId: selectedBrigadaForDispatch,
+          status: 'in_progress',
+          sourceStage: 'pechat',
+          receivedDate: new Date().toISOString().slice(0, 10),
+          pechatResults: {
+            totalKg: parseFloat(totalKg) || 0,
+            totalMeters: parseFloat(totalMeters) || 0,
+            colorMeasurements: Object.fromEntries(colorMeasurements)
+          }
+        };
+        
+        nextStagePlanning.push(nextPlan);
+        localStorage.setItem(nextStorageKey, JSON.stringify(nextStagePlanning));
+        
+        console.log(`Product dispatched to ${dispatchDestination}:`, nextPlan);
+      }
+
+      // Also store in pechat-paneli yakunlangan
+      const yakunlanganStorage = JSON.parse(localStorage.getItem('pechat-paneli-yakunlangan') || '[]');
+      yakunlanganStorage.push({
+        ...productData,
+        dispatchedTo: dispatchDestination,
+        brigada: selectedBrigadaForDispatch,
+        finishedAt: new Date().toISOString()
+      });
+      localStorage.setItem('pechat-paneli-yakunlangan', JSON.stringify(yakunlanganStorage));
+      
+      // Reset dispatch selections
+      setDispatchDestination('');
+      setSelectedBrigadaForDispatch('');
+      
+    } catch (error) {
+      console.error('Error dispatching product:', error);
+    }
   };
 
   const handleSaveStatus = () => {
@@ -814,10 +1077,25 @@ export default function PechatPanelOverviewPage() {
 
       const updatedPlans = plans.map((plan) =>
         plan.id === statusPlan.id
-          ? { ...plan, status: statusValue, materialsUsed: usedMaterials }
+          ? { 
+              ...plan, 
+              status: statusValue, 
+              materialsUsed: usedMaterials,
+              numberOfColors,
+              colorValues: colorValues.filter(color => color.trim() !== ''),
+              colorMeasurements: new Map(colorMeasurements),
+              totalMeters: parseFloat(totalMeters) || 0,
+              totalKg: parseFloat(totalKg) || 0
+            }
           : plan
       );
       persistPlans(updatedPlans);
+      
+      // Handle dispatch if status is finished and destination is selected
+      if (statusValue === 'finished' && dispatchDestination) {
+        handleDispatchProduct(statusPlan);
+      }
+      
       handleCloseStatusDialog();
     }
   };
@@ -1082,100 +1360,151 @@ export default function PechatPanelOverviewPage() {
               </Select>
             </FormControl>
 
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">{t('pechatPanel.materialsUsed')}</Typography>
-              {materialOptions.length === 0 ? (
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {t('pechatPanel.noMaterials')}
+            <Stack spacing={2}>
+              <Typography variant="subtitle2">
+                {t('pechatPanel.colorMeasurements.title')}
+              </Typography>
+              {availableColors.length === 0 ? (
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                  No color data found in stanok materials storage for {selectedMachineId || 'this machine'}.
                 </Typography>
               ) : (
-                <Stack spacing={2}>
-                  {usageRows.map((row) => {
-                    const selectedOption = materialOptionMap.get(row.materialId);
-                    const selectedTotal = row.materialId ? usageTotals.get(row.materialId) || 0 : 0;
-                    const exceedsAvailable =
-                      selectedOption && typeof selectedOption.available === 'number'
-                        ? selectedTotal > selectedOption.available
-                        : false;
-                    return (
-                      <Box
-                        key={row.id}
-                        sx={{
-                          display: 'grid',
-                          gap: 2,
-                          alignItems: 'center',
-                          gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr auto' },
-                        }}
-                      >
-                        <FormControl fullWidth>
-                          <InputLabel>{t('pechatMaterialsPage.table.material')}</InputLabel>
-                          <Select
-                            value={row.materialId}
-                            label={t('pechatMaterialsPage.table.material')}
-                            onChange={(event) =>
-                              updateUsageRow(row.id, { materialId: event.target.value })
-                            }
-                          >
-                            <MenuItem value="">
-                              <em>{t('pechatPanel.selectMaterial')}</em>
-                            </MenuItem>
-                            {materialOptions.map((option) => (
-                              <MenuItem key={option.id} value={option.id}>
-                                {option.label}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-
-                        <TextField
-                          label={t('pechatMaterialsPage.table.amount')}
-                          type="number"
-                          value={row.amount}
-                          onChange={(event) => updateUsageRow(row.id, { amount: event.target.value })}
-                          inputProps={{ min: 0, step: 'any' }}
-                          error={exceedsAvailable}
-                          helperText={
-                            exceedsAvailable
-                              ? t('pechatPanel.maxAmount', {
-                                  amount: selectedOption?.available,
-                                  unit: selectedOption?.unitLabel || '',
-                                })
-                              : undefined
-                          }
-                          FormHelperTextProps={{ sx: { mt: 0 } }}
-                          InputProps={{
-                            endAdornment: selectedOption?.unitLabel ? (
-                              <InputAdornment position="end">
-                                {selectedOption.unitLabel}
-                              </InputAdornment>
-                            ) : null,
-                          }}
-                        />
-
-                        <TextField
-                          label={t('pechatMaterialsPage.table.note')}
-                          value={row.note}
-                          onChange={(event) => updateUsageRow(row.id, { note: event.target.value })}
-                        />
-
-                        <IconButton color="error" onClick={() => handleRemoveUsageRow(row.id)}>
-                          <Iconify icon="solar:trash-bin-trash-bold" />
-                        </IconButton>
+                availableColors.map((color, colorIndex) => {
+                  const measurements = colorMeasurements.get(color.id) || [0, 0, 0, 0];
+                  return (
+                    <Stack key={color.id} spacing={1}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                          {colorIndex + 1}-{color.colorName}:
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                          {color.seriya && `Seriya: ${color.seriya}`}
+                          {color.marka && ` | Marka: ${color.marka}`}
+                          {color.amount && ` | Ishlatilgan: ${color.amount} ${color.unit}`}
+                        </Typography>
                       </Box>
-                    );
-                  })}
-                </Stack>
+                      <Box sx={{ 
+                        display: 'grid', 
+                        gap: 2, 
+                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                        mt: 1
+                      }}>
+                        {[
+                          { label: t('pechatPanel.colorMeasurements.liquidPaintUsed'), short: 'Suyuq (ish.)' },
+                          { label: t('pechatPanel.colorMeasurements.thickPaintUsed'), short: 'Quyuq (ish.)' },
+                          { label: t('pechatPanel.colorMeasurements.thinner'), short: 'Razvaritel' },
+                          { label: t('pechatPanel.colorMeasurements.liquidPaintRemaining'), short: 'Qolgan' }
+                        ].map((item, measureIndex) => (
+                          <Box key={measureIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="caption" sx={{ minWidth: '80px', fontSize: '0.75rem' }}>
+                              {item.short}:
+                            </Typography>
+                            <TextField
+                              placeholder="0"
+                              type="number"
+                              size="small"
+                              value={measurements[measureIndex] || ''}
+                              onChange={(event) => updateColorMeasurement(color.id, measureIndex, event.target.value)}
+                              inputProps={{ min: 0, step: 'any' }}
+                              sx={{ 
+                                flex: 1,
+                                '& .MuiInputBase-input': { 
+                                  textAlign: 'center',
+                                  padding: '6px 8px'
+                                },
+                                '& .MuiOutlinedInput-root': {
+                                  height: '32px'
+                                }
+                              }}
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </Stack>
+                  );
+                })
               )}
             </Stack>
 
-            <Button
-              variant="outlined"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={handleAddUsageRow}
-              disabled={materialOptions.length === 0}
-            >
-              {t('pechatPanel.addMaterial')}
-            </Button>
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">
+                {t('pechatPanel.totalProduction.title')}
+              </Typography>
+              <Box sx={{ 
+                display: 'grid', 
+                gap: 2, 
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
+              }}>
+                <TextField
+                  label={t('pechatPanel.totalProduction.meters')}
+                  type="number"
+                  value={totalMeters}
+                  onChange={(event) => setTotalMeters(event.target.value)}
+                  inputProps={{ min: 0, step: 'any' }}
+                  size="small"
+                />
+                <TextField
+                  label={t('pechatPanel.totalProduction.kg')}
+                  type="number"
+                  value={totalKg}
+                  onChange={(event) => setTotalKg(event.target.value)}
+                  inputProps={{ min: 0, step: 'any' }}
+                  size="small"
+                />
+              </Box>
+            </Stack>
+
+            {statusValue === 'finished' && (
+              <Stack spacing={2} sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Typography variant="subtitle2" sx={{ color: 'primary.main' }}>
+                  Yuborish (Dispatch)
+                </Typography>
+                
+                <FormControl fullWidth size="small">
+                  <InputLabel>Qayerga yuborish?</InputLabel>
+                  <Select
+                    value={dispatchDestination}
+                    label="Qayerga yuborish?"
+                    onChange={(event) => {
+                      setDispatchDestination(event.target.value as any);
+                      setSelectedBrigadaForDispatch(''); // Reset brigada when destination changes
+                    }}
+                  >
+                    <MenuItem value="">Tanlang...</MenuItem>
+                    <MenuItem value="laminatsiya">Laminatsiya</MenuItem>
+                    <MenuItem value="reska">Reska</MenuItem>
+                    <MenuItem value="angren">Angren ombori</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {(dispatchDestination === 'laminatsiya' || dispatchDestination === 'reska') && (
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Brigada tanlang</InputLabel>
+                    <Select
+                      value={selectedBrigadaForDispatch}
+                      label="Brigada tanlang"
+                      onChange={(event) => setSelectedBrigadaForDispatch(event.target.value)}
+                    >
+                      <MenuItem value="">Brigadani tanlang...</MenuItem>
+                      {/* TODO: Load brigadas for selected machine type */}
+                      <MenuItem value="brigada-1">Brigada 1</MenuItem>
+                      <MenuItem value="brigada-2">Brigada 2</MenuItem>
+                      <MenuItem value="brigada-3">Brigada 3</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+                
+                {dispatchDestination && (
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {dispatchDestination === 'angren' 
+                      ? 'Mahsulot Angren omboriga yuboriladi'
+                      : `Mahsulot ${dispatchDestination} bo'limiga yuboriladi`
+                    }
+                    {selectedBrigadaForDispatch && ` (${selectedBrigadaForDispatch})`}
+                  </Typography>
+                )}
+              </Stack>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>

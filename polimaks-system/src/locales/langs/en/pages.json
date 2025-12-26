@@ -1514,6 +1514,18 @@
       "heading": "Reports",
       "description": "Empty area for pechat reports.",
       "placeholder": "Reports page placeholder."
+    },
+    "colorMeasurements": {
+      "title": "Color Measurements",
+      "liquidPaintUsed": "Liquid Paint (Used)",
+      "thickPaintUsed": "Thick Paint (Used)",
+      "thinner": "Thinner",
+      "liquidPaintRemaining": "Liquid Paint (Remaining)"
+    },
+    "totalProduction": {
+      "title": "Total Production",
+      "meters": "Meters",
+      "kg": "Kg"
     }
   },
   "laminatsiyaPanel": {
