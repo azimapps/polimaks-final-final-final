@@ -65,6 +65,7 @@ type OrderBookItem = {
   pricePerKg: number;
   priceCurrency: Currency;
   admin: string;
+  numberOfColors: number; // Number of colors in the order
 };
 
 type MaterialUsage = {
@@ -234,6 +235,7 @@ const normalizeItems = (items: (Partial<OrderBookItem> & { id?: string; client?:
         typeof item.pricePerKg === 'number' ? item.pricePerKg : Number(item.pricePerKg) || 0,
       priceCurrency,
       admin: item.admin || '',
+      numberOfColors: typeof item.numberOfColors === 'number' ? item.numberOfColors : Number(item.numberOfColors) || 1,
     };
   });
 
@@ -258,6 +260,7 @@ const seedData: OrderBookItem[] = [
     pricePerKg: 3.2,
     priceCurrency: 'USD',
     admin: 'Nodir',
+    numberOfColors: 3,
   },
   {
     id: 'order-2',
@@ -279,6 +282,7 @@ const seedData: OrderBookItem[] = [
     pricePerKg: 28500,
     priceCurrency: 'UZS',
     admin: 'Dilshod',
+    numberOfColors: 2,
   },
 ];
 
@@ -350,6 +354,7 @@ export default function ClientsOrderBookPage() {
       | 'cylinderCount'
       | 'cylinderAylanasi'
       | 'pricePerKg'
+      | 'numberOfColors'
     > & {
       quantityKg: string;
       filmThickness: string;
@@ -358,6 +363,7 @@ export default function ClientsOrderBookPage() {
       cylinderCount: string;
       cylinderAylanasi: string;
       pricePerKg: string;
+      numberOfColors: string;
     }
   >({
     date: todayISO(),
@@ -378,6 +384,7 @@ export default function ClientsOrderBookPage() {
     pricePerKg: '',
     priceCurrency: 'USD',
     admin: '',
+    numberOfColors: '1',
   });
   
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -419,6 +426,7 @@ export default function ClientsOrderBookPage() {
       pricePerKg: '',
       priceCurrency: PRICE_CURRENCIES[0],
       admin: '',
+      numberOfColors: '1',
     });
     dialog.onTrue();
   };
@@ -446,6 +454,7 @@ export default function ClientsOrderBookPage() {
       pricePerKg: item.pricePerKg ? String(item.pricePerKg) : '',
       priceCurrency: item.priceCurrency,
       admin: item.admin || '',
+      numberOfColors: item.numberOfColors ? String(item.numberOfColors) : '1',
     });
     dialog.onTrue();
   };
@@ -458,6 +467,7 @@ export default function ClientsOrderBookPage() {
     const cylinderCountNum = parseInt(form.cylinderCount, 10) || 0;
     const cylinderAylanasiNum = parseFloat(form.cylinderAylanasi) || 0;
     const pricePerKgNum = parseFloat(form.pricePerKg) || 0;
+    const numberOfColorsNum = parseInt(form.numberOfColors, 10) || 1;
 
     const payload: OrderBookItem = {
       id: editing ? editing.id : uuidv4(),
@@ -479,6 +489,7 @@ export default function ClientsOrderBookPage() {
       pricePerKg: pricePerKgNum,
       priceCurrency: form.priceCurrency,
       admin: form.admin.trim(),
+      numberOfColors: numberOfColorsNum,
     };
 
     if (editing) {
@@ -669,6 +680,7 @@ export default function ClientsOrderBookPage() {
     parseFloat(form.cylinderLength) > 0 &&
     parseInt(form.cylinderCount, 10) > 0 &&
     parseFloat(form.pricePerKg) > 0 &&
+    parseInt(form.numberOfColors, 10) > 0 &&
     form.startDate &&
     form.endDate &&
     form.startDate <= form.endDate;
@@ -717,6 +729,7 @@ export default function ClientsOrderBookPage() {
                     <TableCell sx={{ minWidth: 150 }}>{t('orderBookPage.cylinderLength')}</TableCell>
                     <TableCell sx={{ minWidth: 130 }}>{t('orderBookPage.cylinderCount')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>Cylinder aylanasi</TableCell>
+                    <TableCell sx={{ minWidth: 120 }}>Ranglar soni</TableCell>
                     <TableCell sx={{ minWidth: 120 }}>{t('orderBookPage.startDate')}</TableCell>
                     <TableCell sx={{ minWidth: 120 }}>{t('orderBookPage.endDate')}</TableCell>
                     <TableCell align="right" sx={{ width: 80 }}>
@@ -727,7 +740,7 @@ export default function ClientsOrderBookPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={17}>
+                      <TableCell colSpan={18}>
                         <Box
                           sx={{
                             py: 6,
@@ -817,6 +830,11 @@ export default function ClientsOrderBookPage() {
                               {item.cylinderAylanasi
                                 ? `${item.cylinderAylanasi} ${t('orderBookPage.mm')}`
                                 : '—'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                              {item.numberOfColors} rang{item.numberOfColors > 1 ? 'lar' : ''}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -1026,6 +1044,16 @@ export default function ClientsOrderBookPage() {
                   value={form.cylinderAylanasi}
                   onChange={(e) => setForm((prev) => ({ ...prev, cylinderAylanasi: e.target.value }))}
                   inputProps={{ min: 0, step: '1', placeholder: 'Cylinder aylanasi' }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Ranglar soni"
+                  value={form.numberOfColors}
+                  onChange={(e) => setForm((prev) => ({ ...prev, numberOfColors: e.target.value }))}
+                  inputProps={{ min: 1, step: '1', placeholder: 'Ranglar soni' }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>

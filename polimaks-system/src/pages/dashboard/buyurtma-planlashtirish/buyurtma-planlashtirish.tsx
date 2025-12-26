@@ -78,6 +78,7 @@ type OrderBookItem = {
   admin?: string;
   startDate: string;
   endDate: string;
+  numberOfColors?: number;
 };
 
 type BrigadaGroup = {
@@ -114,6 +115,7 @@ type PlanItem = {
   admin?: string;
   note: string;
   materialsUsed?: MaterialUsage[];
+  numberOfColors?: number;
 };
 
 type FormState = {
@@ -176,6 +178,7 @@ const ORDER_BOOK_SEED: OrderBookItem[] = [
     admin: 'Nodir',
     startDate: '2024-12-05',
     endDate: '2024-12-15',
+    numberOfColors: 3,
   },
   {
     id: 'order-2',
@@ -197,6 +200,7 @@ const ORDER_BOOK_SEED: OrderBookItem[] = [
     admin: 'Dilshod',
     startDate: '2024-12-10',
     endDate: '2024-12-20',
+    numberOfColors: 2,
   },
 ];
 
@@ -247,6 +251,7 @@ const normalizeOrderBookItem = (item: Partial<OrderBookItem>, index: number): Or
   admin: item.admin || '',
   startDate: item.startDate || item.date || todayISO(),
   endDate: item.endDate || item.date || todayISO(),
+  numberOfColors: typeof item.numberOfColors === 'number' ? item.numberOfColors : Number(item.numberOfColors) || 1,
 });
 
 const resolvePlanStatus = (status?: string): PlanStatus => {
@@ -519,6 +524,7 @@ export default function BuyurtmaPlanlashtirish() {
       admin: selectedOrder.admin,
       note: formData.note,
       materialsUsed: existingPlan?.materialsUsed || [],
+      numberOfColors: selectedOrder.numberOfColors,
     };
 
     if (formData.id) {
@@ -672,6 +678,7 @@ export default function BuyurtmaPlanlashtirish() {
                         <Typography variant="body2">{plan.clientName}</Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                           {plan.quantityKg} {t('orderPlanPage.kg')} · {plan.material}
+                          {plan.numberOfColors ? ` · ${plan.numberOfColors} rang${plan.numberOfColors > 1 ? 'lar' : ''}` : ''}
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ py: 2 }}>
@@ -947,6 +954,14 @@ export default function BuyurtmaPlanlashtirish() {
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          Ranglar soni
+                        </Typography>
+                        <Typography variant="subtitle2" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                          {selectedOrder.numberOfColors || 1} rang{(selectedOrder.numberOfColors || 1) > 1 ? 'lar' : ''}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           Material
                         </Typography>
                         <Typography variant="subtitle2">
@@ -1007,6 +1022,14 @@ export default function BuyurtmaPlanlashtirish() {
                       Миқдор (кг)
                     </Typography>
                     <Typography variant="subtitle2">{detailPlan.quantityKg}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Ранглар сони
+                    </Typography>
+                    <Typography variant="subtitle2" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                      {detailPlan.numberOfColors || 1} ранг{(detailPlan.numberOfColors || 1) > 1 ? 'лар' : ''}
+                    </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
