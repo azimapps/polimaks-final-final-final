@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useParams, useNavigate } from 'react-router';
 
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -62,12 +63,21 @@ type PlyonkaTransaction = {
   amountKg: number;
   machineType: MachineTypeValue;
   machineId: string;
+  orderId?: string; // Selected order ID
   note: string;
   createdAt: number;
 };
 
+type OrderBookItem = {
+  id: string;
+  orderNumber: string;
+  clientName: string;
+  title: string;
+};
+
 const STORAGE_KEY = 'ombor-plyonka';
 const TX_STORAGE_KEY = 'ombor-plyonka-transactions';
+const ORDERS_STORAGE_KEY = 'clients-order-book';
 
 type Machine = { id: string; name?: string };
 
@@ -127,6 +137,18 @@ const readMachines = (type: MachineType): Machine[] => {
   }
 };
 
+const readOrders = (): OrderBookItem[] => {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(ORDERS_STORAGE_KEY);
+  if (!stored) return [];
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as OrderBookItem[]) : [];
+  } catch {
+    return [];
+  }
+};
+
 const readTransactions = (): PlyonkaTransaction[] => {
   if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(TX_STORAGE_KEY);
@@ -168,6 +190,8 @@ export default function PlyonkaTransactionsPage() {
     () => items.find((it) => it.id === plyonkaId) ?? null,
     [items, plyonkaId]
   );
+  
+  const allOrders = useMemo(() => readOrders(), []);
 
   const heading = t('plyonkaTransactionsPage.title', {
     seriya: item?.seriyaNumber || t('plyonkaTransactionsPage.unknown'),
@@ -187,6 +211,7 @@ export default function PlyonkaTransactionsPage() {
     date: string;
     machineType: MachineTypeValue;
     machineId: string;
+    orderId: string | null;
     note: string;
   }>({
     type: 'in',
@@ -194,6 +219,7 @@ export default function PlyonkaTransactionsPage() {
     date: todayISO(),
     machineType: '',
     machineId: '',
+    orderId: null,
     note: '',
   });
 
@@ -238,6 +264,7 @@ export default function PlyonkaTransactionsPage() {
       amountKg: amount,
       machineType: requiresMachine ? form.machineType : '',
       machineId: requiresMachine ? form.machineId : '',
+      orderId: form.orderId || undefined,
       note: form.note.trim(),
       createdAt: editingTx?.createdAt ?? Date.now(),
     };
@@ -249,7 +276,7 @@ export default function PlyonkaTransactionsPage() {
       persistForRoll(next);
       return next;
     });
-    setForm((prev) => ({ ...prev, amountKg: '', note: '' }));
+    setForm((prev) => ({ ...prev, amountKg: '', note: '', orderId: null }));
     setEditingTx(null);
     setDialogOpen(false);
   }, [
@@ -259,6 +286,7 @@ export default function PlyonkaTransactionsPage() {
     form.machineId,
     form.machineType,
     form.note,
+    form.orderId,
     form.type,
     item,
     plyonkaId,
@@ -274,6 +302,7 @@ export default function PlyonkaTransactionsPage() {
       date: tx.date,
       machineType: tx.machineType,
       machineId: tx.machineId,
+      orderId: tx.orderId || null,
       note: tx.note,
     });
     setDialogOpen(true);
@@ -419,6 +448,7 @@ export default function PlyonkaTransactionsPage() {
                     <TableCell sx={{ minWidth: 140 }}>{t('plyonkaTransactionsPage.table.date')}</TableCell>
                     <TableCell sx={{ minWidth: 140 }}>{t('plyonkaTransactionsPage.table.type')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('plyonkaTransactionsPage.table.machine')}</TableCell>
+                    <TableCell sx={{ minWidth: 150 }}>{t('orderBookPage.orderNumber')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('plyonkaTransactionsPage.table.amount')}</TableCell>
                     <TableCell>{t('plyonkaTransactionsPage.table.note')}</TableCell>
                     <TableCell align="right" sx={{ width: 100 }} />
@@ -427,7 +457,7 @@ export default function PlyonkaTransactionsPage() {
                 <TableBody>
                   {!item ? (
                     <TableRow>
-                      <TableCell colSpan={5}>
+                      <TableCell colSpan={7}>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           {t('plyonkaTransactionsPage.notFound')}
                         </Typography>
@@ -435,7 +465,7 @@ export default function PlyonkaTransactionsPage() {
                     </TableRow>
                   ) : mergedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5}>
+                      <TableCell colSpan={7}>
                         <Box
                           sx={{
                             py: 4,
@@ -451,51 +481,63 @@ export default function PlyonkaTransactionsPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    mergedTransactions.map((tx) => (
-                      <TableRow key={tx.id}>
-                        <TableCell>
-                          <Typography variant="body2">{tx.date}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={
-                              tx.type === 'in'
-                                ? t('plyonkaTransactionsPage.typeIn')
-                                : t('plyonkaTransactionsPage.typeOut')
-                            }
-                            color={tx.type === 'in' ? 'success' : 'warning'}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                            {tx.machineType}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            {tx.machineId || '—'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {tx.amountKg.toLocaleString()} {t('plyonkaPage.kg')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {tx.note || '—'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
+                    mergedTransactions.map((tx) => {
+                      const relatedOrder = allOrders.find(o => o.id === tx.orderId);
+                      return (
+                        <TableRow key={tx.id}>
+                          <TableCell>
+                            <Typography variant="body2">{tx.date}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                tx.type === 'in'
+                                  ? t('plyonkaTransactionsPage.typeIn')
+                                  : t('plyonkaTransactionsPage.typeOut')
+                              }
+                              color={tx.type === 'in' ? 'success' : 'warning'}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                              {tx.machineType}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                              {tx.machineId || '—'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {relatedOrder ? relatedOrder.orderNumber : '—'}
+                            </Typography>
+                            {relatedOrder && (
+                              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                                {relatedOrder.clientName}
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {tx.amountKg.toLocaleString()} {t('plyonkaPage.kg')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                              {tx.note || '—'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
                             <Stack direction="row" spacing={1} justifyContent="flex-end">
                               <Button
                                 size="small"
                                 color="inherit"
                                 onClick={() => startEdit(tx)}
                                 sx={{ minWidth: 0, p: 0.75 }}
-                            >
-                              <Iconify icon="solar:pen-bold" width={18} height={18} />
-                            </Button>
-                            <Button
+                              >
+                                <Iconify icon="solar:pen-bold" width={18} height={18} />
+                              </Button>
+                              <Button
                                 size="small"
                                 color="error"
                                 onClick={() => deleteTransaction(tx)}
@@ -504,9 +546,10 @@ export default function PlyonkaTransactionsPage() {
                                 <Iconify icon="solar:trash-bin-trash-bold" width={18} height={18} />
                               </Button>
                             </Stack>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
@@ -585,6 +628,7 @@ export default function PlyonkaTransactionsPage() {
                   </Grid>
                 </>
               ) : null}
+              
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
@@ -595,12 +639,56 @@ export default function PlyonkaTransactionsPage() {
                   inputProps={{ min: 0, step: 0.01 }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              
+              {form.type === 'out' ? (
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Autocomplete
+                    options={allOrders}
+                    getOptionLabel={(option) => `${option.orderNumber} - ${option.clientName}`}
+                    value={allOrders.find((o) => o.id === form.orderId) || null}
+                    onChange={(event, newValue) => {
+                      setForm((prev) => ({ ...prev, orderId: newValue ? newValue.id : null }));
+                    }}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.id}>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                            {option.orderNumber}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            {option.clientName} | {option.title}
+                          </Typography>
+                        </Box>
+                      </li>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={t('orderBookPage.orderNumber')}
+                        placeholder={allOrders.length === 0 ? "No orders available" : "Search order..."}
+                      />
+                    )}
+                  />
+                </Grid>
+              ) : (
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    label={t('plyonkaTransactionsPage.form.note')}
+                    value={form.note}
+                    onChange={(e) => setForm((prev) => ({ ...prev, note: e.target.value }))}
+                  />
+                </Grid>
+              )}
+
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label={t('plyonkaTransactionsPage.form.note')}
                   value={form.note}
                   onChange={(e) => setForm((prev) => ({ ...prev, note: e.target.value }))}
+                  multiline
+                  rows={3}
                 />
               </Grid>
             </Grid>
