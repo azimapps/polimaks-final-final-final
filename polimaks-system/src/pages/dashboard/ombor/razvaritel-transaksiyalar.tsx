@@ -179,6 +179,23 @@ const persistTransactions = (tx: RazvaritelTransaction[]) => {
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
+const getDensity = (type: RazvaritelType): number => {
+  switch (type) {
+    case 'eaf':
+      return 0.78;
+    case 'etilin':
+      return 0.88;
+    case 'metoksil':
+      return 0.89;
+    default:
+      return 0.8;
+  }
+};
+
+const calculateKgFromLiter = (liter: number, type: RazvaritelType): number => {
+  return liter * getDensity(type);
+};
+
 export default function RazvaritelTransactionsPage() {
   const { razvaritelId } = useParams();
   const { t } = useTranslate('pages');
@@ -444,6 +461,9 @@ export default function RazvaritelTransactionsPage() {
                     <TableCell sx={{ minWidth: 180 }}>
                       {t('razvaritelTransactionsPage.table.amount')}
                     </TableCell>
+                    <TableCell sx={{ minWidth: 120 }}>
+                      Kg
+                    </TableCell>
                     <TableCell>{t('razvaritelTransactionsPage.table.note')}</TableCell>
                     <TableCell align="right" sx={{ width: 100 }} />
                   </TableRow>
@@ -451,7 +471,7 @@ export default function RazvaritelTransactionsPage() {
                 <TableBody>
                   {!item ? (
                     <TableRow>
-                      <TableCell colSpan={7}>
+                      <TableCell colSpan={8}>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           {t('razvaritelTransactionsPage.notFound')}
                         </Typography>
@@ -459,7 +479,7 @@ export default function RazvaritelTransactionsPage() {
                     </TableRow>
                   ) : mergedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7}>
+                      <TableCell colSpan={8}>
                         <Box
                           sx={{
                             py: 4,
@@ -514,6 +534,11 @@ export default function RazvaritelTransactionsPage() {
                           <TableCell>
                             <Typography variant="body2">
                               {tx.amountLiter.toLocaleString()} {t('razvaritelPage.liter')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                              {item ? calculateKgFromLiter(tx.amountLiter, item.type).toFixed(2) : '—'} kg
                             </Typography>
                           </TableCell>
                           <TableCell>

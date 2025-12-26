@@ -55,6 +55,23 @@ const STORAGE_KEY = 'ombor-razvaritel';
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
+const getDensity = (type: RazvaritelType): number => {
+  switch (type) {
+    case 'eaf':
+      return 0.78;
+    case 'etilin':
+      return 0.88;
+    case 'metoksil':
+      return 0.89;
+    default:
+      return 0.8;
+  }
+};
+
+const calculateKgFromLiter = (liter: number, type: RazvaritelType): number => {
+  return liter * getDensity(type);
+};
+
 const normalizeItems = (items: (Partial<RazvaritelItem> & { id?: string })[]): RazvaritelItem[] =>
   items.map((item, index) => ({
     id: item.id || `razvaritel-${index}`,
@@ -276,6 +293,7 @@ export default function RazvaritelPage() {
                     <TableCell sx={{ minWidth: 160 }}>{t('razvaritelPage.seriya')}</TableCell>
                     <TableCell sx={{ minWidth: 180 }}>{t('razvaritelPage.type')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('razvaritelPage.totalLiter')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>Omborda (Kg)</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.price')}</TableCell>
                     <TableCell sx={{ minWidth: 200 }}>{t('razvaritelPage.totalPrice')}</TableCell>
                     <TableCell sx={{ minWidth: 260 }}>{t('razvaritelPage.description')}</TableCell>
@@ -287,7 +305,7 @@ export default function RazvaritelPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9}>
+                      <TableCell colSpan={10}>
                         <Box
                           sx={{
                             py: 6,
@@ -327,6 +345,11 @@ export default function RazvaritelPage() {
                         <TableCell>
                           <Typography variant="body2">
                             {item.totalLiter.toLocaleString()} {t('razvaritelPage.liter')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            {calculateKgFromLiter(item.totalLiter, item.type).toFixed(2)} kg
                           </Typography>
                         </TableCell>
                         <TableCell>
