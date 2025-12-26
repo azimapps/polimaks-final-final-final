@@ -582,6 +582,13 @@ export default function PechatPanelOverviewPage() {
   const [totalKg, setTotalKg] = useState('');
   const [dispatchDestination, setDispatchDestination] = useState<'laminatsiya' | 'reska' | 'angren' | ''>('');
   const [selectedBrigadaForDispatch, setSelectedBrigadaForDispatch] = useState('');
+  
+  // Calculation results dialog
+  const [calculationResults, setCalculationResults] = useState<{
+    colorResults: { colorName: string; suyuqUsed: number; razvaritelUsed: number; totalCost: number }[];
+    totalCost: number;
+  } | null>(null);
+  const [showCalculationDialog, setShowCalculationDialog] = useState(false);
 
   const materialOptionMap = useMemo(
     () => new Map(materialOptions.map((option) => [option.id, option])),
@@ -928,6 +935,53 @@ export default function PechatPanelOverviewPage() {
     });
   };
 
+  // Calculation functions for material usage
+  const calculateMaterialUsage = () => {
+    const results: { colorName: string; suyuqUsed: number; razvaritelUsed: number; totalCost: number }[] = [];
+    let totalCost = 0;
+
+    // Get material prices
+    const suyuqKraskaItems = JSON.parse(localStorage.getItem('ombor-suyuq-kraska') || '[]');
+    const razvaritelItems = JSON.parse(localStorage.getItem('ombor-razvaritel') || '[]');
+
+    availableColors.forEach(color => {
+      const measurements = colorMeasurements.get(color.id) || [0, 0, 0, 0];
+      const [suyuqIshlatilgan, quyuqIshlatilgan, razvaritel, qolganSuyuq] = measurements;
+
+      // Formula for suyuq kraska: Ishlatilgan suyuq kraska * 0.67 + quyuq kraska - qolgan suyuq kraska * 0.67
+      const suyuqUsed = suyuqIshlatilgan * 0.67 + quyuqIshlatilgan - qolganSuyuq * 0.67;
+
+      // Formula for razvaritel: Ishlatilgan suyuq kraska * 0.33 + razvaritel - qolgan suyuq kraska * 0.33
+      const razvaritelUsed = suyuqIshlatilgan * 0.33 + razvaritel - qolganSuyuq * 0.33;
+
+      // Calculate cost
+      let colorCost = 0;
+      
+      // Find suyuq kraska price
+      const suyuqItem = suyuqKraskaItems.find((item: any) => item.colorName === color.colorName);
+      if (suyuqItem && suyuqItem.pricePerKg && suyuqUsed > 0) {
+        colorCost += suyuqUsed * suyuqItem.pricePerKg;
+      }
+
+      // Find razvaritel price (assuming EAF type for now)
+      const razvaritelItem = razvaritelItems.find((item: any) => item.type === 'eaf');
+      if (razvaritelItem && razvaritelItem.pricePerLiter && razvaritelUsed > 0) {
+        colorCost += razvaritelUsed * razvaritelItem.pricePerLiter;
+      }
+
+      results.push({
+        colorName: color.colorName,
+        suyuqUsed: Math.max(0, suyuqUsed),
+        razvaritelUsed: Math.max(0, razvaritelUsed),
+        totalCost: colorCost
+      });
+
+      totalCost += colorCost;
+    });
+
+    return { colorResults: results, totalCost };
+  };
+
   const handleDispatchProduct = (plan: PlanItem) => {
     try {
       const productData = {
@@ -1075,6 +1129,9 @@ export default function PechatPanelOverviewPage() {
         localStorage.setItem(storageKey, JSON.stringify(next));
       });
 
+      // Calculate material usage and costs
+      const calculations = calculateMaterialUsage();
+      
       const updatedPlans = plans.map((plan) =>
         plan.id === statusPlan.id
           ? { 
@@ -1085,7 +1142,8 @@ export default function PechatPanelOverviewPage() {
               colorValues: colorValues.filter(color => color.trim() !== ''),
               colorMeasurements: new Map(colorMeasurements),
               totalMeters: parseFloat(totalMeters) || 0,
-              totalKg: parseFloat(totalKg) || 0
+              totalKg: parseFloat(totalKg) || 0,
+              calculatedMaterialUsage: calculations // Store the calculation results
             }
           : plan
       );
@@ -1096,7 +1154,10 @@ export default function PechatPanelOverviewPage() {
         handleDispatchProduct(statusPlan);
       }
       
+      // Store and show calculation results
+      setCalculationResults(calculations);
       handleCloseStatusDialog();
+      setShowCalculationDialog(true);
     }
   };
 
@@ -1511,6 +1572,102 @@ export default function PechatPanelOverviewPage() {
           <Button onClick={handleCloseStatusDialog}>{t('orderPlanPage.cancel')}</Button>
           <Button variant="contained" onClick={handleSaveStatus} disabled={hasUsageErrors}>
             {t('orderPlanPage.save')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Calculation Results Dialog */}
+      <Dialog 
+        open={showCalculationDialog} 
+        onClose={() => setShowCalculationDialog(false)} 
+        fullWidth 
+        maxWidth="md"
+      >
+        <DialogTitle>Material xarajatlari hisobi</DialogTitle>
+        <DialogContent dividers>
+          {calculationResults && (
+            <Stack spacing={3}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Quyidagi formulalar asosida hisoblangan:
+              </Typography>
+              
+              <Box sx={{ bgcolor: 'grey.100', p: 2, borderRadius: 1 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+                  Suyuq kraska: (Ishlatilgan × 0.67) + Quyuq - (Qolgan × 0.67)
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                  Razvaritel: (Ishlatilgan × 0.33) + Razvaritel - (Qolgan × 0.33)
+                </Typography>
+              </Box>
+
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Rang</TableCell>
+                      <TableCell align="right">Suyuq kraska (kg)</TableCell>
+                      <TableCell align="right">Razvaritel (l)</TableCell>
+                      <TableCell align="right">Xarajat</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {calculationResults.colorResults.map((result, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                            {result.colorName}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2">
+                            {result.suyuqUsed.toFixed(2)} kg
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2">
+                            {result.razvaritelUsed.toFixed(2)} l
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                            {result.totalCost.toFixed(2)} USD
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow sx={{ bgcolor: 'background.neutral' }}>
+                      <TableCell colSpan={3}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          Jami xarajat:
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                          {calculationResults.totalCost.toFixed(2)} USD
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              <Box sx={{ 
+                p: 2, 
+                border: 1, 
+                borderColor: 'success.main', 
+                borderRadius: 1,
+                bgcolor: 'success.lighter'
+              }}>
+                <Typography variant="body2" sx={{ color: 'success.dark', fontWeight: 'medium' }}>
+                  ✅ Hisob-kitob muvaffaqiyatli saqlandi va material xarajatlari bazaga qo&apos;shildi.
+                </Typography>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowCalculationDialog(false)} variant="contained">
+            Yopish
           </Button>
         </DialogActions>
       </Dialog>
