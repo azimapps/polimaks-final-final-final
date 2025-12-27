@@ -145,6 +145,7 @@ type BaseTx = {
   type: 'in' | 'out';
   machineType?: string;
   machineId?: string;
+  orderId?: string;
 };
 
 type PlyonkaTx = BaseTx & { plyonkaId: string; amountKg?: number };
@@ -372,7 +373,11 @@ const createMaterialTransaction = (
   return null;
 };
 
-const buildMaterialOptions = (machineId: string | undefined, t: (key: string, vars?: any) => string) => {
+const buildMaterialOptions = (
+  machineId: string | undefined, 
+  t: (key: string, vars?: any) => string,
+  plan?: PlanItem
+) => {
   if (!machineId) return [];
 
   const unknownLabel = t('pechatMaterialsPage.unknown');
@@ -395,6 +400,15 @@ const buildMaterialOptions = (machineId: string | undefined, t: (key: string, va
     readLocalArray<SilindirItem>('ombor-silindir', silindirSeed as SilindirItem[])
   );
 
+  // Load order book data to match order numbers with order IDs
+  const orderItems = itemsById(
+    readLocalArray<OrderBookItem>('clients-order-book', [])
+  );
+
+  // Find the order ID for this plan
+  const planOrderId = plan?.orderId || 
+    Array.from(orderItems.values()).find(order => order.orderNumber === plan?.orderNumber)?.id;
+
   const options = new Map<string, MaterialOption>();
   const totals = new Map<string, number>();
   const addOption = (key: string, option: MaterialOption) => {
@@ -409,6 +423,8 @@ const buildMaterialOptions = (machineId: string | undefined, t: (key: string, va
     const txs = readTransactions<PlyonkaTx>('ombor-plyonka-transactions');
     txs.forEach((tx) => {
       if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      // Filter by order ID if plan is provided
+      if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = plyonkaItems.get(tx.plyonkaId);
       const parts = [
         item?.seriyaNumber || unknownLabel,
@@ -433,6 +449,8 @@ const buildMaterialOptions = (machineId: string | undefined, t: (key: string, va
     const txs = readTransactions<KraskaTx>('ombor-kraska-transactions');
     txs.forEach((tx) => {
       if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      // Filter by order ID if plan is provided
+      if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = kraskaItems.get(tx.kraskaId);
       const parts = [
         item?.seriyaNumber || unknownLabel,
@@ -457,6 +475,8 @@ const buildMaterialOptions = (machineId: string | undefined, t: (key: string, va
     const txs = readTransactions<SuyuqKraskaTx>('ombor-suyuq-kraska-transactions');
     txs.forEach((tx) => {
       if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      // Filter by order ID if plan is provided
+      if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = suyuqKraskaItems.get(tx.suyuqKraskaId);
       const parts = [
         item?.seriyaNumber || unknownLabel,
@@ -481,6 +501,8 @@ const buildMaterialOptions = (machineId: string | undefined, t: (key: string, va
     const txs = readTransactions<RazvaritelTx>('ombor-razvaritel-transactions');
     txs.forEach((tx) => {
       if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      // Filter by order ID if plan is provided
+      if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = razvaritelItems.get(tx.razvaritelId);
       const parts = [item?.seriyaNumber || unknownLabel, item?.type || ''].filter(Boolean);
       const itemLabel = parts.join(' / ') || unknownLabel;
@@ -501,6 +523,8 @@ const buildMaterialOptions = (machineId: string | undefined, t: (key: string, va
     const txs = readTransactions<SilindirTx>('ombor-silindir-transactions');
     txs.forEach((tx) => {
       if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      // Filter by order ID if plan is provided
+      if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = silindirItems.get(tx.silindirId);
       const originLabel = item?.origin ? t(`silindirPage.origin.${item.origin}`) : '';
       const sizeParts = [
@@ -694,7 +718,7 @@ export default function PechatPanelOverviewPage() {
 
   // Reload colors when machine changes
   useEffect(() => {
-    loadAvailableColors();
+    loadAvailableColors(); // Load all colors for the machine when no specific plan is selected
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMachineId]);
 
@@ -742,7 +766,7 @@ export default function PechatPanelOverviewPage() {
   };
 
   const handleOpenStatusDialog = (plan: PlanItem) => {
-    const options = buildMaterialOptions(plan.machineId || selectedMachineId, t);
+    const options = buildMaterialOptions(plan.machineId || selectedMachineId, t, plan);
     const usedTotals = new Map<string, number>();
     plans.forEach((item) => {
       if (item.id === plan.id) return;
@@ -783,7 +807,7 @@ export default function PechatPanelOverviewPage() {
     setColorValues(initialColors);
     
     // Load available colors from stanok materials
-    loadAvailableColors();
+    loadAvailableColors(plan);
     
     // Initialize color measurements if not already set
     const existingMeasurements = plan.colorMeasurements || new Map();
@@ -830,7 +854,7 @@ export default function PechatPanelOverviewPage() {
     });
   };
 
-  const loadAvailableColors = () => {
+  const loadAvailableColors = (filterPlan?: PlanItem) => {
     const colors: {
       id: string; 
       colorName: string; 
@@ -839,7 +863,12 @@ export default function PechatPanelOverviewPage() {
       amount?: number; 
       unit?: string;
     }[] = [];
-    const machineId = selectedMachineId || 'pechat-1';
+    const machineId = filterPlan?.machineId || selectedMachineId || 'pechat-1';
+
+    // Load order book data to filter by order ID
+    const orderItems = readLocalArray<OrderBookItem>('clients-order-book', []);
+    const planOrderId = filterPlan?.orderId || 
+      orderItems.find(order => order.orderNumber === filterPlan?.orderNumber)?.id;
     
     console.log('Loading colors for machine:', machineId);
     
@@ -874,6 +903,8 @@ export default function PechatPanelOverviewPage() {
         kraskaTxs.forEach((tx: any) => {
           console.log('Checking transaction:', tx);
           if (tx.type === 'out' && tx.machineType === 'pechat' && tx.machineId === machineId) {
+            // Filter by order ID if plan is provided
+            if (filterPlan && planOrderId && tx.orderId !== planOrderId) return;
             const item = kraskaItems.get(tx.kraskaId);
             console.log('Found matching transaction, item:', item);
             if (item?.colorName) {
@@ -899,6 +930,8 @@ export default function PechatPanelOverviewPage() {
       if (Array.isArray(suyuqTxs)) {
         suyuqTxs.forEach((tx: any) => {
           if (tx.type === 'out' && tx.machineType === 'pechat' && tx.machineId === machineId) {
+            // Filter by order ID if plan is provided
+            if (filterPlan && planOrderId && tx.orderId !== planOrderId) return;
             const item = suyuqKraskaItems.get(tx.suyuqKraskaId);
             console.log('Found matching suyuq transaction, item:', item);
             if (item?.colorName) {

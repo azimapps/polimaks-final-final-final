@@ -79,6 +79,7 @@ type BaseTx = {
   type: 'in' | 'out';
   machineType?: string;
   machineId?: string;
+  orderId?: string;
   note?: string;
   createdAt?: number;
 };
@@ -94,12 +95,20 @@ type MaterialInfo = {
   value: string;
 };
 
+type OrderBookItem = {
+  id: string;
+  orderNumber: string;
+  clientName: string;
+  title: string;
+};
+
 type MaterialRow = {
   id: string;
   date: string;
   materialLabel: string;
   itemLabel: string;
   amountLabel: string;
+  orderNumber: string;
   note: string;
   createdAt: number;
   info: MaterialInfo[];
@@ -183,13 +192,20 @@ export default function MaterialsPechatPage() {
       readLocalArray<SilindirItem>('ombor-silindir', silindirSeed as SilindirItem[])
     );
 
+    // Load order book data
+    const orderItems = itemsById(
+      readLocalArray<OrderBookItem>('clients-order-book', [])
+    );
+
     const now = Date.now();
     let fallbackIndex = 0;
     const results: MaterialRow[] = [];
 
-    const pushRow = (row: Omit<MaterialRow, 'createdAt'>, tx: BaseTx) => {
+    const pushRow = (row: Omit<MaterialRow, 'createdAt' | 'orderNumber'>, tx: BaseTx) => {
+      const order = tx.orderId ? orderItems.get(tx.orderId) : null;
       results.push({
         ...row,
+        orderNumber: order?.orderNumber || '—',
         createdAt: toCreatedAt(tx, now + fallbackIndex++),
       });
     };
@@ -443,13 +459,16 @@ export default function MaterialsPechatPage() {
                         <TableCell sx={{ minWidth: 140 }}>
                           {t('pechatMaterialsPage.table.amount')}
                         </TableCell>
+                        <TableCell sx={{ minWidth: 150 }}>
+                          {t('orderBookPage.orderNumber')}
+                        </TableCell>
                         <TableCell>{t('pechatMaterialsPage.table.note')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {rows.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5}>
+                          <TableCell colSpan={6}>
                             <Box
                               sx={{
                                 py: 6,
@@ -490,6 +509,9 @@ export default function MaterialsPechatPage() {
                               </Stack>
                             </TableCell>
                             <TableCell>{row.amountLabel}</TableCell>
+                            <TableCell>
+                              <Typography variant="body2">{row.orderNumber}</Typography>
+                            </TableCell>
                             <TableCell>{row.note || '-'}</TableCell>
                           </TableRow>
                         ))
