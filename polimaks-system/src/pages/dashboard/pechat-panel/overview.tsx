@@ -16,9 +16,9 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
@@ -292,188 +292,29 @@ const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
 
 const readTransactions = <T,>(key: string): T[] => readLocalArray<T>(key, []);
 
-const TRANSACTION_STORAGE_KEYS = [
-  'ombor-plyonka-transactions',
-  'ombor-kraska-transactions',
-  'ombor-suyuq-kraska-transactions',
-  'ombor-razvaritel-transactions',
-  'ombor-silindir-transactions',
-];
 
-const buildUsageTotals = (items: MaterialUsage[]) => {
-  const totals = new Map<string, number>();
-  items.forEach((usage) => {
-    totals.set(usage.materialId, (totals.get(usage.materialId) || 0) + usage.amount);
-  });
-  return totals;
+
+
+
+
+
+const loadOrderBook = (): OrderBookItem[] => {
+
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(ORDER_BOOK_STORAGE_KEY);
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored) as OrderBookItem[];
+  } catch {
+    return [];
+  }
 };
 
-const buildUsageNotes = (items: MaterialUsage[]) => {
-  const notes = new Map<string, string[]>();
-  items.forEach((usage) => {
-    const note = usage.note?.trim();
-    if (!note) return;
-    const values = notes.get(usage.materialId) || [];
-    if (!values.includes(note)) values.push(note);
-    notes.set(usage.materialId, values);
-  });
-  const merged = new Map<string, string>();
-  notes.forEach((values, materialId) => {
-    merged.set(materialId, values.join('; '));
-  });
-  return merged;
-};
+export default function PechatPanelOverviewPage() {
+  const { t } = useTranslate('pages');
+  const title = `${t('pechatPanel.title')} | ${CONFIG.appName}`;
 
-const getMaterialKeyFromTransaction = (storageKey: string, transaction: any) => {
-  if (storageKey === 'ombor-plyonka-transactions') return `plyonka:${transaction.plyonkaId}`;
-  if (storageKey === 'ombor-kraska-transactions') return `kraska:${transaction.kraskaId}`;
-  if (storageKey === 'ombor-suyuq-kraska-transactions') {
-    return `suyuq-kraska:${transaction.suyuqKraskaId}`;
-  }
-  if (storageKey === 'ombor-razvaritel-transactions') {
-    return `razvaritel:${transaction.razvaritelId}`;
-  }
-  if (storageKey === 'ombor-silindir-transactions') return `silindir:${transaction.silindirId}`;
-  return '';
-};
-
-const createMaterialTransaction = (
-  materialId: string,
-  amount: number,
-  note: string,
-  machineId: string,
-  planId: string,
-  type: 'out' | 'return' = 'out',
-  orderId?: string
-) => {
-  const [materialType, itemId] = materialId.split(':');
-  if (!materialType || !itemId) return null;
-  const materialKey = `${materialType}:${itemId}`;
-  const base = {
-    id: buildUsageId('tx'),
-    date: new Date().toISOString().slice(0, 10),
-    type: type,
-    machineType: 'pechat' as const,
-    machineId,
-    orderId: orderId || undefined,
-    note,
-    createdAt: Date.now(),
-    source: type === 'return' ? 'pechat-ostatok' : 'pechat-plan',
-    planId,
-  };
-
-  if (materialType === 'plyonka') {
-    return {
-      storageKey: 'ombor-plyonka-transactions',
-      materialKey,
-      transaction: { ...base, plyonkaId: itemId, amountKg: amount },
-    };
-  }
-  if (materialType === 'kraska') {
-    return {
-      storageKey: 'ombor-kraska-transactions',
-      materialKey,
-      transaction: { ...base, kraskaId: itemId, amountKg: amount },
-    };
-  }
-  if (materialType === 'suyuq-kraska') {
-    return {
-      storageKey: 'ombor-suyuq-kraska-transactions',
-      materialKey,
-      transaction: { ...base, suyuqKraskaId: itemId, amountKg: amount },
-    };
-  }
-  if (materialType === 'razvaritel') {
-    return {
-      storageKey: 'ombor-razvaritel-transactions',
-      materialKey,
-      transaction: { ...base, razvaritelId: itemId, amountLiter: amount },
-    };
-  }
-  if (materialType === 'silindir') {
-    return {
-      storageKey: 'ombor-silindir-transactions',
-      materialKey,
-      transaction: { ...base, silindirId: itemId, amountQty: amount },
-    };
-  }
-
-  return null;
-};
-
-const buildMaterialOptions = (
-  machineId: string | undefined, 
-  t: (key: string, vars?: any) => string,
-  plan?: PlanItem
-) => {
-  if (!machineId) return [];
-
-  const unknownLabel = t('pechatMaterialsPage.unknown');
-  const itemsById = <T extends MaterialItemWithId>(items: T[]) =>
-    new Map(items.map((item) => [item.id, item]));
-
-  const plyonkaItems = itemsById(
-    readLocalArray<PlyonkaItem>('ombor-plyonka', plyonkaSeed as PlyonkaItem[])
-  );
-  const kraskaItems = itemsById(
-    readLocalArray<KraskaItem>('ombor-kraska', kraskaSeed as KraskaItem[])
-  );
-  const suyuqKraskaItems = itemsById(
-    readLocalArray<SuyuqKraskaItem>('ombor-suyuq-kraska', suyuqKraskaSeed as SuyuqKraskaItem[])
-  );
-  const razvaritelItems = itemsById(
-    readLocalArray<RazvaritelItem>('ombor-razvaritel', razvaritelSeed as RazvaritelItem[])
-  );
-  const silindirItems = itemsById(
-    readLocalArray<SilindirItem>('ombor-silindir', silindirSeed as SilindirItem[])
-  );
-
-  // Load order book data to match order numbers with order IDs
-  const orderItems = itemsById(
-    readLocalArray<OrderBookItem>('clients-order-book', [])
-  );
-
-  // Find the order ID for this plan
-  const planOrderId = plan?.orderId || 
-    Array.from(orderItems.values()).find(order => order.orderNumber === plan?.orderNumber)?.id;
-
-  const options = new Map<string, MaterialOption>();
-  const totals = new Map<string, number>();
-  const addOption = (key: string, option: MaterialOption) => {
-    if (!options.has(key)) options.set(key, option);
-  };
-  const addTotal = (key: string, amount: number) => {
-    if (!Number.isFinite(amount) || amount <= 0) return;
-    totals.set(key, (totals.get(key) || 0) + amount);
-  };
-
-  const handlePlyonka = () => {
-    const txs = readTransactions<PlyonkaTx>('ombor-plyonka-transactions');
-    txs.forEach((tx) => {
-      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
-      // Filter by order ID if plan is provided
-      if (plan && planOrderId && tx.orderId !== planOrderId) return;
-      const item = plyonkaItems.get(tx.plyonkaId);
-      const parts = [
-        item?.seriyaNumber || unknownLabel,
-        item?.category || '',
-        item?.subcategory || '',
-      ].filter(Boolean);
-      const itemLabel = parts.join(' / ') || unknownLabel;
-      const materialLabel = t('plyonkaPage.title');
-      const key = `plyonka:${item?.id || tx.plyonkaId}`;
-      addOption(key, {
-        id: key,
-        label: `${materialLabel} / ${itemLabel}`,
-        materialLabel,
-        itemLabel,
-        unitLabel: t('plyonkaPage.kg'),
-      });
-      // For 'out' transactions, subtract from available. For 'return' transactions, add back
-      const amount = Number(tx.amountKg) || 0;
-      addTotal(key, tx.type === 'out' ? amount : -amount);
-    });
-  };
+  const [machines, setMachines] = useState<any[]>([]);
 
   const handleKraska = () => {
     const txs = readTransactions<KraskaTx>('ombor-kraska-transactions');
