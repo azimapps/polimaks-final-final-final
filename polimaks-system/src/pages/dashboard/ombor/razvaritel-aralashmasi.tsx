@@ -25,13 +25,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 
+import { paths } from 'src/routes/paths';
+
 import { useTranslate } from 'src/locales';
 import razvaritelData from 'src/data/razvaritel.json';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
-import { paths } from 'src/routes/paths';
 
 type RazvaritelType = 'eaf' | 'etilin' | 'metoksil';
 
@@ -138,7 +139,6 @@ export default function RazvaritelAralashmasiPage() {
   const [open, setOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedMixture, setSelectedMixture] = useState<Mixture | null>(null);
-  const [editingMixture, setEditingMixture] = useState<Mixture | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuMixture, setMenuMixture] = useState<Mixture | null>(null);
@@ -221,38 +221,6 @@ export default function RazvaritelAralashmasiPage() {
     setMenuMixture(null);
   };
 
-  const handleEditMixture = (mixture: Mixture) => {
-    setEditingMixture(mixture);
-    setMixtureName(mixture.name);
-    
-    // Set component selections and quantities based on mixture
-    if (mixture.eafComponent) {
-      setSelectedEaf(mixture.eafComponent.razvaritelId);
-      setEafQuantity(mixture.eafComponent.quantity);
-    } else {
-      setSelectedEaf('');
-      setEafQuantity('');
-    }
-    
-    if (mixture.etilinComponent) {
-      setSelectedEtilin(mixture.etilinComponent.razvaritelId);
-      setEtilinQuantity(mixture.etilinComponent.quantity);
-    } else {
-      setSelectedEtilin('');
-      setEtilinQuantity('');
-    }
-    
-    if (mixture.metoksilComponent) {
-      setSelectedMetoksil(mixture.metoksilComponent.razvaritelId);
-      setMetoksilQuantity(mixture.metoksilComponent.quantity);
-    } else {
-      setSelectedMetoksil('');
-      setMetoksilQuantity('');
-    }
-    
-    setOpen(true);
-    closeMenu();
-  };
 
   const handleDeleteMixture = () => {
     if (menuMixture) {
@@ -332,13 +300,13 @@ export default function RazvaritelAralashmasiPage() {
       inventoryUpdates.push({ id: selectedMetoksil, quantityUsed: metoksilNum });
     }
     
-    // Update inventory only for new mixtures (not when editing)
-    if (!editingMixture && inventoryUpdates.length > 0) {
+    // Update inventory
+    if (inventoryUpdates.length > 0) {
       updateRazvaritelInventory(inventoryUpdates);
     }
     
     const mixtureData: Mixture = {
-      id: editingMixture ? editingMixture.id : `mixture-${Date.now()}`,
+      id: `mixture-${Date.now()}`,
       name: mixtureName,
       eafComponent: selectedEaf && eafNum > 0 ? { razvaritelId: selectedEaf, quantity: eafNum } : null,
       etilinComponent: selectedEtilin && etilinNum > 0 ? { razvaritelId: selectedEtilin, quantity: etilinNum } : null,
@@ -347,15 +315,10 @@ export default function RazvaritelAralashmasiPage() {
       totalKg,
       pricePerLiter: calculatedPricePerLiter,
       pricePerKg: calculatedPricePerKg,
-      createdDate: editingMixture ? editingMixture.createdDate : new Date().toISOString().slice(0, 10),
+      createdDate: new Date().toISOString().slice(0, 10),
     };
     
-    let updatedMixtures: Mixture[];
-    if (editingMixture) {
-      updatedMixtures = mixtures.map(m => m.id === editingMixture.id ? mixtureData : m);
-    } else {
-      updatedMixtures = [...mixtures, mixtureData];
-    }
+    const updatedMixtures = [...mixtures, mixtureData];
     
     setMixtures(updatedMixtures);
     saveMixturesToStorage(updatedMixtures);
@@ -368,7 +331,6 @@ export default function RazvaritelAralashmasiPage() {
     setEafQuantity('');
     setEtilinQuantity('');
     setMetoksilQuantity('');
-    setEditingMixture(null);
     setOpen(false);
   };
 
@@ -395,7 +357,7 @@ export default function RazvaritelAralashmasiPage() {
                 <Button 
                   variant="outlined" 
                   size="small"
-                  onClick={() => navigate(paths.dashboard.ombor.razvaritelAralashmasiTransactions)}
+                  onClick={() => navigate(paths.dashboard.inventory.razvaritelAralashmasiTransactions)}
                 >
                   {t('razvaritelAralashmasiPage.transactions')}
                 </Button>
@@ -404,7 +366,6 @@ export default function RazvaritelAralashmasiPage() {
                 variant="contained"
                 startIcon={<Iconify icon="mingcute:add-line" />}
                 onClick={() => {
-                  setEditingMixture(null);
                   setMixtureName('');
                   setSelectedEaf('');
                   setSelectedEtilin('');
@@ -466,7 +427,7 @@ export default function RazvaritelAralashmasiPage() {
 
         <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle>
-            {editingMixture ? t('razvaritelAralashmasiPage.dialogs.edit.title') : t('razvaritelAralashmasiPage.dialogs.create.title')}
+            {t('razvaritelAralashmasiPage.dialogs.create.title')}
           </DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ mt: 1 }}>
@@ -650,7 +611,7 @@ export default function RazvaritelAralashmasiPage() {
                 !!getQuantityError(metoksilQuantity, selectedMetoksil)
               }
             >
-              {editingMixture ? t('razvaritelAralashmasiPage.buttons.save') : t('razvaritelAralashmasiPage.buttons.createMixture')}
+              {t('razvaritelAralashmasiPage.buttons.createMixture')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -826,16 +787,6 @@ export default function RazvaritelAralashmasiPage() {
           >
             <Iconify icon="solar:eye-bold" width={18} height={18} style={{ marginRight: 8 }} />
             {t('razvaritelAralashmasiPage.menu.view')}
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              if (menuMixture) {
-                handleEditMixture(menuMixture);
-              }
-            }}
-          >
-            <Iconify icon="solar:pen-bold" width={18} height={18} style={{ marginRight: 8 }} />
-            {t('razvaritelAralashmasiPage.menu.edit')}
           </MenuItem>
           <MenuItem
             onClick={() => {

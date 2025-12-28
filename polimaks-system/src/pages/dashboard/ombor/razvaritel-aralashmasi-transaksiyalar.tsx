@@ -1,10 +1,9 @@
 /* eslint-disable perfectionist/sort-imports */
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router';
 
 import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
@@ -14,8 +13,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContentText from '@mui/material/DialogContentText';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -27,7 +24,6 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import pechatSeed from 'src/data/stanok-pechat.json';
 import reskaSeed from 'src/data/stanok-reska.json';
@@ -37,7 +33,6 @@ import { paths } from 'src/routes/paths';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
 type MachineType = 'pechat' | 'reska' | 'laminatsiya';
 type MachineTypeValue = MachineType | '';
 
@@ -145,7 +140,6 @@ export default function MixtureTransactionsPage() {
   const [orders] = useState<OrderBookItem[]>(initialOrders);
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editingTx, setEditingTx] = useState<MixtureTransaction | null>(null);
   const [selectedTx, setSelectedTx] = useState<MixtureTransaction | null>(null);
 
   // Form state
@@ -205,7 +199,6 @@ export default function MixtureTransactionsPage() {
     setTxMachineId('');
     setTxOrderId('');
     setTxNote('');
-    setEditingTx(null);
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -215,7 +208,7 @@ export default function MixtureTransactionsPage() {
     if (!mixture) return;
 
     const newTransaction: MixtureTransaction = {
-      id: editingTx?.id || uuidv4(),
+      id: uuidv4(),
       mixtureId: selectedMixture,
       date: txDate,
       type: txType,
@@ -224,18 +217,13 @@ export default function MixtureTransactionsPage() {
       machineId: txMachineId,
       orderId: txOrderId || undefined,
       note: txNote,
-      createdAt: editingTx?.createdAt || Date.now(),
+      createdAt: Date.now(),
     };
 
-    let updatedTx: MixtureTransaction[];
-    if (editingTx) {
-      updatedTx = transactions.map(tx => tx.id === editingTx.id ? newTransaction : tx);
-    } else {
-      updatedTx = [...transactions, newTransaction];
-    }
+    const updatedTx = [...transactions, newTransaction];
 
-    // Update mixture inventory for new transactions
-    if (!editingTx && txType === 'out') {
+    // Update mixture inventory for out transactions
+    if (txType === 'out') {
       const updatedMixtures = mixtures.map(m => {
         if (m.id === selectedMixture) {
           return {
@@ -253,20 +241,7 @@ export default function MixtureTransactionsPage() {
     saveTxToStorage(updatedTx);
     setOpen(false);
     resetForm();
-  }, [selectedMixture, txAmount, txDate, txType, txMachineType, txMachineId, txOrderId, txNote, editingTx, transactions, mixtures, saveTxToStorage, saveMixturesToStorage, resetForm]);
-
-  const handleEdit = useCallback((tx: MixtureTransaction) => {
-    setEditingTx(tx);
-    setSelectedMixture(tx.mixtureId);
-    setTxType(tx.type);
-    setTxDate(tx.date);
-    setTxAmount(tx.amountLiter);
-    setTxMachineType(tx.machineType);
-    setTxMachineId(tx.machineId);
-    setTxOrderId(tx.orderId || '');
-    setTxNote(tx.note);
-    setOpen(true);
-  }, []);
+  }, [selectedMixture, txAmount, txDate, txType, txMachineType, txMachineId, txOrderId, txNote, transactions, mixtures, saveTxToStorage, saveMixturesToStorage, resetForm]);
 
   const handleDelete = useCallback(() => {
     if (!selectedTx) return;
@@ -299,9 +274,7 @@ export default function MixtureTransactionsPage() {
   }, [orders]);
 
   // Sort transactions by date (newest first)
-  const sortedTransactions = useMemo(() => {
-    return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions]);
+  const sortedTransactions = useMemo(() => [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [transactions]);
 
   return (
     <DashboardContent>
@@ -323,7 +296,7 @@ export default function MixtureTransactionsPage() {
             <Stack direction="row" spacing={1}>
               <Button
                 variant="outlined"
-                startIcon={<Iconify icon="eva:arrow-back-fill" />}
+                startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}
                 onClick={() => navigate(paths.dashboard.inventory.razvaritelAralashmasi)}
               >
                 {t('razvaritelTransactionsPage.back')}
@@ -398,26 +371,17 @@ export default function MixtureTransactionsPage() {
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button
-                            size="small"
-                            startIcon={<Iconify icon="solar:pen-bold" />}
-                            onClick={() => handleEdit(tx)}
-                          >
-                            {t('razvaritelTransactionsPage.form.edit')}
-                          </Button>
-                          <Button
-                            size="small"
-                            color="error"
-                            startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
-                            onClick={() => {
-                              setSelectedTx(tx);
-                              setDeleteOpen(true);
-                            }}
-                          >
-                            {t('razvaritelTransactionsPage.form.delete')}
-                          </Button>
-                        </Stack>
+                        <Button
+                          size="small"
+                          color="error"
+                          startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
+                          onClick={() => {
+                            setSelectedTx(tx);
+                            setDeleteOpen(true);
+                          }}
+                        >
+                          {t('razvaritelTransactionsPage.form.delete')}
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -427,106 +391,116 @@ export default function MixtureTransactionsPage() {
           </TableContainer>
         </Card>
 
-        {/* Add/Edit Transaction Dialog */}
+        {/* Add Transaction Dialog */}
         <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle>
-            {editingTx ? 'Edit Transaction' : 'Add New Transaction'}
+            Add New Transaction
           </DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ mt: 1 }}>
-              <Grid container spacing={2}>
-                <Grid xs={12} md={6}>
-                  <Autocomplete
-                    fullWidth
-                    options={mixtures}
-                    getOptionLabel={(mixture) => mixture.name}
-                    value={mixtures.find(m => m.id === selectedMixture) || null}
-                    onChange={(_, newValue) => setSelectedMixture(newValue?.id || '')}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Select Mixture"
-                        required
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label={t('razvaritelTransactionsPage.form.type')}
-                    value={txType}
-                    onChange={(e) => setTxType(e.target.value as 'in' | 'out')}
-                  >
-                    <MenuItem value="in">{t('razvaritelTransactionsPage.typeIn')}</MenuItem>
-                    <MenuItem value="out">{t('razvaritelTransactionsPage.typeOut')}</MenuItem>
-                  </TextField>
-                </Grid>
-              </Grid>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <Autocomplete
+                  fullWidth
+                  options={mixtures}
+                  getOptionLabel={(mixture) => mixture.name}
+                  value={mixtures.find(m => m.id === selectedMixture) || null}
+                  onChange={(_, newValue) => setSelectedMixture(newValue?.id || '')}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select Mixture"
+                      required
+                    />
+                  )}
+                />
+                <TextField
+                  fullWidth
+                  select
+                  label={t('razvaritelTransactionsPage.form.type')}
+                  value={txType}
+                  onChange={(e) => setTxType(e.target.value as 'in' | 'out')}
+                >
+                  <MenuItem value="in">{t('razvaritelTransactionsPage.typeIn')}</MenuItem>
+                  <MenuItem value="out">{t('razvaritelTransactionsPage.typeOut')}</MenuItem>
+                </TextField>
+              </Stack>
 
-              <Grid container spacing={2}>
-                <Grid xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label={t('razvaritelTransactionsPage.form.date')}
-                    value={txDate}
-                    onChange={(e) => setTxDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Grid>
-                <Grid xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    type="number"
-                    label={t('razvaritelTransactionsPage.form.amount')}
-                    value={txAmount}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setTxAmount(value === '' ? '' : Number(value));
-                    }}
-                    inputProps={{ min: 0, step: 0.1 }}
-                  />
-                </Grid>
-              </Grid>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label={t('razvaritelTransactionsPage.form.date')}
+                  value={txDate}
+                  onChange={(e) => setTxDate(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  fullWidth
+                  type="number"
+                  label={t('razvaritelTransactionsPage.form.amount')}
+                  value={txAmount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setTxAmount(value === '' ? '' : Number(value));
+                  }}
+                  error={txType === 'out' && selectedMixture && typeof txAmount === 'number' && txAmount > 0 && (() => {
+                    const mixture = mixtures.find(m => m.id === selectedMixture);
+                    return mixture ? txAmount > mixture.totalLiter : false;
+                  })()}
+                  helperText={
+                    txType === 'out' && selectedMixture && (() => {
+                      const mixture = mixtures.find(m => m.id === selectedMixture);
+                      if (mixture) {
+                        return typeof txAmount === 'number' && txAmount > mixture.totalLiter 
+                          ? `Cannot exceed available quantity: ${mixture.totalLiter}L`
+                          : `Available: ${mixture.totalLiter}L`;
+                      }
+                      return '';
+                    })()
+                  }
+                  inputProps={{ 
+                    min: 0, 
+                    step: 0.1,
+                    max: txType === 'out' && selectedMixture ? (() => {
+                      const mixture = mixtures.find(m => m.id === selectedMixture);
+                      return mixture?.totalLiter || 0;
+                    })() : undefined
+                  }}
+                />
+              </Stack>
 
-              <Grid container spacing={2}>
-                <Grid xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label={t('razvaritelTransactionsPage.form.machineType')}
-                    value={txMachineType}
-                    onChange={(e) => {
-                      setTxMachineType(e.target.value as MachineTypeValue);
-                      setTxMachineId('');
-                    }}
-                  >
-                    <MenuItem value="">{t('razvaritelTransactionsPage.form.machineType')}</MenuItem>
-                    <MenuItem value="pechat">Pechat</MenuItem>
-                    <MenuItem value="reska">Reska</MenuItem>
-                    <MenuItem value="laminatsiya">Laminatsiya</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label={t('razvaritelTransactionsPage.form.machine')}
-                    value={txMachineId}
-                    onChange={(e) => setTxMachineId(e.target.value)}
-                    disabled={!txMachineType}
-                  >
-                    <MenuItem value="">{t('razvaritelTransactionsPage.form.machine')}</MenuItem>
-                    {machines.map((machine) => (
-                      <MenuItem key={machine.id} value={machine.id}>
-                        {machine.name || machine.id}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-              </Grid>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <TextField
+                  fullWidth
+                  select
+                  label={t('razvaritelTransactionsPage.form.machineType')}
+                  value={txMachineType}
+                  onChange={(e) => {
+                    setTxMachineType(e.target.value as MachineTypeValue);
+                    setTxMachineId('');
+                  }}
+                >
+                  <MenuItem value="">{t('razvaritelTransactionsPage.form.machineType')}</MenuItem>
+                  <MenuItem value="pechat">Pechat</MenuItem>
+                  <MenuItem value="reska">Reska</MenuItem>
+                  <MenuItem value="laminatsiya">Laminatsiya</MenuItem>
+                </TextField>
+                <TextField
+                  fullWidth
+                  select
+                  label={t('razvaritelTransactionsPage.form.machine')}
+                  value={txMachineId}
+                  onChange={(e) => setTxMachineId(e.target.value)}
+                  disabled={!txMachineType}
+                >
+                  <MenuItem value="">{t('razvaritelTransactionsPage.form.machine')}</MenuItem>
+                  {machines.map((machine) => (
+                    <MenuItem key={machine.id} value={machine.id}>
+                      {machine.name || machine.id}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Stack>
 
               <Autocomplete
                 fullWidth
@@ -559,9 +533,17 @@ export default function MixtureTransactionsPage() {
             <Button
               variant="contained"
               onClick={handleSubmit}
-              disabled={!selectedMixture || txAmount === '' || typeof txAmount !== 'number'}
+              disabled={
+                !selectedMixture || 
+                txAmount === '' || 
+                typeof txAmount !== 'number' ||
+                (txType === 'out' && (() => {
+                  const mixture = mixtures.find(m => m.id === selectedMixture);
+                  return mixture ? txAmount > mixture.totalLiter : false;
+                })())
+              }
             >
-              {editingTx ? t('razvaritelTransactionsPage.form.save') : t('razvaritelTransactionsPage.form.save')}
+              {t('razvaritelTransactionsPage.form.save')}
             </Button>
           </DialogActions>
         </Dialog>
