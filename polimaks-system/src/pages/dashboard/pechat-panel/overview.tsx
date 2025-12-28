@@ -16,9 +16,9 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import IconButton from '@mui/material/IconButton';
+import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
-import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
@@ -297,148 +297,6 @@ const readTransactions = <T,>(key: string): T[] => readLocalArray<T>(key, []);
 
 
 
-
-const loadOrderBook = (): OrderBookItem[] => {
-
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(ORDER_BOOK_STORAGE_KEY);
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored) as OrderBookItem[];
-  } catch {
-    return [];
-  }
-};
-
-export default function PechatPanelOverviewPage() {
-  const { t } = useTranslate('pages');
-  const title = `${t('pechatPanel.title')} | ${CONFIG.appName}`;
-
-  const [machines, setMachines] = useState<any[]>([]);
-
-  const handleKraska = () => {
-    const txs = readTransactions<KraskaTx>('ombor-kraska-transactions');
-    txs.forEach((tx) => {
-      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
-      // Filter by order ID if plan is provided
-      if (plan && planOrderId && tx.orderId !== planOrderId) return;
-      const item = kraskaItems.get(tx.kraskaId);
-      const parts = [
-        item?.seriyaNumber || unknownLabel,
-        item?.colorName || '',
-        item?.marka || '',
-      ].filter(Boolean);
-      const itemLabel = parts.join(' / ') || unknownLabel;
-      const materialLabel = t('kraskaPage.title');
-      const key = `kraska:${item?.id || tx.kraskaId}`;
-      addOption(key, {
-        id: key,
-        label: `${materialLabel} / ${itemLabel}`,
-        materialLabel,
-        itemLabel,
-        unitLabel: t('kraskaPage.kg'),
-      });
-      // For 'out' transactions, subtract from available. For 'return' transactions, add back
-      const amount = Number(tx.amountKg) || 0;
-      addTotal(key, tx.type === 'out' ? amount : -amount);
-    });
-  };
-
-  const handleSuyuqKraska = () => {
-    const txs = readTransactions<SuyuqKraskaTx>('ombor-suyuq-kraska-transactions');
-    txs.forEach((tx) => {
-      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
-      // Filter by order ID if plan is provided
-      if (plan && planOrderId && tx.orderId !== planOrderId) return;
-      const item = suyuqKraskaItems.get(tx.suyuqKraskaId);
-      const parts = [
-        item?.seriyaNumber || unknownLabel,
-        item?.colorName || '',
-        item?.marka || '',
-      ].filter(Boolean);
-      const itemLabel = parts.join(' / ') || unknownLabel;
-      const materialLabel = t('suyuqKraskaPage.title');
-      const key = `suyuq-kraska:${item?.id || tx.suyuqKraskaId}`;
-      addOption(key, {
-        id: key,
-        label: `${materialLabel} / ${itemLabel}`,
-        materialLabel,
-        itemLabel,
-        unitLabel: t('suyuqKraskaPage.kg'),
-      });
-      // For 'out' transactions, subtract from available. For 'return' transactions, add back
-      const amount = Number(tx.amountKg) || 0;
-      addTotal(key, tx.type === 'out' ? amount : -amount);
-    });
-  };
-
-  const handleRazvaritel = () => {
-    const txs = readTransactions<RazvaritelTx>('ombor-razvaritel-transactions');
-    txs.forEach((tx) => {
-      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
-      // Filter by order ID if plan is provided
-      if (plan && planOrderId && tx.orderId !== planOrderId) return;
-      const item = razvaritelItems.get(tx.razvaritelId);
-      const parts = [item?.seriyaNumber || unknownLabel, item?.type || ''].filter(Boolean);
-      const itemLabel = parts.join(' / ') || unknownLabel;
-      const materialLabel = t('razvaritelPage.title');
-      const key = `razvaritel:${item?.id || tx.razvaritelId}`;
-      addOption(key, {
-        id: key,
-        label: `${materialLabel} / ${itemLabel}`,
-        materialLabel,
-        itemLabel,
-        unitLabel: t('razvaritelPage.liter'),
-      });
-      // For 'out' transactions, subtract from available. For 'return' transactions, add back
-      const amount = Number(tx.amountLiter) || 0;
-      addTotal(key, tx.type === 'out' ? amount : -amount);
-    });
-  };
-
-  const handleSilindir = () => {
-    const txs = readTransactions<SilindirTx>('ombor-silindir-transactions');
-    txs.forEach((tx) => {
-      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
-      // Filter by order ID if plan is provided
-      if (plan && planOrderId && tx.orderId !== planOrderId) return;
-      const item = silindirItems.get(tx.silindirId);
-      const originLabel = item?.origin ? t(`silindirPage.origin.${item.origin}`) : '';
-      const sizeParts = [
-        typeof item?.length === 'number' && item.length > 0 ? `${item.length}` : '',
-        typeof item?.diameter === 'number' && item.diameter > 0 ? `${item.diameter}` : '',
-      ].filter(Boolean);
-      const sizeLabel = sizeParts.length ? `${sizeParts.join('x')} ${t('silindirPage.mm')}` : '';
-      const parts = [item?.seriyaNumber || unknownLabel, originLabel, sizeLabel].filter(Boolean);
-      const itemLabel = parts.join(' / ') || unknownLabel;
-      const materialLabel = t('silindirPage.title');
-      const key = `silindir:${item?.id || tx.silindirId}`;
-      addOption(key, {
-        id: key,
-        label: `${materialLabel} / ${itemLabel}`,
-        materialLabel,
-        itemLabel,
-        unitLabel: t('orderPlanPage.pcs'),
-      });
-      // For 'out' transactions, subtract from available. For 'return' transactions, add back
-      const amount = Number(tx.amountQty) || 0;
-      addTotal(key, tx.type === 'out' ? amount : -amount);
-    });
-  };
-
-  handlePlyonka();
-  handleKraska();
-  handleSuyuqKraska();
-  handleRazvaritel();
-  handleSilindir();
-
-  return Array.from(options.values())
-    .map((option) => ({
-      ...option,
-      available: totals.get(option.id) || 0,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-};
 
 const loadOrderBook = (): OrderBookItem[] => {
   if (typeof window === 'undefined') return [];
