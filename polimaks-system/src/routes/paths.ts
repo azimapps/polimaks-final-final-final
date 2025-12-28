@@ -24,6 +24,8 @@ export const paths = {
       razvaritel: '/ombor/razvaritel',
       razvaritelTransactions: (razvaritelId: string) =>
         `/ombor/razvaritel/${razvaritelId}/transaksiyalar`,
+      razvaritelAralashmasi: '/ombor/razvaritel-aralashmasi',
+      razvaritelAralashmasiTransactions: '/ombor/razvaritel-aralashmasi/transaksiyalar',
       silindir: '/ombor/silindir',
       silindirTransactions: (silindirId: string) =>
         `/ombor/silindir/${silindirId}/transaksiyalar`,
@@ -68,10 +70,7 @@ export const paths = {
     },
     ishlabChiqarish: {
       root: '/ishlab-chiqarish',
-      rejalashtirish: '/ishlab-chiqarish/rejalashtirish',
-      nazorat: '/ishlab-chiqarish/nazorat',
       hisobotlar: '/ishlab-chiqarish/hisobotlar',
-      uskunalar: '/ishlab-chiqarish/uskunalar',
     },
     buyurtmaPlanlashtirish: {
       root: '/buyurtma-planlashtirish',

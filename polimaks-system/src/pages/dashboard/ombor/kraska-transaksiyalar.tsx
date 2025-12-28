@@ -58,7 +58,7 @@ type KraskaTransaction = {
   id: string;
   kraskaId: string;
   date: string;
-  type: 'in' | 'out';
+  type: 'in' | 'out' | 'return';
   amountKg: number;
   machineType: MachineTypeValue;
   machineId: string;
@@ -203,7 +203,7 @@ export default function KraskaTransactionsPage() {
   const [pendingDelete, setPendingDelete] = useState<KraskaTransaction | null>(null);
   const [editingTx, setEditingTx] = useState<KraskaTransaction | null>(null);
   const [form, setForm] = useState<{
-    type: 'in' | 'out';
+    type: 'in' | 'out' | 'return';
     amountKg: string;
     date: string;
     machineType: MachineTypeValue;
@@ -220,7 +220,7 @@ export default function KraskaTransactionsPage() {
     note: '',
   });
 
-  const requiresMachine = form.type === 'out';
+  const requiresMachine = form.type === 'out' || form.type === 'return';
 
   const machines = useMemo(
     () => (requiresMachine && form.machineType ? readMachines(form.machineType) : []),
@@ -338,7 +338,7 @@ export default function KraskaTransactionsPage() {
   const currentKg = useMemo(
     () =>
       mergedTransactions.reduce(
-        (sum, tx) => (tx.type === 'in' ? sum + tx.amountKg : sum - tx.amountKg),
+        (sum, tx) => (tx.type === 'in' || tx.type === 'return' ? sum + tx.amountKg : sum - tx.amountKg),
         0
       ),
     [mergedTransactions]
@@ -477,9 +477,11 @@ export default function KraskaTransactionsPage() {
                               label={
                                 tx.type === 'in'
                                   ? t('kraskaTransactionsPage.typeIn')
-                                  : t('kraskaTransactionsPage.typeOut')
+                                  : tx.type === 'out'
+                                  ? t('kraskaTransactionsPage.typeOut')
+                                  : 'Return'
                               }
-                              color={tx.type === 'in' ? 'success' : 'warning'}
+                              color={tx.type === 'in' || tx.type === 'return' ? 'success' : 'warning'}
                               size="small"
                             />
                           </TableCell>
@@ -556,11 +558,12 @@ export default function KraskaTransactionsPage() {
                   label={t('kraskaTransactionsPage.form.type')}
                   value={form.type}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, type: e.target.value as 'in' | 'out' }))
+                    setForm((prev) => ({ ...prev, type: e.target.value as 'in' | 'out' | 'return' }))
                   }
                 >
                   <MenuItem value="in">{t('kraskaTransactionsPage.typeIn')}</MenuItem>
                   <MenuItem value="out">{t('kraskaTransactionsPage.typeOut')}</MenuItem>
+                  <MenuItem value="return">Return</MenuItem>
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -624,7 +627,7 @@ export default function KraskaTransactionsPage() {
                 />
               </Grid>
               
-              {form.type === 'out' ? (
+              {form.type === 'out' || form.type === 'return' ? (
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Autocomplete
                     options={allOrders}

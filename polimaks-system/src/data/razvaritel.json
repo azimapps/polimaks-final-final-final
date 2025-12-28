@@ -20,5 +20,27 @@
     "supplier": "EuroSolvent",
     "createdDate": "2025-02-20",
     "description": "Etilin solvent, fast dry."
+  },
+  {
+    "id": "raz-3",
+    "type": "metoksil",
+    "totalLiter": 150,
+    "pricePerLiter": 2.1,
+    "priceCurrency": "USD",
+    "seriyaNumber": "MET-2403",
+    "supplier": "ChemCorp",
+    "createdDate": "2025-02-22",
+    "description": "Metoksil premium grade."
+  },
+  {
+    "id": "raz-4",
+    "type": "metoksil",
+    "totalLiter": 180,
+    "pricePerLiter": 1.95,
+    "priceCurrency": "EUR",
+    "seriyaNumber": "MET-2404",
+    "supplier": "SolventTech",
+    "createdDate": "2025-02-25",
+    "description": "High purity metoksil solution."
   }
 ]

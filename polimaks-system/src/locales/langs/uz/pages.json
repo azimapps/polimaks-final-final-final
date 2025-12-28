@@ -772,6 +772,111 @@
     "initial": "Boshlang'ich qoldiq",
     "deleteTitle": "Transaksiyani o'chirish"
   },
+  "razvaritelAralashmasiPage": {
+    "title": "Razvaritel aralashmalari",
+    "subtitle": "EAF, Etilin va Metoksil komponentlaridan maxsus razvaritel aralashmalari yarating va boshqaring.",
+    "breadcrumbTitle": "Razvaritel aralashmasi",
+    "transactions": "Transaksiyalar",
+    "createNew": "Yangi aralashma yaratish",
+    "editMixture": "Aralashmani tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "view": "Ko'rish",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "deleteConfirm": "O'chirishni tasdiqlang",
+    "deleteConfirmText": "Haqiqatan ham ushbu aralashmani o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi.",
+    "deleteCancel": "Bekor qilish",
+    "deleteAction": "O'chirish",
+    "close": "Yopish",
+    "validation": {
+      "productNotSelected": "Mahsulot tanlanmagan",
+      "exceededQuantity": "Mavjud miqdordan oshib ketdi! Maksimal:"
+    },
+    "buttons": {
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "createMixture": "Aralashma yaratish",
+      "close": "Yopish",
+      "delete": "O'chirish"
+    },
+    "form": {
+      "mixtureName": "Aralashma nomi",
+      "eafRazvaritel": "EAF razvaritel",
+      "etilinRazvaritel": "Etilin razvaritel",
+      "metoksilRazvaritel": "Metoksil razvaritel",
+      "quantityL": "Miqdor (L)",
+      "available": "mavjud",
+      "summary": {
+        "title": "Aralashma ma'lumotlari",
+        "totalLiters": "Jami litr",
+        "totalKg": "Jami kilogramm",
+        "pricePerLiter": "Narx (litr)",
+        "pricePerKg": "Narx (kg)"
+      }
+    },
+    "table": {
+      "name": "Nomi",
+      "totalLiters": "Jami litr",
+      "totalKg": "Jami kg",
+      "pricePerLiter": "Narx (L)",
+      "pricePerKg": "Narx (KG)",
+      "date": "Sana",
+      "actions": "Amallar",
+      "emptyState": "Hozircha aralashmalar mavjud emas"
+    },
+    "dialogs": {
+      "create": {
+        "title": "Yangi razvaritel aralashmasi yaratish"
+      },
+      "edit": {
+        "title": "Aralashmani tahrirlash"
+      },
+      "view": {
+        "title": "Aralashma ma'lumotlari",
+        "createdDate": "Yaratilgan sana",
+        "generalInfo": "Umumiy ma'lumotlar",
+        "totalLiters": "Jami litr",
+        "totalKg": "Jami kilogramm",
+        "pricePerLiter": "Narx (litr)",
+        "pricePerKg": "Narx (kg)",
+        "components": "Tarkibiy qismlar"
+      },
+      "delete": {
+        "title": "O'chirishni tasdiqlang",
+        "content": "Haqiqatan ham ushbu aralashmani o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi."
+      }
+    },
+    "menu": {
+      "view": "Ko'rish",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish"
+    },
+    "details": {
+      "title": "Aralashma ma'lumotlari",
+      "createdDate": "Yaratilgan sana: {{date}}",
+      "summary": "Umumiy ma'lumotlar",
+      "totalLiters": "Jami litr:",
+      "totalKilograms": "Jami kilogramm:",
+      "pricePerLiter": "Narx (litr):",
+      "pricePerKg": "Narx (kg):",
+      "components": "Tarkibiy qismlar",
+      "eafThinner": "EAF Razvaritel",
+      "etilinThinner": "Etilin Razvaritel",
+      "metoksilThinner": "Metoksil Razvaritel"
+    },
+    "calculations": {
+      "title": "Aralashma ma'lumotlari:",
+      "totalLiters": "Jami litr:",
+      "totalKilograms": "Jami kilogramm:",
+      "pricePerLiter": "Narx (litr):",
+      "pricePerKg": "Narx (kg):"
+    }
+  },
+  "mixtureTransactionsPage": {
+    "title": "Aralashma transaksiyalari",
+    "subtitle": "Razvaritel aralashmalarining ishlatilishi va yaratilishini kuzating. Hozircha ma'lumotlar lokal."
+  },
   "silindirPage": {
     "title": "Silindr",
     "subtitle": "Kelib chiqishi (Xitoy/Germaniya), o'lcham, ishlatilish va seriya. Hozircha ma'lumotlar lokal (TODO: API ulash).",

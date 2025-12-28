@@ -48,6 +48,7 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('kraska'), path: paths.dashboard.inventory.kraska },
               { title: t('suyuq_kraska'), path: paths.dashboard.inventory.suyuqKraska },
               { title: t('razvaritel'), path: paths.dashboard.inventory.razvaritel },
+              { title: t('razvaritel_aralashmasi'), path: paths.dashboard.inventory.razvaritelAralashmasi },
               { title: t('silindir'), path: paths.dashboard.inventory.silindir },
               { title: t('kley'), path: paths.dashboard.inventory.kley },
               { title: t('zapchastlar'), path: paths.dashboard.inventory.zapchastlar },
@@ -108,10 +109,7 @@ export const useNavData = (): NavSectionProps['data'] => {
             path: paths.dashboard.ishlabChiqarish.root,
             icon: ICONS.ishlabChiqarish,
             children: [
-              { title: t('ishlab_chiqarish_rejalashtirish'), path: paths.dashboard.ishlabChiqarish.rejalashtirish },
-              { title: t('ishlab_chiqarish_nazorat'), path: paths.dashboard.ishlabChiqarish.nazorat },
               { title: t('ishlab_chiqarish_hisobotlar'), path: paths.dashboard.ishlabChiqarish.hisobotlar },
-              { title: t('ishlab_chiqarish_uskunalar'), path: paths.dashboard.ishlabChiqarish.uskunalar },
             ],
           },
           {

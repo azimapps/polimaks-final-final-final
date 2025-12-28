@@ -772,6 +772,111 @@
     "initial": "Бошланғич қолдиқ",
     "deleteTitle": "Транзакцияни ўчириш"
   },
+  "razvaritelAralashmasiPage": {
+    "title": "Разварител аралашмалари",
+    "subtitle": "EAF, Этилин ва Метоксил компонентларидан махсус разварител аралашмалари яратинг ва бошқаринг.",
+    "breadcrumbTitle": "Разварител аралашмаси",
+    "transactions": "Транзакциялар",
+    "createNew": "Янги аралашма яратиш",
+    "editMixture": "Аралашмани таҳрирлаш",
+    "save": "Сақлаш",
+    "cancel": "Бекор қилиш",
+    "view": "Кўриш",
+    "edit": "Таҳрирлаш",
+    "delete": "Ўчириш",
+    "deleteConfirm": "Ўчиришни тасдиқланг",
+    "deleteConfirmText": "Ҳақиқатан ҳам ушбу аралашмани ўчирмоқчимисиз? Бу амални бекор қилиб бўлмайди.",
+    "deleteCancel": "Бекор қилиш",
+    "deleteAction": "Ўчириш",
+    "close": "Ёпиш",
+    "validation": {
+      "productNotSelected": "Маҳсулот танланмаган",
+      "exceededQuantity": "Мавжуд миқдордан ошиб кетди! Максимал:"
+    },
+    "buttons": {
+      "cancel": "Бекор қилиш",
+      "save": "Сақлаш",
+      "createMixture": "Аралашма яратиш",
+      "close": "Ёпиш",
+      "delete": "Ўчириш"
+    },
+    "form": {
+      "mixtureName": "Аралашма номи",
+      "eafRazvaritel": "EAF разварител",
+      "etilinRazvaritel": "Этилин разварител",
+      "metoksilRazvaritel": "Метоксил разварител",
+      "quantityL": "Миқдор (L)",
+      "available": "мавжуд",
+      "summary": {
+        "title": "Аралашма маълумотлари",
+        "totalLiters": "Жами литр",
+        "totalKg": "Жами килограмм",
+        "pricePerLiter": "Нарх (литр)",
+        "pricePerKg": "Нарх (кг)"
+      }
+    },
+    "table": {
+      "name": "Номи",
+      "totalLiters": "Жами литр",
+      "totalKg": "Жами кг",
+      "pricePerLiter": "Нарх (L)",
+      "pricePerKg": "Нарх (KG)",
+      "date": "Сана",
+      "actions": "Амаллар",
+      "emptyState": "Ҳозирча аралашмалар мавжуд эмас"
+    },
+    "dialogs": {
+      "create": {
+        "title": "Янги разварител аралашмаси яратиш"
+      },
+      "edit": {
+        "title": "Аралашмани таҳрирлаш"
+      },
+      "view": {
+        "title": "Аралашма маълумотлари",
+        "createdDate": "Яратилган сана",
+        "generalInfo": "Умумий маълумотлар",
+        "totalLiters": "Жами литр",
+        "totalKg": "Жами килограмм",
+        "pricePerLiter": "Нарх (литр)",
+        "pricePerKg": "Нарх (кг)",
+        "components": "Таркибий қисмлар"
+      },
+      "delete": {
+        "title": "Ўчиришни тасдиқланг",
+        "content": "Ҳақиқатан ҳам ушбу аралашмани ўчирмоқчимисиз? Бу амални бекор қилиб бўлмайди."
+      }
+    },
+    "menu": {
+      "view": "Кўриш",
+      "edit": "Таҳрирлаш",
+      "delete": "Ўчириш"
+    },
+    "details": {
+      "title": "Аралашма маълумотлари",
+      "createdDate": "Яратилган сана: {{date}}",
+      "summary": "Умумий маълумотлар",
+      "totalLiters": "Жами литр:",
+      "totalKilograms": "Жами килограмм:",
+      "pricePerLiter": "Нарх (литр):",
+      "pricePerKg": "Нарх (кг):",
+      "components": "Таркибий қисмлар",
+      "eafThinner": "EAF Разварител",
+      "etilinThinner": "Этилин Разварител",
+      "metoksilThinner": "Метоксил Разварител"
+    },
+    "calculations": {
+      "title": "Аралашма маълумотлари:",
+      "totalLiters": "Жами литр:",
+      "totalKilograms": "Жами килограмм:",
+      "pricePerLiter": "Нарх (литр):",
+      "pricePerKg": "Нарх (кг):"
+    }
+  },
+  "mixtureTransactionsPage": {
+    "title": "Аралашма транзакциялари",
+    "subtitle": "Разварител аралашмаларининг ишлатилиши ва яратилишини кузатинг. Ҳозирча маълумотлар локал."
+  },
   "silindirPage": {
     "title": "Силиндр",
     "subtitle": "Келиб чиқиши (Хитой/Германия), ўлчам, ишлатилиши ва серия. Ҳозирча маълумотлар локал (TODO: API улаш).",

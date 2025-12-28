@@ -76,7 +76,7 @@ type SilindirItem = {
 type BaseTx = {
   id: string;
   date: string;
-  type: 'in' | 'out';
+  type: 'in' | 'out' | 'return';
   machineType?: string;
   machineId?: string;
   orderId?: string;

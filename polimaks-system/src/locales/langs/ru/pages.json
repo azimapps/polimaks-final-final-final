@@ -725,6 +725,111 @@
     "initial": "Начальный остаток",
     "deleteTitle": "Удалить транзакцию"
   },
+  "razvaritelAralashmasiPage": {
+    "title": "Смеси растворителей",
+    "subtitle": "Создавайте и управляйте пользовательскими смесями растворителей из EAF, Etилина и Metоксила.",
+    "breadcrumbTitle": "Смеси растворителей",
+    "transactions": "Транзакции",
+    "createNew": "Создать новую смесь",
+    "editMixture": "Редактировать смесь",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "view": "Просмотр",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "deleteConfirm": "Подтвердить удаление",
+    "deleteConfirmText": "Вы действительно хотите удалить эту смесь? Это действие нельзя отменить.",
+    "deleteCancel": "Отмена",
+    "deleteAction": "Удалить",
+    "close": "Закрыть",
+    "validation": {
+      "productNotSelected": "Продукт не выбран",
+      "exceededQuantity": "Превышает доступное количество! Максимум:"
+    },
+    "buttons": {
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "createMixture": "Создать смесь",
+      "close": "Закрыть",
+      "delete": "Удалить"
+    },
+    "form": {
+      "mixtureName": "Название смеси",
+      "eafRazvaritel": "EAF растворитель",
+      "etilinRazvaritel": "Этилин растворитель",
+      "metoksilRazvaritel": "Метоксил растворитель",
+      "quantityL": "Количество (L)",
+      "available": "доступно",
+      "summary": {
+        "title": "Информация о смеси",
+        "totalLiters": "Всего литров",
+        "totalKg": "Всего килограммов",
+        "pricePerLiter": "Цена (литр)",
+        "pricePerKg": "Цена (кг)"
+      }
+    },
+    "table": {
+      "name": "Название",
+      "totalLiters": "Всего литров",
+      "totalKg": "Всего кг",
+      "pricePerLiter": "Цена (L)",
+      "pricePerKg": "Цена (KG)",
+      "date": "Дата",
+      "actions": "Действия",
+      "emptyState": "Смесей пока нет"
+    },
+    "dialogs": {
+      "create": {
+        "title": "Создать новую смесь растворителей"
+      },
+      "edit": {
+        "title": "Редактировать смесь"
+      },
+      "view": {
+        "title": "Детали смеси",
+        "createdDate": "Дата создания",
+        "generalInfo": "Общая информация",
+        "totalLiters": "Всего литров",
+        "totalKg": "Всего килограммов",
+        "pricePerLiter": "Цена (литр)",
+        "pricePerKg": "Цена (кг)",
+        "components": "Компоненты"
+      },
+      "delete": {
+        "title": "Подтвердить удаление",
+        "content": "Вы действительно хотите удалить эту смесь? Это действие нельзя отменить."
+      }
+    },
+    "menu": {
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "details": {
+      "title": "Детали смеси",
+      "createdDate": "Дата создания: {{date}}",
+      "summary": "Общая информация",
+      "totalLiters": "Всего литров:",
+      "totalKilograms": "Всего килограммов:",
+      "pricePerLiter": "Цена (литр):",
+      "pricePerKg": "Цена (кг):",
+      "components": "Компоненты",
+      "eafThinner": "EAF Растворитель",
+      "etilinThinner": "Этилин Растворитель",
+      "metoksilThinner": "Метоксил Растворитель"
+    },
+    "calculations": {
+      "title": "Информация о смеси:",
+      "totalLiters": "Всего литров:",
+      "totalKilograms": "Всего килограммов:",
+      "pricePerLiter": "Цена (литр):",
+      "pricePerKg": "Цена (кг):"
+    }
+  },
+  "mixtureTransactionsPage": {
+    "title": "Транзакции смесей",
+    "subtitle": "Отслеживайте использование и создание смесей растворителей. Данные пока локальные."
+  },
   "silindirPage": {
     "title": "Цилиндры",
     "subtitle": "Происхождение (Китай/Германия), размеры, износ и серия. Данные локальные (TODO: подключить API).",

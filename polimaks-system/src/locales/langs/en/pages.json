@@ -729,6 +729,111 @@
     "initial": "Initial balance",
     "deleteTitle": "Delete transaction"
   },
+  "razvaritelAralashmasiPage": {
+    "title": "Thinner mixtures",
+    "subtitle": "Create and manage custom thinner mixtures from EAF, Etilin, and Metoksil components.",
+    "breadcrumbTitle": "Thinner mixtures",
+    "transactions": "Transactions",
+    "createNew": "Create new mixture",
+    "editMixture": "Edit mixture",
+    "save": "Save",
+    "cancel": "Cancel",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Confirm deletion",
+    "deleteConfirmText": "Are you sure you want to delete this mixture? This action cannot be undone.",
+    "deleteCancel": "Cancel",
+    "deleteAction": "Delete",
+    "close": "Close",
+    "form": {
+      "mixtureName": "Mixture name",
+      "eafRazvaritel": "EAF Thinner",
+      "etilinRazvaritel": "Etilin Thinner", 
+      "metoksilRazvaritel": "Metoksil Thinner",
+      "quantityL": "Quantity (L)",
+      "available": "available",
+      "summary": {
+        "title": "Mixture information",
+        "totalLiters": "Total liters",
+        "totalKg": "Total kilograms",
+        "pricePerLiter": "Price (liter)",
+        "pricePerKg": "Price (kg)"
+      }
+    },
+    "validation": {
+      "productNotSelected": "Product not selected",
+      "exceededQuantity": "Exceeds available quantity! Maximum:"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "createMixture": "Create mixture",
+      "close": "Close",
+      "delete": "Delete"
+    },
+    "table": {
+      "name": "Name",
+      "totalLiters": "Total liters",
+      "totalKg": "Total kg", 
+      "pricePerLiter": "Price (L)",
+      "pricePerKg": "Price (KG)",
+      "date": "Date",
+      "actions": "Actions",
+      "emptyState": "No mixtures available yet"
+    },
+    "dialogs": {
+      "create": {
+        "title": "Create new thinner mixture"
+      },
+      "edit": {
+        "title": "Edit mixture"
+      },
+      "view": {
+        "title": "Mixture details",
+        "createdDate": "Created date",
+        "generalInfo": "General information",
+        "totalLiters": "Total liters",
+        "totalKg": "Total kilograms",
+        "pricePerLiter": "Price (liter)",
+        "pricePerKg": "Price (kg)",
+        "components": "Components"
+      },
+      "delete": {
+        "title": "Confirm deletion",
+        "content": "Are you sure you want to delete this mixture? This action cannot be undone."
+      }
+    },
+    "menu": {
+      "view": "View",
+      "edit": "Edit", 
+      "delete": "Delete"
+    },
+    "details": {
+      "title": "Mixture details",
+      "createdDate": "Created date: {{date}}",
+      "summary": "General information",
+      "totalLiters": "Total liters:",
+      "totalKilograms": "Total kilograms:",
+      "pricePerLiter": "Price (liter):",
+      "pricePerKg": "Price (kg):",
+      "components": "Components",
+      "eafThinner": "EAF Thinner",
+      "etilinThinner": "Etilin Thinner",
+      "metoksilThinner": "Metoksil Thinner"
+    },
+    "calculations": {
+      "title": "Mixture information:",
+      "totalLiters": "Total liters:",
+      "totalKilograms": "Total kilograms:",
+      "pricePerLiter": "Price (liter):",
+      "pricePerKg": "Price (kg):"
+    }
+  },
+  "mixtureTransactionsPage": {
+    "title": "Mixture Transactions",
+    "subtitle": "Track usage and creation of thinner mixtures. Data is stored locally for now."
+  },
   "silindirPage": {
     "title": "Cylinders",
     "subtitle": "Track cylinder origin (China/Germany), size, usage, and seriya. Data is local for now (TODO: connect API).",

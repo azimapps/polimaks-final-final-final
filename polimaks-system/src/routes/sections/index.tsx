@@ -37,6 +37,10 @@ const RazvaritelPage = lazy(() => import('src/pages/dashboard/ombor/razvaritel')
 const RazvaritelTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/razvaritel-transaksiyalar')
 );
+const RazvaritelAralashmasiPage = lazy(() => import('src/pages/dashboard/ombor/razvaritel-aralashmasi'));
+const RazvaritelAralashmasiTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/razvaritel-aralashmasi-transaksiyalar')
+);
 const SilindirPage = lazy(() => import('src/pages/dashboard/ombor/silindir'));
 const SilindirTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/silindir-transaksiyalar')
@@ -93,10 +97,7 @@ const ClientMaterialsDetailPage = lazy(
 );
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
 const IshlabChiqarishIndexPage = lazy(() => import('src/pages/dashboard/ishlab-chiqarish'));
-const IshlabChiqarishRejalashtirish = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/rejalashtirish'));
-const IshlabChiqarishNazorat = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/nazorat'));
 const IshlabChiqarishHisobotlar = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/hisobotlar'));
-const IshlabChiqarishUskunalar = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/uskunalar'));
 const BuyurtmaPlanlashtirish = lazy(() => import('src/pages/dashboard/buyurtma-planlashtirish/buyurtma-planlashtirish'));
 const ReskaPanelOverviewPage = lazy(() => import('src/pages/dashboard/reska-panel/overview'));
 const ReskaPanelQueuePage = lazy(() => import('src/pages/dashboard/reska-panel/queue'));
@@ -171,6 +172,8 @@ export const routesSection: RouteObject[] = [
           { path: 'suyuq-kraska/:suyuqKraskaId/transaksiyalar', element: <SuyuqKraskaTransactionsPage /> },
           { path: 'razvaritel', element: <RazvaritelPage /> },
           { path: 'razvaritel/:razvaritelId/transaksiyalar', element: <RazvaritelTransactionsPage /> },
+          { path: 'razvaritel-aralashmasi', element: <RazvaritelAralashmasiPage /> },
+          { path: 'razvaritel-aralashmasi/transaksiyalar', element: <RazvaritelAralashmasiTransactionsPage /> },
           { path: 'silindir', element: <SilindirPage /> },
           { path: 'silindir/:silindirId/transaksiyalar', element: <SilindirTransactionsPage /> },
           { path: 'kley', element: <KleyPage /> },
@@ -235,10 +238,7 @@ export const routesSection: RouteObject[] = [
             path: 'ishlab-chiqarish',
             children: [
               { index: true, element: <IshlabChiqarishIndexPage /> },
-              { path: 'rejalashtirish', element: <IshlabChiqarishRejalashtirish /> },
-              { path: 'nazorat', element: <IshlabChiqarishNazorat /> },
               { path: 'hisobotlar', element: <IshlabChiqarishHisobotlar /> },
-              { path: 'uskunalar', element: <IshlabChiqarishUskunalar /> },
             ],
           },
           {

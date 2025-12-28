@@ -70,8 +70,37 @@ type PlanItem = {
   numberOfColors?: number;
   colorValues?: string[];
   colorMeasurements?: Map<string, number[]>;
+  formulaDetails?: FormulaDetail[];
   totalMeters?: number;
   totalKg?: number;
+  completedAt?: string;
+};
+
+type FormulaDetail = {
+  colorId: string;
+  colorName: string;
+  seriya?: string;
+  marka?: string;
+  measurements: {
+    ishlatilganSuyuq: number;
+    quyuqKraska: number;
+    razvaritel: number;
+    qolganSuyuq: number;
+    qolganMahsulot: number;
+  };
+  formulas: {
+    quyuqKraska: FormulaCalculation;
+    razvaritel: FormulaCalculation;
+  };
+};
+
+type FormulaCalculation = {
+  formula: string;
+  calculation: string;
+  step1: number;
+  step2: number;
+  step3: number;
+  result: number;
 };
 
 type MaterialUsage = {
@@ -83,12 +112,6 @@ type MaterialUsage = {
   note?: string;
 };
 
-type MaterialUsageForm = {
-  id: string;
-  materialId: string;
-  amount: string;
-  note: string;
-};
 
 type MaterialOption = {
   id: string;
@@ -142,10 +165,11 @@ type SilindirItem = {
 type BaseTx = {
   id: string;
   date: string;
-  type: 'in' | 'out';
+  type: 'in' | 'out' | 'return';
   machineType?: string;
   machineId?: string;
   orderId?: string;
+  source?: string;
 };
 
 type PlyonkaTx = BaseTx & { plyonkaId: string; amountKg?: number };
@@ -317,7 +341,9 @@ const createMaterialTransaction = (
   amount: number,
   note: string,
   machineId: string,
-  planId: string
+  planId: string,
+  type: 'out' | 'return' = 'out',
+  orderId?: string
 ) => {
   const [materialType, itemId] = materialId.split(':');
   if (!materialType || !itemId) return null;
@@ -325,12 +351,13 @@ const createMaterialTransaction = (
   const base = {
     id: buildUsageId('tx'),
     date: new Date().toISOString().slice(0, 10),
-    type: 'out' as const,
+    type: type,
     machineType: 'pechat' as const,
     machineId,
+    orderId: orderId || undefined,
     note,
     createdAt: Date.now(),
-    source: 'pechat-plan',
+    source: type === 'return' ? 'pechat-ostatok' : 'pechat-plan',
     planId,
   };
 
@@ -422,7 +449,7 @@ const buildMaterialOptions = (
   const handlePlyonka = () => {
     const txs = readTransactions<PlyonkaTx>('ombor-plyonka-transactions');
     txs.forEach((tx) => {
-      if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
       // Filter by order ID if plan is provided
       if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = plyonkaItems.get(tx.plyonkaId);
@@ -441,14 +468,16 @@ const buildMaterialOptions = (
         itemLabel,
         unitLabel: t('plyonkaPage.kg'),
       });
-      addTotal(key, Number(tx.amountKg) || 0);
+      // For 'out' transactions, subtract from available. For 'return' transactions, add back
+      const amount = Number(tx.amountKg) || 0;
+      addTotal(key, tx.type === 'out' ? amount : -amount);
     });
   };
 
   const handleKraska = () => {
     const txs = readTransactions<KraskaTx>('ombor-kraska-transactions');
     txs.forEach((tx) => {
-      if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
       // Filter by order ID if plan is provided
       if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = kraskaItems.get(tx.kraskaId);
@@ -467,14 +496,16 @@ const buildMaterialOptions = (
         itemLabel,
         unitLabel: t('kraskaPage.kg'),
       });
-      addTotal(key, Number(tx.amountKg) || 0);
+      // For 'out' transactions, subtract from available. For 'return' transactions, add back
+      const amount = Number(tx.amountKg) || 0;
+      addTotal(key, tx.type === 'out' ? amount : -amount);
     });
   };
 
   const handleSuyuqKraska = () => {
     const txs = readTransactions<SuyuqKraskaTx>('ombor-suyuq-kraska-transactions');
     txs.forEach((tx) => {
-      if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
       // Filter by order ID if plan is provided
       if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = suyuqKraskaItems.get(tx.suyuqKraskaId);
@@ -493,14 +524,16 @@ const buildMaterialOptions = (
         itemLabel,
         unitLabel: t('suyuqKraskaPage.kg'),
       });
-      addTotal(key, Number(tx.amountKg) || 0);
+      // For 'out' transactions, subtract from available. For 'return' transactions, add back
+      const amount = Number(tx.amountKg) || 0;
+      addTotal(key, tx.type === 'out' ? amount : -amount);
     });
   };
 
   const handleRazvaritel = () => {
     const txs = readTransactions<RazvaritelTx>('ombor-razvaritel-transactions');
     txs.forEach((tx) => {
-      if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
       // Filter by order ID if plan is provided
       if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = razvaritelItems.get(tx.razvaritelId);
@@ -515,14 +548,16 @@ const buildMaterialOptions = (
         itemLabel,
         unitLabel: t('razvaritelPage.liter'),
       });
-      addTotal(key, Number(tx.amountLiter) || 0);
+      // For 'out' transactions, subtract from available. For 'return' transactions, add back
+      const amount = Number(tx.amountLiter) || 0;
+      addTotal(key, tx.type === 'out' ? amount : -amount);
     });
   };
 
   const handleSilindir = () => {
     const txs = readTransactions<SilindirTx>('ombor-silindir-transactions');
     txs.forEach((tx) => {
-      if (tx.type !== 'out' || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
+      if (!['out', 'return'].includes(tx.type) || tx.machineType !== 'pechat' || tx.machineId !== machineId) return;
       // Filter by order ID if plan is provided
       if (plan && planOrderId && tx.orderId !== planOrderId) return;
       const item = silindirItems.get(tx.silindirId);
@@ -543,7 +578,9 @@ const buildMaterialOptions = (
         itemLabel,
         unitLabel: t('orderPlanPage.pcs'),
       });
-      addTotal(key, Number(tx.amountQty) || 0);
+      // For 'out' transactions, subtract from available. For 'return' transactions, add back
+      const amount = Number(tx.amountQty) || 0;
+      addTotal(key, tx.type === 'out' ? amount : -amount);
     });
   };
 
@@ -589,8 +626,6 @@ export default function PechatPanelOverviewPage() {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [statusPlan, setStatusPlan] = useState<PlanItem | null>(null);
   const [statusValue, setStatusValue] = useState<PlanStatus>('in_progress');
-  const [materialOptions, setMaterialOptions] = useState<MaterialOption[]>([]);
-  const [usageRows, setUsageRows] = useState<MaterialUsageForm[]>([]);
   const [colorValues, setColorValues] = useState<string[]>([]);
   const [numberOfColors, setNumberOfColors] = useState<number>(1);
   const [availableColors, setAvailableColors] = useState<{
@@ -602,43 +637,13 @@ export default function PechatPanelOverviewPage() {
     unit?: string;
   }[]>([]);
   const [colorMeasurements, setColorMeasurements] = useState<Map<string, number[]>>(new Map());
+  const [colorTotalUsed, setColorTotalUsed] = useState<Map<string, number>>(new Map());
   const [totalMeters, setTotalMeters] = useState('');
   const [totalKg, setTotalKg] = useState('');
   const [dispatchDestination, setDispatchDestination] = useState<'laminatsiya' | 'reska' | 'angren' | ''>('');
   const [selectedBrigadaForDispatch, setSelectedBrigadaForDispatch] = useState('');
   
-  // Calculation results dialog
-  const [calculationResults, setCalculationResults] = useState<{
-    colorResults: { colorName: string; suyuqUsed: number; razvaritelUsed: number; totalCost: number }[];
-    totalCost: number;
-  } | null>(null);
-  const [showCalculationDialog, setShowCalculationDialog] = useState(false);
 
-  const materialOptionMap = useMemo(
-    () => new Map(materialOptions.map((option) => [option.id, option])),
-    [materialOptions]
-  );
-
-  const usageTotals = useMemo(() => {
-    const totals = new Map<string, number>();
-    usageRows.forEach((row) => {
-      const amount = Number(row.amount);
-      if (!row.materialId || Number.isNaN(amount)) return;
-      totals.set(row.materialId, (totals.get(row.materialId) || 0) + amount);
-    });
-    return totals;
-  }, [usageRows]);
-
-  const hasUsageErrors = useMemo(() => {
-    for (const row of usageRows) {
-      if (!row.materialId) continue;
-      const option = materialOptionMap.get(row.materialId);
-      if (!option || typeof option.available !== 'number') continue;
-      const total = usageTotals.get(row.materialId) || 0;
-      if (total > option.available) return true;
-    }
-    return false;
-  }, [materialOptionMap, usageRows, usageTotals]);
 
   useEffect(() => {
     const loadMachines = () =>
@@ -766,25 +771,6 @@ export default function PechatPanelOverviewPage() {
   };
 
   const handleOpenStatusDialog = (plan: PlanItem) => {
-    const options = buildMaterialOptions(plan.machineId || selectedMachineId, t, plan);
-    const usedTotals = new Map<string, number>();
-    plans.forEach((item) => {
-      if (item.id === plan.id) return;
-      if (item.machineId !== plan.machineId) return;
-      (item.materialsUsed || []).forEach((usage) => {
-        usedTotals.set(usage.materialId, (usedTotals.get(usage.materialId) || 0) + usage.amount);
-      });
-    });
-    const adjustedOptions = options.map((option) => ({
-      ...option,
-      available: Math.max(0, (option.available || 0) - (usedTotals.get(option.id) || 0)),
-    }));
-    const existingUsage = (plan.materialsUsed || []).map((item, index) => ({
-      id: buildUsageId(`usage-${index}`),
-      materialId: item.materialId,
-      amount: item.amount ? String(item.amount) : '',
-      note: item.note || '',
-    }));
 
     // Load number of colors from order book data
     const orderBook = loadOrderBook();
@@ -797,12 +783,6 @@ export default function PechatPanelOverviewPage() {
       existingColors[i] || ''
     );
 
-    setMaterialOptions(adjustedOptions);
-    setUsageRows(
-      existingUsage.length
-        ? existingUsage
-        : [{ id: buildUsageId('usage'), materialId: '', amount: '', note: '' }]
-    );
     setNumberOfColors(colorsCount);
     setColorValues(initialColors);
     
@@ -831,20 +811,6 @@ export default function PechatPanelOverviewPage() {
     setStatusPlan(null);
   };
 
-  const handleAddUsageRow = () => {
-    setUsageRows((prev) => [
-      ...prev,
-      { id: buildUsageId('usage'), materialId: '', amount: '', note: '' },
-    ]);
-  };
-
-  const handleRemoveUsageRow = (id: string) => {
-    setUsageRows((prev) => prev.filter((row) => row.id !== id));
-  };
-
-  const updateUsageRow = (id: string, next: Partial<MaterialUsageForm>) => {
-    setUsageRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...next } : row)));
-  };
 
   const updateColorValue = (index: number, value: string) => {
     setColorValues((prev) => {
@@ -902,7 +868,7 @@ export default function PechatPanelOverviewPage() {
       if (Array.isArray(kraskaTxs)) {
         kraskaTxs.forEach((tx: any) => {
           console.log('Checking transaction:', tx);
-          if (tx.type === 'out' && tx.machineType === 'pechat' && tx.machineId === machineId) {
+          if (['out', 'return'].includes(tx.type) && tx.machineType === 'pechat' && tx.machineId === machineId) {
             // Filter by order ID if plan is provided
             if (filterPlan && planOrderId && tx.orderId !== planOrderId) return;
             const item = kraskaItems.get(tx.kraskaId);
@@ -929,7 +895,7 @@ export default function PechatPanelOverviewPage() {
       
       if (Array.isArray(suyuqTxs)) {
         suyuqTxs.forEach((tx: any) => {
-          if (tx.type === 'out' && tx.machineType === 'pechat' && tx.machineId === machineId) {
+          if (['out', 'return'].includes(tx.type) && tx.machineType === 'pechat' && tx.machineId === machineId) {
             // Filter by order ID if plan is provided
             if (filterPlan && planOrderId && tx.orderId !== planOrderId) return;
             const item = suyuqKraskaItems.get(tx.suyuqKraskaId);
@@ -958,62 +924,100 @@ export default function PechatPanelOverviewPage() {
     setAvailableColors(colors);
   };
 
+  // Get allocated material amounts for a plan
+  const getAllocatedAmount = (materialId: string, planMachineId: string, planOrderId?: string): number => {
+    const storageKey = `ombor-${materialId.split(':')[0]}-transactions`;
+    const transactions = readLocalArray<any>(storageKey, []);
+    
+    return transactions
+      .filter(tx => 
+        tx.type === 'out' && 
+        tx.machineId === planMachineId &&
+        (!planOrderId || tx.orderId === planOrderId) &&
+        tx[`${materialId.split(':')[0]}Id`] === materialId.split(':')[1]
+      )
+      .reduce((sum, tx) => sum + (tx.amountKg || tx.amountLiter || tx.amountQty || 0), 0);
+  };
+
   const updateColorMeasurement = (colorId: string, index: number, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    const planMachineId = statusPlan?.machineId || selectedMachineId;
+    const planOrderId = statusPlan?.orderId;
+    
+    // Get allocated amount for this color
+    const allocatedAmount = getAllocatedAmount(`kraska:${colorId}`, planMachineId, planOrderId);
+    
     setColorMeasurements(prev => {
       const newMap = new Map(prev);
-      const measurements = newMap.get(colorId) || [0, 0, 0, 0];
-      measurements[index] = parseFloat(value) || 0;
+      const measurements = newMap.get(colorId) || [0, 0, 0, 0, 0];
+      
+      // Calculate what the new total usage would be
+      const tempMeasurements = [...measurements];
+      tempMeasurements[index] = numValue;
+      
+      // Auto-calculate quyuq if needed and validate logical consistency
+      if (index === 0 || index === 3) {
+        const ishlatilganSuyuq = tempMeasurements[0] || 0;
+        const qolganSuyuq = tempMeasurements[3] || 0;
+        
+        // Check if remaining is more than used (illogical)
+        if (qolganSuyuq > ishlatilganSuyuq) {
+          return prev; // Don't update if validation fails
+        }
+        
+        // Check if qolgan mahsulot is more than ishlatilgan suyuq (illogical)
+        const qolganMahsulot = tempMeasurements[4] || 0;
+        if (qolganMahsulot > ishlatilganSuyuq) {
+          return prev; // Don't update if validation fails
+        }
+        
+        const baseQuyuq = tempMeasurements[1] || 0;
+        const calculatedQuyuq = ishlatilganSuyuq * 0.67 + baseQuyuq - qolganSuyuq * 0.67;
+        tempMeasurements[1] = calculatedQuyuq; // Don't use Math.max to show the actual result
+      } else if (index === 1) {
+        if (tempMeasurements[0] > 0 || tempMeasurements[3] > 0) {
+          const calculatedQuyuq = (tempMeasurements[0] || 0) * 0.67 + numValue - (tempMeasurements[3] || 0) * 0.67;
+          tempMeasurements[1] = calculatedQuyuq;
+        }
+      }
+      
+      // Calculate total usage from all fields except "Qolgan suyuq" and "Qolgan mahsulot"
+      const totalUsage = (tempMeasurements[0] || 0) + (tempMeasurements[1] || 0) + (tempMeasurements[2] || 0);
+      
+      // Validate against allocated amount
+      if (totalUsage > allocatedAmount && allocatedAmount > 0) {
+        // Don't update state if validation fails
+        return prev;
+      }
+      
+      // Additional validation for Qolgan mahsulot (index 4)
+      if (index === 4) {
+        const ishlatilganSuyuq = tempMeasurements[0] || 0;
+        if (numValue > ishlatilganSuyuq) {
+          return prev; // Don't update if qolgan mahsulot > ishlatilgan suyuq
+        }
+      }
+      
+      // Update with validated values
+      measurements[index] = numValue;
+      
+      // Only auto-calculate Quyuq kraska (index 1) when Ishlatilgan suyuq or Qolgan suyuq changes
+      if (index === 0 || index === 3) {
+        const baseQuyuq = measurements[1] || 0;
+        const calculatedQuyuq = (measurements[0] || 0) * 0.67 + baseQuyuq - (measurements[3] || 0) * 0.67;
+        measurements[1] = calculatedQuyuq; // Show actual calculation result, not Math.max(0, x)
+      } else if (index === 1) {
+        if (measurements[0] > 0 || measurements[3] > 0) {
+          const calculatedQuyuq = (measurements[0] || 0) * 0.67 + numValue - (measurements[3] || 0) * 0.67;
+          measurements[1] = calculatedQuyuq;
+        }
+      }
+      
       newMap.set(colorId, measurements);
       return newMap;
     });
   };
 
-  // Calculation functions for material usage
-  const calculateMaterialUsage = () => {
-    const results: { colorName: string; suyuqUsed: number; razvaritelUsed: number; totalCost: number }[] = [];
-    let totalCost = 0;
-
-    // Get material prices
-    const suyuqKraskaItems = JSON.parse(localStorage.getItem('ombor-suyuq-kraska') || '[]');
-    const razvaritelItems = JSON.parse(localStorage.getItem('ombor-razvaritel') || '[]');
-
-    availableColors.forEach(color => {
-      const measurements = colorMeasurements.get(color.id) || [0, 0, 0, 0];
-      const [suyuqIshlatilgan, quyuqIshlatilgan, razvaritel, qolganSuyuq] = measurements;
-
-      // Formula for suyuq kraska: Ishlatilgan suyuq kraska * 0.67 + quyuq kraska - qolgan suyuq kraska * 0.67
-      const suyuqUsed = suyuqIshlatilgan * 0.67 + quyuqIshlatilgan - qolganSuyuq * 0.67;
-
-      // Formula for razvaritel: Ishlatilgan suyuq kraska * 0.33 + razvaritel - qolgan suyuq kraska * 0.33
-      const razvaritelUsed = suyuqIshlatilgan * 0.33 + razvaritel - qolganSuyuq * 0.33;
-
-      // Calculate cost
-      let colorCost = 0;
-      
-      // Find suyuq kraska price
-      const suyuqItem = suyuqKraskaItems.find((item: any) => item.colorName === color.colorName);
-      if (suyuqItem && suyuqItem.pricePerKg && suyuqUsed > 0) {
-        colorCost += suyuqUsed * suyuqItem.pricePerKg;
-      }
-
-      // Find razvaritel price (assuming EAF type for now)
-      const razvaritelItem = razvaritelItems.find((item: any) => item.type === 'eaf');
-      if (razvaritelItem && razvaritelItem.pricePerLiter && razvaritelUsed > 0) {
-        colorCost += razvaritelUsed * razvaritelItem.pricePerLiter;
-      }
-
-      results.push({
-        colorName: color.colorName,
-        suyuqUsed: Math.max(0, suyuqUsed),
-        razvaritelUsed: Math.max(0, razvaritelUsed),
-        totalCost: colorCost
-      });
-
-      totalCost += colorCost;
-    });
-
-    return { colorResults: results, totalCost };
-  };
 
   const handleDispatchProduct = (plan: PlanItem) => {
     try {
@@ -1090,108 +1094,208 @@ export default function PechatPanelOverviewPage() {
 
   const handleSaveStatus = () => {
     if (!statusPlan) return;
-    const usedMaterials = usageRows
-      .map((row): MaterialUsage | null => {
-        const option = materialOptionMap.get(row.materialId);
-        const amount = Number(row.amount);
-        if (!option || Number.isNaN(amount) || amount <= 0) return null;
-        const note = row.note?.trim();
-        return {
-          materialId: option.id,
-          materialLabel: option.materialLabel,
-          itemLabel: option.itemLabel,
-          amount,
-          unitLabel: option.unitLabel,
-          ...(note ? { note } : {}),
-        };
-      })
-      .filter((item): item is MaterialUsage => item !== null);
-
-    if (!hasUsageErrors) {
-      const planId = statusPlan.id;
-      const planMachineId = statusPlan.machineId || selectedMachineId;
-      const notesByMaterial = buildUsageNotes(usedMaterials);
-      const nextTotals = buildUsageTotals(usedMaterials);
-      const nextTransactionsByStorage = new Map<string, any[]>();
-      const existingStorage = new Map<
-        string,
-        { all: any[]; planByMaterial: Map<string, any> }
-      >();
-
-      const ensureStorage = (storageKey: string) => {
-        if (existingStorage.has(storageKey)) return existingStorage.get(storageKey)!;
-        const all = readLocalArray<any>(storageKey, []);
-        const planByMaterial = new Map<string, any>();
-        all
-          .filter((tx) => tx?.source === 'pechat-plan' && tx?.planId === planId)
-          .forEach((tx) => {
-            const materialKey = getMaterialKeyFromTransaction(storageKey, tx);
-            if (materialKey) planByMaterial.set(materialKey, tx);
-          });
-        const entry = { all, planByMaterial };
-        existingStorage.set(storageKey, entry);
-        return entry;
-      };
-
-      nextTotals.forEach((amount, materialId) => {
-        if (amount <= 0) return;
-        const note = notesByMaterial.get(materialId) || statusPlan.orderNumber || '';
-        const result = createMaterialTransaction(materialId, amount, note, planMachineId, planId);
-        if (!result) return;
-        const storage = ensureStorage(result.storageKey);
-        const existingTx = storage.planByMaterial.get(result.materialKey);
-        const transaction = existingTx
-          ? {
-              ...result.transaction,
-              id: existingTx.id,
-              date: existingTx.date,
-              createdAt: existingTx.createdAt,
-            }
-          : result.transaction;
-        const bucket = nextTransactionsByStorage.get(result.storageKey) || [];
-        bucket.push(transaction);
-        nextTransactionsByStorage.set(result.storageKey, bucket);
-      });
-
-      TRANSACTION_STORAGE_KEYS.forEach((storageKey) => {
-        const storage = ensureStorage(storageKey);
-        const withoutPlan = storage.all.filter(
-          (tx) => !(tx?.source === 'pechat-plan' && tx?.planId === planId)
-        );
-        const next = [...withoutPlan, ...(nextTransactionsByStorage.get(storageKey) || [])];
-        localStorage.setItem(storageKey, JSON.stringify(next));
-      });
-
-      // Calculate material usage and costs
-      const calculations = calculateMaterialUsage();
+    
+    // Find the order ID for this plan
+    const orderItems = readLocalArray<OrderBookItem>('clients-order-book', []);
+    const planOrderId = statusPlan.orderId || 
+      orderItems.find(order => order.orderNumber === statusPlan.orderNumber)?.id;
+    
+    // Validate all color measurements before saving
+    const validationMachineId = statusPlan.machineId || selectedMachineId;
+    let validationError = false;
+    
+    availableColors.forEach(color => {
+      const measurements = colorMeasurements.get(color.id) || [0, 0, 0, 0, 0];
+      const allocatedAmount = getAllocatedAmount(`kraska:${color.id}`, validationMachineId, planOrderId);
+      const totalUsage = (measurements[0] || 0) + (measurements[1] || 0) + (measurements[2] || 0);
       
-      const updatedPlans = plans.map((plan) =>
-        plan.id === statusPlan.id
-          ? { 
-              ...plan, 
-              status: statusValue, 
-              materialsUsed: usedMaterials,
-              numberOfColors,
-              colorValues: colorValues.filter(color => color.trim() !== ''),
-              colorMeasurements: new Map(colorMeasurements),
-              totalMeters: parseFloat(totalMeters) || 0,
-              totalKg: parseFloat(totalKg) || 0,
-              calculatedMaterialUsage: calculations // Store the calculation results
-            }
-          : plan
+      if (totalUsage > allocatedAmount && allocatedAmount > 0) {
+        validationError = true;
+      }
+    });
+    
+    if (validationError) {
+      return; // Don't save if validation fails
+    }
+    
+    // Use the existing color data instead of separate material usage
+    const usedMaterials: MaterialUsage[] = [];
+
+    // Process return transactions for colors
+    const planId = statusPlan.id;
+    const planMachineId = statusPlan.machineId || selectedMachineId;
+    const nextTransactionsByStorage = new Map<string, any[]>();
+
+      // Create return transactions for remaining materials based on formula calculations
+      availableColors.forEach(color => {
+        const measurements = colorMeasurements.get(color.id) || [0, 0, 0, 0, 0];
+        
+        // Return remaining suyuq kraska (liquid paint) if any
+        const remainingSuyuq = measurements[3]; // Qolgan suyuq
+        if (remainingSuyuq > 0) {
+          const note = `Qolgan suyuq kraska qaytarildi - ${statusPlan.orderNumber}`;
+          const materialId = `suyuq-kraska:${color.id}`;
+          const result = createMaterialTransaction(materialId, remainingSuyuq, note, planMachineId, planId, 'return', planOrderId);
+          if (result) {
+            const bucket = nextTransactionsByStorage.get(result.storageKey) || [];
+            bucket.push(result.transaction);
+            nextTransactionsByStorage.set(result.storageKey, bucket);
+            console.log('Created suyuq kraska return transaction:', result.transaction);
+          }
+        }
+        
+        // Return remaining kraska (thick paint) if any - this is the main return transaction
+        const remainingKraska = measurements[4]; // Qolgan mahsulot
+        if (remainingKraska > 0) {
+          const note = `Qolgan kraska qaytarildi - ${statusPlan.orderNumber}`;
+          const materialId = `kraska:${color.id}`;
+          const result = createMaterialTransaction(materialId, remainingKraska, note, planMachineId, planId, 'return', planOrderId);
+          if (result) {
+            const bucket = nextTransactionsByStorage.get(result.storageKey) || [];
+            bucket.push(result.transaction);
+            nextTransactionsByStorage.set(result.storageKey, bucket);
+            console.log('Created kraska return transaction:', result.transaction);
+          }
+        }
+        
+        // Record calculated quyuq kraska usage if positive
+        const calculatedQuyuq = measurements[1];
+        if (calculatedQuyuq > 0) {
+          const note = `Quyuq kraska ishlatildi (formula asosida) - ${statusPlan.orderNumber}`;
+          const materialId = `kraska:${color.id}`;
+          const result = createMaterialTransaction(materialId, calculatedQuyuq, note, planMachineId, planId, 'out', planOrderId);
+          if (result) {
+            const bucket = nextTransactionsByStorage.get(result.storageKey) || [];
+            bucket.push(result.transaction);
+            nextTransactionsByStorage.set(result.storageKey, bucket);
+            console.log('Created quyuq kraska usage transaction:', result.transaction);
+          }
+        }
+        
+        // Record manual razvaritel usage if positive
+        const manualRazvaritel = measurements[2];
+        if (manualRazvaritel > 0) {
+          const note = `Razvaritel ishlatildi (qo'lda kiritilgan) - ${statusPlan.orderNumber}`;
+          const materialId = `razvaritel:${color.id}`;
+          const result = createMaterialTransaction(materialId, manualRazvaritel, note, planMachineId, planId, 'out', planOrderId);
+          if (result) {
+            const bucket = nextTransactionsByStorage.get(result.storageKey) || [];
+            bucket.push(result.transaction);
+            nextTransactionsByStorage.set(result.storageKey, bucket);
+            console.log('Created razvaritel usage transaction:', result.transaction);
+          }
+        }
+      });
+
+    console.log('Final transaction map:', Array.from(nextTransactionsByStorage.entries()));
+
+    // Update storage with new return transactions
+    TRANSACTION_STORAGE_KEYS.forEach((storageKey) => {
+      const all = readLocalArray<any>(storageKey, []);
+      const withoutPlan = all.filter(
+        (tx) => !(
+          (tx?.source === 'pechat-plan' && tx?.planId === planId) ||
+          (tx?.source === 'pechat-ostatok' && tx?.planId === planId)
+        )
       );
-      persistPlans(updatedPlans);
+      const newTransactions = nextTransactionsByStorage.get(storageKey) || [];
+      const next = [...withoutPlan, ...newTransactions];
       
-      // Handle dispatch if status is finished and destination is selected
-      if (statusValue === 'finished' && dispatchDestination) {
-        handleDispatchProduct(statusPlan);
+      console.log(`Updating ${storageKey}:`, {
+        original: all.length,
+        withoutPlan: withoutPlan.length, 
+        newTransactions: newTransactions.length,
+        final: next.length
+      });
+      
+      if (newTransactions.length > 0) {
+        console.log(`New transactions for ${storageKey}:`, newTransactions);
       }
       
-      // Store and show calculation results
-      setCalculationResults(calculations);
-      handleCloseStatusDialog();
-      setShowCalculationDialog(true);
+      localStorage.setItem(storageKey, JSON.stringify(next));
+      
+      // Dispatch storage event so other pages can update
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: storageKey,
+          newValue: JSON.stringify(next),
+          url: window.location.href
+        }));
+      }
+    });
+
+    // Prepare detailed formula calculations for saving
+    const formulaDetails = availableColors.map(color => {
+      const measurements = colorMeasurements.get(color.id) || [0, 0, 0, 0, 0];
+      const ishlatilganSuyuq = measurements[0] || 0;
+      const quyuqKraska = measurements[1] || 0;
+      const razvaritel = measurements[2] || 0;
+      const qolganSuyuq = measurements[3] || 0;
+      const qolganMahsulot = measurements[4] || 0;
+      
+      // Calculate formulas step by step
+      const quyuqFormula = {
+        formula: "Ishlatilgan suyuq × 0.67 + quyuq kraska - qolgan suyuq × 0.67",
+        calculation: `${ishlatilganSuyuq} × 0.67 + ${quyuqKraska} - ${qolganSuyuq} × 0.67`,
+        step1: ishlatilganSuyuq * 0.67,
+        step2: quyuqKraska,
+        step3: qolganSuyuq * 0.67,
+        result: parseFloat(((ishlatilganSuyuq * 0.67) + quyuqKraska - (qolganSuyuq * 0.67)).toFixed(2))
+      };
+      
+      const razvaritelFormula = {
+        formula: "Manual Entry (User Input)",
+        calculation: `Manually entered by user`,
+        step1: 0,
+        step2: razvaritel,
+        step3: 0,
+        result: parseFloat(razvaritel.toFixed(2))
+      };
+      
+      return {
+        colorId: color.id,
+        colorName: color.colorName,
+        seriya: color.seriya,
+        marka: color.marka,
+        measurements: {
+          ishlatilganSuyuq,
+          quyuqKraska,
+          razvaritel,
+          qolganSuyuq,
+          qolganMahsulot
+        },
+        formulas: {
+          quyuqKraska: quyuqFormula,
+          razvaritel: razvaritelFormula
+        }
+      };
+    });
+
+    const updatedPlans = plans.map((plan) =>
+      plan.id === statusPlan.id
+        ? { 
+            ...plan, 
+            status: statusValue, 
+            materialsUsed: usedMaterials,
+            numberOfColors,
+            colorValues: colorValues.filter(color => color.trim() !== ''),
+            colorMeasurements: new Map(colorMeasurements),
+            formulaDetails, // Save detailed formula calculations
+            totalMeters: parseFloat(totalMeters) || 0,
+            totalKg: parseFloat(totalKg) || 0,
+            completedAt: statusValue === 'finished' ? new Date().toISOString() : plan.completedAt
+          }
+        : plan
+    );
+    persistPlans(updatedPlans);
+    
+    // Handle dispatch if status is finished and destination is selected
+    if (statusValue === 'finished' && dispatchDestination) {
+      handleDispatchProduct(statusPlan);
     }
+    
+    // Close dialog without showing calculation results
+    handleCloseStatusDialog();
   };
 
   const formatDate = (value?: string) => {
@@ -1465,54 +1569,250 @@ export default function PechatPanelOverviewPage() {
               ) : (
                 availableColors.map((color, colorIndex) => {
                   const measurements = colorMeasurements.get(color.id) || [0, 0, 0, 0];
+                  const planMachineId = statusPlan?.machineId || selectedMachineId;
+                  const planOrderId = statusPlan?.orderId;
+                  const allocatedAmount = getAllocatedAmount(`kraska:${color.id}`, planMachineId, planOrderId);
+                  const totalUsed = (measurements[0] || 0) + (measurements[1] || 0) + (measurements[2] || 0);
+                  
                   return (
                     <Stack key={color.id} spacing={1}>
                       <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                          {colorIndex + 1}-{color.colorName}:
-                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                            {colorIndex + 1}-{color.colorName}:
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 500 }}>
+                            Allocated: {allocatedAmount} kg
+                          </Typography>
+                        </Box>
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                           {color.seriya && `Seriya: ${color.seriya}`}
                           {color.marka && ` | Marka: ${color.marka}`}
                           {color.amount && ` | Ishlatilgan: ${color.amount} ${color.unit}`}
                         </Typography>
                       </Box>
+
+
+                      {/* Input fields for formula base values */}
                       <Box sx={{ 
                         display: 'grid', 
                         gap: 2, 
-                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-                        mt: 1
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        mt: 1,
+                        mb: 2
                       }}>
-                        {[
-                          { label: t('pechatPanel.colorMeasurements.liquidPaintUsed'), short: 'Suyuq (ish.)' },
-                          { label: t('pechatPanel.colorMeasurements.thickPaintUsed'), short: 'Quyuq (ish.)' },
-                          { label: t('pechatPanel.colorMeasurements.thinner'), short: 'Razvaritel' },
-                          { label: t('pechatPanel.colorMeasurements.liquidPaintRemaining'), short: 'Qolgan' }
-                        ].map((item, measureIndex) => (
-                          <Box key={measureIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="caption" sx={{ minWidth: '80px', fontSize: '0.75rem' }}>
-                              {item.short}:
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" sx={{ 
+                            minWidth: '120px', 
+                            fontSize: '0.75rem',
+                            fontWeight: 500
+                          }}>
+                            Ishlatilgan suyuq:
+                          </Typography>
+                          <TextField
+                            placeholder="0"
+                            type="number"
+                            size="small"
+                            value={measurements[0] || ''}
+                            onChange={(event) => updateColorMeasurement(color.id, 0, event.target.value)}
+                            inputProps={{ min: 0, step: 'any' }}
+                            error={totalUsed > allocatedAmount && allocatedAmount > 0}
+                            sx={{ 
+                              flex: 1,
+                              '& .MuiInputBase-input': { 
+                                textAlign: 'center',
+                                padding: '6px 8px'
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                height: '32px'
+                              }
+                            }}
+                          />
+                          <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>kg</Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" sx={{ 
+                            minWidth: '120px', 
+                            fontSize: '0.75rem',
+                            fontWeight: 500
+                          }}>
+                            Qolgan suyuq:
+                          </Typography>
+                          <TextField
+                            placeholder="0"
+                            type="number"
+                            size="small"
+                            value={measurements[3] || ''}
+                            onChange={(event) => updateColorMeasurement(color.id, 3, event.target.value)}
+                            inputProps={{ min: 0, step: 'any' }}
+                            error={totalUsed > allocatedAmount && allocatedAmount > 0}
+                            sx={{ 
+                              flex: 1,
+                              '& .MuiInputBase-input': { 
+                                textAlign: 'center',
+                                padding: '6px 8px'
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                height: '32px'
+                              }
+                            }}
+                          />
+                          <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>kg</Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" sx={{ 
+                            minWidth: '120px', 
+                            fontSize: '0.75rem',
+                            fontWeight: 500
+                          }}>
+                            Razvaritel:
+                          </Typography>
+                          <TextField
+                            placeholder="0"
+                            type="number"
+                            size="small"
+                            value={measurements[2] || ''}
+                            onChange={(event) => updateColorMeasurement(color.id, 2, event.target.value)}
+                            inputProps={{ min: 0, step: 'any' }}
+                            error={totalUsed > allocatedAmount && allocatedAmount > 0}
+                            sx={{ 
+                              flex: 1,
+                              '& .MuiInputBase-input': { 
+                                textAlign: 'center',
+                                padding: '6px 8px'
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                height: '32px'
+                              }
+                            }}
+                          />
+                          <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>kg</Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" sx={{ 
+                            minWidth: '120px', 
+                            fontSize: '0.75rem',
+                            fontWeight: 500
+                          }}>
+                            Qolgan mahsulot:
+                          </Typography>
+                          <TextField
+                            placeholder="0"
+                            type="number"
+                            size="small"
+                            value={measurements[4] || ''}
+                            onChange={(event) => updateColorMeasurement(color.id, 4, event.target.value)}
+                            inputProps={{ min: 0, step: 'any' }}
+                            error={(totalUsed > allocatedAmount && allocatedAmount > 0) || (measurements[4] || 0) > (measurements[0] || 0)}
+                            sx={{ 
+                              flex: 1,
+                              '& .MuiInputBase-input': { 
+                                textAlign: 'center',
+                                padding: '6px 8px'
+                              },
+                              '& .MuiOutlinedInput-root': {
+                                height: '32px'
+                              }
+                            }}
+                          />
+                          <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>kg</Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Formula calculations and results */}
+                      <Box sx={{ 
+                        p: 2,
+                        backgroundColor: 'action.hover',
+                        borderRadius: 1,
+                        mb: 2
+                      }}>
+                        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
+                          Formula Calculations & Explanation:
+                        </Typography>
+                        
+                        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr' }}>
+                          {/* Formula explanation */}
+                          <Box sx={{ p: 1.5, backgroundColor: 'background.paper', borderRadius: 1 }}>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, display: 'block', mb: 1 }}>
+                              How the calculation works:
                             </Typography>
-                            <TextField
-                              placeholder="0"
-                              type="number"
-                              size="small"
-                              value={measurements[measureIndex] || ''}
-                              onChange={(event) => updateColorMeasurement(color.id, measureIndex, event.target.value)}
-                              inputProps={{ min: 0, step: 'any' }}
-                              sx={{ 
-                                flex: 1,
-                                '& .MuiInputBase-input': { 
-                                  textAlign: 'center',
-                                  padding: '6px 8px'
-                                },
-                                '& .MuiOutlinedInput-root': {
-                                  height: '32px'
-                                }
-                              }}
-                            />
+                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', display: 'block' }}>
+                              • Quyuq kraska is automatically calculated: 67% of liquid paint usage
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', display: 'block' }}>
+                              • Razvaritel must be entered manually - enter the actual amount used
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', display: 'block' }}>
+                              • Remaining liquid paint is subtracted from the calculation
+                            </Typography>
                           </Box>
-                        ))}
+
+                          {/* Quyuq kraska calculation */}
+                          <Box>
+                            <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 500 }}>
+                              1. Quyuq kraska formula:
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem', mt: 0.5, color: 'text.secondary' }}>
+                              Ishlatilgan suyuq × 0.67 + quyuq kraska - qolgan suyuq × 0.67
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.85rem', mt: 0.5, fontWeight: 500 }}>
+                              {measurements[0] || 0} × 0.67 + {measurements[1] || 0} - {measurements[3] || 0} × 0.67 = {parseFloat((measurements[1] || 0).toFixed(2))} kg
+                            </Typography>
+                          </Box>
+
+                          {/* Razvaritel manual entry */}
+                          <Box>
+                            <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 500 }}>
+                              2. Razvaritel (Manual Entry):
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem', mt: 0.5, color: 'text.secondary' }}>
+                              User entered amount (no automatic calculation)
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.85rem', mt: 0.5, fontWeight: 500 }}>
+                              Entered: {parseFloat((measurements[2] || 0).toFixed(2))} kg
+                            </Typography>
+                          </Box>
+
+                          {/* Summary */}
+                          <Divider sx={{ my: 1 }} />
+                          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 500 }}>
+                                Ishlatilgan suyuq:
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {parseFloat((measurements[0] || 0).toFixed(2))} kg
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'warning.main', fontWeight: 500 }}>
+                                Quyuq kraska:
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {parseFloat((measurements[1] || 0).toFixed(2))} kg
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 500 }}>
+                                Razvaritel:
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {parseFloat((measurements[2] || 0).toFixed(2))} kg
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 500 }}>
+                                Qolgan mahsulot:
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {parseFloat((measurements[4] || 0).toFixed(2))} kg
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
                       </Box>
                     </Stack>
                   );
@@ -1603,107 +1903,12 @@ export default function PechatPanelOverviewPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseStatusDialog}>{t('orderPlanPage.cancel')}</Button>
-          <Button variant="contained" onClick={handleSaveStatus} disabled={hasUsageErrors}>
+          <Button variant="contained" onClick={handleSaveStatus}>
             {t('orderPlanPage.save')}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Calculation Results Dialog */}
-      <Dialog 
-        open={showCalculationDialog} 
-        onClose={() => setShowCalculationDialog(false)} 
-        fullWidth 
-        maxWidth="md"
-      >
-        <DialogTitle>Material xarajatlari hisobi</DialogTitle>
-        <DialogContent dividers>
-          {calculationResults && (
-            <Stack spacing={3}>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Quyidagi formulalar asosida hisoblangan:
-              </Typography>
-              
-              <Box sx={{ bgcolor: 'grey.100', p: 2, borderRadius: 1 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-                  Suyuq kraska: (Ishlatilgan × 0.67) + Quyuq - (Qolgan × 0.67)
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                  Razvaritel: (Ishlatilgan × 0.33) + Razvaritel - (Qolgan × 0.33)
-                </Typography>
-              </Box>
-
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Rang</TableCell>
-                      <TableCell align="right">Suyuq kraska (kg)</TableCell>
-                      <TableCell align="right">Razvaritel (l)</TableCell>
-                      <TableCell align="right">Xarajat</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {calculationResults.colorResults.map((result, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            {result.colorName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2">
-                            {result.suyuqUsed.toFixed(2)} kg
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2">
-                            {result.razvaritelUsed.toFixed(2)} l
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            {result.totalCost.toFixed(2)} USD
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow sx={{ bgcolor: 'background.neutral' }}>
-                      <TableCell colSpan={3}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                          Jami xarajat:
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                          {calculationResults.totalCost.toFixed(2)} USD
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              <Box sx={{ 
-                p: 2, 
-                border: 1, 
-                borderColor: 'success.main', 
-                borderRadius: 1,
-                bgcolor: 'success.lighter'
-              }}>
-                <Typography variant="body2" sx={{ color: 'success.dark', fontWeight: 'medium' }}>
-                  ✅ Hisob-kitob muvaffaqiyatli saqlandi va material xarajatlari bazaga qo&apos;shildi.
-                </Typography>
-              </Box>
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowCalculationDialog(false)} variant="contained">
-            Yopish
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }

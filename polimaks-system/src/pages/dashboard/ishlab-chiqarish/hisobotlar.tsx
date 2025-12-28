@@ -81,6 +81,37 @@ type PlanItem = {
   endDate?: string;
   status?: PlanStatus;
   materialsUsed?: MaterialUsage[];
+  formulaDetails?: FormulaDetail[];
+  totalMeters?: number;
+  totalKg?: number;
+  completedAt?: string;
+};
+
+type FormulaDetail = {
+  colorId: string;
+  colorName: string;
+  seriya?: string;
+  marka?: string;
+  measurements: {
+    ishlatilganSuyuq: number;
+    quyuqKraska: number;
+    razvaritel: number;
+    qolganSuyuq: number;
+    qolganMahsulot: number;
+  };
+  formulas: {
+    quyuqKraska: FormulaCalculation;
+    razvaritel: FormulaCalculation;
+  };
+};
+
+type FormulaCalculation = {
+  formula: string;
+  calculation: string;
+  step1: number;
+  step2: number;
+  step3: number;
+  result: number;
 };
 
 type UsageRow = {
@@ -217,6 +248,7 @@ export default function IshlabChiqarishHisobotlar() {
 
   const infoDialog = useBoolean();
   const financialDialog = useBoolean();
+  const formulaDialog = useBoolean();
 
   const buildPriceLookup = () => {
     const map = new Map<string, { price?: number; currency?: Currency; unitLabel: string }>();
@@ -357,6 +389,16 @@ export default function IshlabChiqarishHisobotlar() {
     financialDialog.onTrue();
   };
 
+  const openFormulaDetails = (item: OrderBookItem) => {
+    const relatedPlans = allPlans.filter(
+      (plan) => plan?.orderId === item.id || plan?.orderNumber === item.orderNumber
+    );
+    setDetailItem(item);
+    setDetailPlans(relatedPlans);
+    setDetailMaterials(buildUsageRows(relatedPlans));
+    formulaDialog.onTrue();
+  };
+
   const closeInfo = () => {
     infoDialog.onFalse();
     setDetailItem(null);
@@ -366,6 +408,13 @@ export default function IshlabChiqarishHisobotlar() {
 
   const closeFinancial = () => {
     financialDialog.onFalse();
+    setDetailItem(null);
+    setDetailPlans([]);
+    setDetailMaterials([]);
+  };
+
+  const closeFormula = () => {
+    formulaDialog.onFalse();
     setDetailItem(null);
     setDetailPlans([]);
     setDetailMaterials([]);
@@ -435,7 +484,12 @@ export default function IshlabChiqarishHisobotlar() {
                       const totalRevenue = item.quantityKg * item.pricePerKg;
                       
                       return (
-                        <TableRow key={item.id} hover>
+                        <TableRow 
+                          key={item.id} 
+                          hover 
+                          onClick={() => openFormulaDetails(item)}
+                          sx={{ cursor: 'pointer' }}
+                        >
                           <TableCell>
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>
                               {item.orderNumber}
@@ -505,10 +559,18 @@ export default function IshlabChiqarishHisobotlar() {
                           </TableCell>
                           <TableCell align="right">
                             <Stack direction="row" spacing={0.5}>
-                              <IconButton onClick={() => openFinancial(item)} size="small" title="Moliyaviy tahlil">
+                              <IconButton 
+                                onClick={(e) => { e.stopPropagation(); openFinancial(item); }} 
+                                size="small" 
+                                title="Moliyaviy tahlil"
+                              >
                                 <Iconify icon="solar:verified-check-bold" />
                               </IconButton>
-                              <IconButton onClick={() => openInfo(item)} size="small" title="Batafsil ma'lumot">
+                              <IconButton 
+                                onClick={(e) => { e.stopPropagation(); openInfo(item); }} 
+                                size="small" 
+                                title="Batafsil ma'lumot"
+                              >
                                 <Iconify icon="solar:info-circle-bold" />
                               </IconButton>
                             </Stack>
@@ -955,6 +1017,183 @@ export default function IshlabChiqarishHisobotlar() {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeFinancial} color="inherit">
+            Yopish
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Formula Details Dialog */}
+      <Dialog open={formulaDialog.value} onClose={closeFormula} maxWidth="lg" fullWidth>
+        <DialogTitle>Formula hisobotlari - {detailItem?.orderNumber}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={3}>
+            {detailItem && detailPlans.length > 0 && (
+              <>
+                {detailPlans
+                  .filter(plan => plan.formulaDetails && plan.formulaDetails.length > 0)
+                  .map((plan) => (
+                    <Card key={plan.id} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
+                      <Stack spacing={2}>
+                        {/* Plan Header */}
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                            {machineTypeLabel(plan.machineType)} - {plan.machineName || plan.groupName}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Status: {plan.status === 'finished' ? 'Tugallangan' : 'Jarayonda'}
+                            {plan.completedAt && ` | Tugash vaqti: ${new Date(plan.completedAt).toLocaleDateString()}`}
+                          </Typography>
+                        </Box>
+
+                        <Divider />
+
+                        {/* Formula Details for each color */}
+                        {plan.formulaDetails?.map((colorDetail, index) => (
+                          <Box key={colorDetail.colorId} sx={{ p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
+                            <Stack spacing={2}>
+                              {/* Color Header */}
+                              <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                  {index + 1}-{colorDetail.colorName}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                                  {colorDetail.seriya && `Seriya: ${colorDetail.seriya}`}
+                                  {colorDetail.marka && ` | Marka: ${colorDetail.marka}`}
+                                </Typography>
+                              </Box>
+
+                              {/* Measurements Input Values */}
+                              <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                                <Box sx={{ p: 1.5, backgroundColor: 'background.paper', borderRadius: 1 }}>
+                                  <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 500 }}>
+                                    Ishlatilgan suyuq:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {parseFloat(colorDetail.measurements.ishlatilganSuyuq.toFixed(2))} kg
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ p: 1.5, backgroundColor: 'background.paper', borderRadius: 1 }}>
+                                  <Typography variant="caption" sx={{ color: 'warning.main', fontWeight: 500 }}>
+                                    Qolgan suyuq:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {parseFloat(colorDetail.measurements.qolganSuyuq.toFixed(2))} kg
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ p: 1.5, backgroundColor: 'background.paper', borderRadius: 1 }}>
+                                  <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 500 }}>
+                                    Razvaritel:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {parseFloat(colorDetail.measurements.razvaritel.toFixed(2))} kg
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ p: 1.5, backgroundColor: 'background.paper', borderRadius: 1 }}>
+                                  <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 500 }}>
+                                    Qolgan mahsulot:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {parseFloat(colorDetail.measurements.qolganMahsulot.toFixed(2))} kg
+                                  </Typography>
+                                </Box>
+                              </Box>
+
+                              {/* Formula Calculations */}
+                              <Box sx={{ p: 2, backgroundColor: 'background.paper', borderRadius: 1 }}>
+                                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+                                  Formula hisobotlari:
+                                </Typography>
+                                
+                                <Stack spacing={2}>
+                                  {/* Quyuq kraska formula */}
+                                  <Box>
+                                    <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 500 }}>
+                                      1. Quyuq kraska formulasi:
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'text.secondary', mt: 0.5 }}>
+                                      {colorDetail.formulas.quyuqKraska.formula}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 500, mt: 0.5 }}>
+                                      {colorDetail.formulas.quyuqKraska.calculation} = {parseFloat(colorDetail.formulas.quyuqKraska.result.toFixed(2))} kg
+                                    </Typography>
+                                  </Box>
+
+                                  {/* Razvaritel formula */}
+                                  <Box>
+                                    <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 500 }}>
+                                      2. Razvaritel formulasi:
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'text.secondary', mt: 0.5 }}>
+                                      {colorDetail.formulas.razvaritel.formula}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 500, mt: 0.5 }}>
+                                      {colorDetail.formulas.razvaritel.calculation} = {parseFloat(colorDetail.formulas.razvaritel.result.toFixed(2))} kg
+                                    </Typography>
+                                  </Box>
+                                </Stack>
+                              </Box>
+                            </Stack>
+                          </Box>
+                        ))}
+
+                        {/* Production Summary */}
+                        {plan.totalMeters || plan.totalKg ? (
+                          <Box sx={{ p: 2, backgroundColor: 'action.hover', borderRadius: 1 }}>
+                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                              Ishlab chiqarish natijalari:
+                            </Typography>
+                            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                              {plan.totalMeters && (
+                                <Box>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                    Umumiy metr:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {parseFloat(plan.totalMeters.toFixed(2))} m
+                                  </Typography>
+                                </Box>
+                              )}
+                              {plan.totalKg && (
+                                <Box>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                    Umumiy kilogram:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {parseFloat(plan.totalKg.toFixed(2))} kg
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                          </Box>
+                        ) : null}
+                      </Stack>
+                    </Card>
+                  ))}
+
+                {detailPlans.filter(plan => !plan.formulaDetails || plan.formulaDetails.length === 0).length > 0 && (
+                  <Box sx={{ p: 3, textAlign: 'center', backgroundColor: 'action.hover', borderRadius: 1 }}>
+                    <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+                      Ba&apos;zi planlar uchun formula ma&apos;lumotlari mavjud emas
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+                      Formula ma&apos;lumotlari faqat yangi saqlangan planlar uchun ko&apos;rsatiladi
+                    </Typography>
+                  </Box>
+                )}
+              </>
+            )}
+
+            {detailPlans.length === 0 && (
+              <Box sx={{ p: 6, textAlign: 'center' }}>
+                <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+                  Ushbu buyurtma uchun ishlab chiqarish rejalari topilmadi
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeFormula} color="inherit">
             Yopish
           </Button>
         </DialogActions>
