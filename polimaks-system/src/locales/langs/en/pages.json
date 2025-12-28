@@ -1610,7 +1610,12 @@
       "usagePlaceholder": "Enter amount used",
       "noSuyuqKraska": "No suyuq kraska available in transactions for this order/machine",
       "noKraska": "No kraska available in transactions for this order/machine", 
-      "noRazvaritelAralashmasi": "No razvaritel aralashmasi available in transactions for this order/machine"
+      "noRazvaritelAralashmasi": "No razvaritel aralashmasi available in transactions for this order/machine",
+      "calculations": "Calculations",
+      "colorUsed": "Color Used",
+      "razvaritelUsed": "Razvaritel Used",
+      "formula": "Formula",
+      "calculation": "Calculation"
     },
     "noMaterials": "No materials found",
     "selectMaterial": "Select material",

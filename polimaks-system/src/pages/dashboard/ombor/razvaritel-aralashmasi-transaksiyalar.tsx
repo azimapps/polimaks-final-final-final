@@ -443,10 +443,10 @@ export default function MixtureTransactionsPage() {
                     const value = e.target.value;
                     setTxAmount(value === '' ? '' : Number(value));
                   }}
-                  error={txType === 'out' && selectedMixture && typeof txAmount === 'number' && txAmount > 0 && (() => {
+                  error={Boolean(txType === 'out' && selectedMixture && typeof txAmount === 'number' && txAmount > 0 && (() => {
                     const mixture = mixtures.find(m => m.id === selectedMixture);
                     return mixture ? txAmount > mixture.totalLiter : false;
-                  })()}
+                  })())}
                   helperText={
                     txType === 'out' && selectedMixture && (() => {
                       const mixture = mixtures.find(m => m.id === selectedMixture);

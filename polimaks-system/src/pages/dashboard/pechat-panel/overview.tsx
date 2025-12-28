@@ -15,9 +15,10 @@ import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
-import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
@@ -893,8 +894,8 @@ export default function PechatPanelOverviewPage() {
         title: plan.title,
         totalKg: parseFloat(totalKg) || plan.quantityKg || 0,
         totalMeter: parseFloat(totalMeters) || 0,
-        colorMeasurements: Object.fromEntries(colorMeasurements),
-        colorValues: colorValues.filter(color => color.trim() !== ''),
+        materialUsage: Object.fromEntries(materialUsage),
+        materialValues: Array.from(materialUsage.keys()),
         completedDate: new Date().toISOString().slice(0, 10),
         pricePerKg: plan.pricePerKg || 0,
         priceCurrency: plan.priceCurrency || 'UZS',
@@ -927,7 +928,7 @@ export default function PechatPanelOverviewPage() {
           pechatResults: {
             totalKg: parseFloat(totalKg) || 0,
             totalMeters: parseFloat(totalMeters) || 0,
-            colorMeasurements: Object.fromEntries(colorMeasurements)
+            materialUsage: Object.fromEntries(materialUsage)
           }
         };
         
@@ -1246,173 +1247,363 @@ export default function PechatPanelOverviewPage() {
                 {t('pechatPanel.materialSelection.title')}
               </Typography>
               
-              {/* Suyuq Kraska */}
+              {/* Top Section: Kraska and Razvaritel */}
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                {/* Kraska */}
+                {availableKraska.length > 0 && (
+                  <Box sx={{ flex: 1, minWidth: '300px' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                      {t('pechatPanel.materialSelection.kraskaTitle')}
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                      gap: 1 
+                    }}>
+                      {availableKraska.map((item) => (
+                        <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box 
+                              sx={{ 
+                                width: 16, 
+                                height: 16, 
+                                borderRadius: '50%', 
+                                backgroundColor: item.colorCode || '#cccccc',
+                                border: '1px solid #ddd',
+                                flexShrink: 0
+                              }} 
+                            />
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
+                                {item.seriyaNumber || item.id} - {item.colorName || t('razvaritelTransactionsPage.unknown')}
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
+                                {t('pechatPanel.materialSelection.available')}: {item.amount}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Razvaritel Aralashmasi */}
+                {availableRazvaritelAralashmasi.length > 0 && (
+                  <Box sx={{ flex: 1, minWidth: '300px' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                      {t('pechatPanel.materialSelection.razvaritelAralashmasiTitle')}
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                      gap: 1 
+                    }}>
+                      {availableRazvaritelAralashmasi.map((item) => (
+                        <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
+                                {item.name || item.id}
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
+                                {t('pechatPanel.materialSelection.available')}: {item.amount}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Divider */}
+              {availableSuyuqKraska.length > 0 && (availableKraska.length > 0 || availableRazvaritelAralashmasi.length > 0) && (
+                <Divider sx={{ my: 1 }} />
+              )}
+
+              {/* Suyuq Kraska Section with 4 Fields */}
               {availableSuyuqKraska.length > 0 && (
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', mb: 2, display: 'block' }}>
                     {t('pechatPanel.materialSelection.suyuqKraskaTitle')}
                   </Typography>
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                    gap: 1 
-                  }}>
+                  <Stack spacing={2}>
                     {availableSuyuqKraska.map((item) => (
-                      <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box key={item.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                        {/* Header with color and name */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                           <Box 
                             sx={{ 
-                              width: 16, 
-                              height: 16, 
+                              width: 20, 
+                              height: 20, 
                               borderRadius: '50%', 
                               backgroundColor: item.colorCode || '#cccccc',
                               border: '1px solid #ddd',
                               flexShrink: 0
                             }} 
                           />
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
-                              {item.seriyaNumber || item.id} - {item.colorName || t('razvaritelTransactionsPage.unknown')}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
+                            {item.seriyaNumber || item.id} - {item.colorName || t('razvaritelTransactionsPage.unknown')}
+                          </Typography>
+                          <Box sx={{ ml: 'auto', textAlign: 'right' }}>
+                            <Typography variant="caption" sx={{ color: 'primary.main', display: 'block' }}>
+                              {t('pechatPanel.materialSelection.available')}: {item.amount}
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
-                              {t('pechatPanel.materialSelection.available')}: {item.amount}kg
+                            <Typography variant="caption" sx={{ 
+                              color: (() => {
+                                const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
+                                                 (materialUsage.get(`leftover:${item.id}`) || 0);
+                                return totalUsed > (item.amount || 0) ? 'error.main' : 'text.secondary';
+                              })(),
+                              display: 'block'
+                            }}>
+                              Used: {((materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
+                                     (materialUsage.get(`leftover:${item.id}`) || 0)).toFixed(1)}
                             </Typography>
                           </Box>
+                        </Box>
+                        
+                        {/* 2x2 Grid of Fields */}
+                        <Box sx={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: '1fr 1fr', 
+                          gap: 1.5 
+                        }}>
                           <TextField
+                            label="Suyuq (ish)"
                             size="small"
                             type="number"
                             placeholder="0"
-                            value={materialUsage.get(`suyuq-kraska:${item.id}`) || ''}
+                            value={materialUsage.get(`suyuq-used:${item.id}`) || ''}
                             onChange={(e) => {
-                              const value = parseFloat(e.target.value) || 0;
-                              setMaterialUsage(prev => new Map(prev.set(`suyuq-kraska:${item.id}`, value)));
+                              const newValue = parseFloat(e.target.value) || 0;
+                              const leftover = (materialUsage.get(`leftover:${item.id}`) || 0);
+                              if (newValue + leftover <= (item.amount || 0)) {
+                                setMaterialUsage(prev => new Map(prev.set(`suyuq-used:${item.id}`, newValue)));
+                              }
                             }}
-                            inputProps={{ min: 0, max: item.amount, step: 0.1 }}
-                            error={materialUsage.get(`suyuq-kraska:${item.id}`) > item.amount}
+                            inputProps={{ min: 0, step: 0.1 }}
+                            error={(() => {
+                              const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
+                                               (materialUsage.get(`leftover:${item.id}`) || 0);
+                              return totalUsed > (item.amount || 0);
+                            })()}
                             sx={{ 
-                              width: '80px',
                               '& .MuiInputBase-input': { 
                                 textAlign: 'center', 
-                                fontSize: '0.75rem', 
-                                padding: '4px 6px' 
+                                fontSize: '0.875rem'
                               }
                             }}
                           />
-                          <Typography variant="caption" sx={{ fontSize: '0.7rem', minWidth: '20px' }}>kg</Typography>
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              {/* Kraska */}
-              {availableKraska.length > 0 && (
-                <Box>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
-                    {t('pechatPanel.materialSelection.kraskaTitle')}
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                    gap: 1 
-                  }}>
-                    {availableKraska.map((item) => (
-                      <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box 
-                            sx={{ 
-                              width: 16, 
-                              height: 16, 
-                              borderRadius: '50%', 
-                              backgroundColor: item.colorCode || '#cccccc',
-                              border: '1px solid #ddd',
-                              flexShrink: 0
-                            }} 
-                          />
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
-                              {item.seriyaNumber || item.id} - {item.colorName || t('razvaritelTransactionsPage.unknown')}
-                            </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
-                              {t('pechatPanel.materialSelection.available')}: {item.amount}kg
-                            </Typography>
-                          </Box>
                           <TextField
+                            label="Kraska"
                             size="small"
                             type="number"
                             placeholder="0"
-                            value={materialUsage.get(`kraska:${item.id}`) || ''}
+                            value={materialUsage.get(`quyuq-used:${item.id}`) || ''}
                             onChange={(e) => {
-                              const value = parseFloat(e.target.value) || 0;
-                              setMaterialUsage(prev => new Map(prev.set(`kraska:${item.id}`, value)));
+                              const newValue = parseFloat(e.target.value) || 0;
+                              setMaterialUsage(prev => new Map(prev.set(`quyuq-used:${item.id}`, newValue)));
                             }}
-                            inputProps={{ min: 0, max: item.amount, step: 0.1 }}
-                            error={materialUsage.get(`kraska:${item.id}`) > item.amount}
+                            inputProps={{ min: 0, step: 0.1 }}
                             sx={{ 
-                              width: '80px',
                               '& .MuiInputBase-input': { 
                                 textAlign: 'center', 
-                                fontSize: '0.75rem', 
-                                padding: '4px 6px' 
+                                fontSize: '0.875rem'
                               }
                             }}
                           />
-                          <Typography variant="caption" sx={{ fontSize: '0.7rem', minWidth: '20px' }}>kg</Typography>
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              {/* Razvaritel Aralashmasi */}
-              {availableRazvaritelAralashmasi.length > 0 && (
-                <Box>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
-                    {t('pechatPanel.materialSelection.razvaritelAralashmasiTitle')}
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                    gap: 1 
-                  }}>
-                    {availableRazvaritelAralashmasi.map((item) => (
-                      <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
-                              {item.name || item.id}
-                            </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
-                              {t('pechatPanel.materialSelection.available')}: {item.amount}L
-                            </Typography>
-                          </Box>
                           <TextField
+                            label="Razvaritel Aralashmasi"
                             size="small"
                             type="number"
                             placeholder="0"
-                            value={materialUsage.get(`razvaritel-aralashmasi:${item.id}`) || ''}
+                            value={materialUsage.get(`razvaritel-used:${item.id}`) || ''}
                             onChange={(e) => {
-                              const value = parseFloat(e.target.value) || 0;
-                              setMaterialUsage(prev => new Map(prev.set(`razvaritel-aralashmasi:${item.id}`, value)));
+                              const newValue = parseFloat(e.target.value) || 0;
+                              setMaterialUsage(prev => new Map(prev.set(`razvaritel-used:${item.id}`, newValue)));
                             }}
-                            inputProps={{ min: 0, max: item.amount, step: 0.1 }}
-                            error={materialUsage.get(`razvaritel-aralashmasi:${item.id}`) > item.amount}
+                            inputProps={{ min: 0, step: 0.1 }}
                             sx={{ 
-                              width: '80px',
                               '& .MuiInputBase-input': { 
                                 textAlign: 'center', 
-                                fontSize: '0.75rem', 
-                                padding: '4px 6px' 
+                                fontSize: '0.875rem'
                               }
                             }}
                           />
-                          <Typography variant="caption" sx={{ fontSize: '0.7rem', minWidth: '20px' }}>L</Typography>
+                          <TextField
+                            label="Qolgan"
+                            size="small"
+                            type="number"
+                            placeholder="0"
+                            value={materialUsage.get(`leftover:${item.id}`) || ''}
+                            onChange={(e) => {
+                              const newValue = parseFloat(e.target.value) || 0;
+                              const suyuqUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0);
+                              if (newValue + suyuqUsed <= (item.amount || 0)) {
+                                setMaterialUsage(prev => new Map(prev.set(`leftover:${item.id}`, newValue)));
+                              }
+                            }}
+                            inputProps={{ min: 0, step: 0.1 }}
+                            error={(() => {
+                              const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
+                                               (materialUsage.get(`leftover:${item.id}`) || 0);
+                              return totalUsed > (item.amount || 0);
+                            })()}
+                            sx={{ 
+                              '& .MuiInputBase-input': { 
+                                textAlign: 'center', 
+                                fontSize: '0.875rem'
+                              }
+                            }}
+                          />
+                        </Box>
+                        
+                        {/* Calculation Results */}
+                        <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                          <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main' }}>
+                            {t('pechatPanel.materialSelection.calculations')}
+                          </Typography>
+                          
+                          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                            {/* Color Usage Calculation */}
+                            <Box sx={{ 
+                              p: 1.5, 
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50', 
+                              borderRadius: 1, 
+                              border: (theme) => `1px solid ${theme.palette.divider}` 
+                            }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                  {t('pechatPanel.materialSelection.colorUsed')}:
+                                </Typography>
+                                <Tooltip 
+                                  title={
+                                    <Box sx={{ p: 1 }}>
+                                      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                        {t('pechatPanel.materialSelection.formula')}:
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ mb: 2, fontFamily: 'monospace' }}>
+                                        Suyuq kraska × 0.67 + Kraska - Qolgan × 0.67
+                                      </Typography>
+                                      
+                                      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                        {t('pechatPanel.materialSelection.calculation')}:
+                                      </Typography>
+                                      <Box sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                                        {(() => {
+                                          const suyuqUsed = materialUsage.get(`suyuq-used:${item.id}`) || 0;
+                                          const quyuqUsed = materialUsage.get(`quyuq-used:${item.id}`) || 0;
+                                          const leftover = materialUsage.get(`leftover:${item.id}`) || 0;
+                                          const step1 = (suyuqUsed * 0.67).toFixed(2);
+                                          const step2 = (leftover * 0.67).toFixed(2);
+                                          const result = ((suyuqUsed * 0.67) + quyuqUsed - (leftover * 0.67)).toFixed(2);
+                                          return (
+                                            <>
+                                              <Typography variant="body2">{suyuqUsed} × 0.67 + {quyuqUsed} - {leftover} × 0.67</Typography>
+                                              <Typography variant="body2">= {step1} + {quyuqUsed} - {step2}</Typography>
+                                              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>= {result}</Typography>
+                                            </>
+                                          );
+                                        })()}
+                                      </Box>
+                                    </Box>
+                                  }
+                                  arrow
+                                  placement="top"
+                                >
+                                  <Iconify 
+                                    icon="eva:info-outline" 
+                                    width={16} 
+                                    sx={{ color: 'text.secondary', cursor: 'help' }} 
+                                  />
+                                </Tooltip>
+                              </Box>
+                              <Typography variant="h6" sx={{ 
+                                color: (theme) => theme.palette.mode === 'dark' ? 'success.light' : 'success.dark',
+                                fontWeight: 'bold'
+                              }}>
+                                {(() => {
+                                  const suyuqUsed = materialUsage.get(`suyuq-used:${item.id}`) || 0;
+                                  const quyuqUsed = materialUsage.get(`quyuq-used:${item.id}`) || 0;
+                                  const leftover = materialUsage.get(`leftover:${item.id}`) || 0;
+                                  return ((suyuqUsed * 0.67) + quyuqUsed - (leftover * 0.67)).toFixed(2);
+                                })()}
+                              </Typography>
+                            </Box>
+                            
+                            {/* Razvaritel Usage Calculation */}
+                            <Box sx={{ 
+                              p: 1.5, 
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50', 
+                              borderRadius: 1, 
+                              border: (theme) => `1px solid ${theme.palette.divider}` 
+                            }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                                  {t('pechatPanel.materialSelection.razvaritelUsed')}:
+                                </Typography>
+                                <Tooltip 
+                                  title={
+                                    <Box sx={{ p: 1 }}>
+                                      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                        {t('pechatPanel.materialSelection.formula')}:
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ mb: 2, fontFamily: 'monospace' }}>
+                                        Suyuq kraska × 0.33 + Razvaritel Aralashmasi - Qolgan × 0.33
+                                      </Typography>
+                                      
+                                      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                        {t('pechatPanel.materialSelection.calculation')}:
+                                      </Typography>
+                                      <Box sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                                        {(() => {
+                                          const suyuqUsed = materialUsage.get(`suyuq-used:${item.id}`) || 0;
+                                          const razvaritelUsed = materialUsage.get(`razvaritel-used:${item.id}`) || 0;
+                                          const leftover = materialUsage.get(`leftover:${item.id}`) || 0;
+                                          const step1 = (suyuqUsed * 0.33).toFixed(2);
+                                          const step2 = (leftover * 0.33).toFixed(2);
+                                          const result = ((suyuqUsed * 0.33) + razvaritelUsed - (leftover * 0.33)).toFixed(2);
+                                          return (
+                                            <>
+                                              <Typography variant="body2">{suyuqUsed} × 0.33 + {razvaritelUsed} - {leftover} × 0.33</Typography>
+                                              <Typography variant="body2">= {step1} + {razvaritelUsed} - {step2}</Typography>
+                                              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>= {result}</Typography>
+                                            </>
+                                          );
+                                        })()}
+                                      </Box>
+                                    </Box>
+                                  }
+                                  arrow
+                                  placement="top"
+                                >
+                                  <Iconify 
+                                    icon="eva:info-outline" 
+                                    width={16} 
+                                    sx={{ color: 'text.secondary', cursor: 'help' }} 
+                                  />
+                                </Tooltip>
+                              </Box>
+                              <Typography variant="h6" sx={{ 
+                                color: (theme) => theme.palette.mode === 'dark' ? 'info.light' : 'info.dark',
+                                fontWeight: 'bold'
+                              }}>
+                                {(() => {
+                                  const suyuqUsed = materialUsage.get(`suyuq-used:${item.id}`) || 0;
+                                  const razvaritelUsed = materialUsage.get(`razvaritel-used:${item.id}`) || 0;
+                                  const leftover = materialUsage.get(`leftover:${item.id}`) || 0;
+                                  return ((suyuqUsed * 0.33) + razvaritelUsed - (leftover * 0.33)).toFixed(2);
+                                })()}
+                              </Typography>
+                            </Box>
+                          </Box>
                         </Box>
                       </Box>
                     ))}
-                  </Box>
+                  </Stack>
                 </Box>
               )}
 
