@@ -187,7 +187,7 @@ export default function KraskaTransactionsPage() {
     () => items.find((it) => it.id === kraskaId) ?? null,
     [items, kraskaId]
   );
-  
+
   const allOrders = useMemo(() => readOrders(), []);
 
   const heading = t('kraskaTransactionsPage.title', {
@@ -211,7 +211,7 @@ export default function KraskaTransactionsPage() {
     orderId: string | null;
     note: string;
   }>({
-    type: 'in',
+    type: 'out',
     amountKg: '',
     date: todayISO(),
     machineType: '',
@@ -220,7 +220,7 @@ export default function KraskaTransactionsPage() {
     note: '',
   });
 
-  const requiresMachine = form.type === 'out' || form.type === 'return';
+  const requiresMachine = true;
 
   const machines = useMemo(
     () => (requiresMachine && form.machineType ? readMachines(form.machineType) : []),
@@ -242,6 +242,31 @@ export default function KraskaTransactionsPage() {
     setDialogOpen(false);
   }, [kraskaId]);
 
+  const mergedTransactions = useMemo<KraskaTransaction[]>(() => {
+    if (!item) return transactions;
+    const initial: KraskaTransaction = {
+      id: `${item.id}-initial`,
+      kraskaId: item.id,
+      date: item.createdDate,
+      type: 'in',
+      amountKg: item.totalKg,
+      machineType: 'pechat',
+      machineId: '',
+      note: t('kraskaTransactionsPage.generatedFromStock'),
+      createdAt: Date.parse(item.createdDate) || 0,
+    };
+    return [initial, ...transactions].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  }, [item, t, transactions]);
+
+  const currentKg = useMemo(
+    () =>
+      mergedTransactions.reduce(
+        (sum, tx) => (tx.type === 'in' || tx.type === 'return' ? sum + tx.amountKg : sum - tx.amountKg),
+        0
+      ),
+    [mergedTransactions]
+  );
+
   const persistForItem = useCallback(
     (next: KraskaTransaction[]) => {
       const others = readTransactions().filter((tx) => tx.kraskaId !== kraskaId);
@@ -254,13 +279,14 @@ export default function KraskaTransactionsPage() {
     if (!item || !kraskaId) return;
     const amount = Number(form.amountKg);
     if (Number.isNaN(amount) || amount <= 0) return;
+    if (amount > currentKg) return;
     if (requiresMachine && (!form.machineId || !form.machineType)) return;
 
     const payload: KraskaTransaction = {
       id: editingTx?.id || uuidv4(),
       kraskaId,
       date: form.date || todayISO(),
-      type: form.type,
+      type: 'out',
       amountKg: amount,
       machineType: requiresMachine ? form.machineType : '',
       machineId: requiresMachine ? form.machineId : '',
@@ -297,7 +323,7 @@ export default function KraskaTransactionsPage() {
   const startEdit = (tx: KraskaTransaction) => {
     setEditingTx(tx);
     setForm({
-      type: tx.type,
+      type: 'out',
       amountKg: String(tx.amountKg),
       date: tx.date,
       machineType: tx.machineType,
@@ -316,33 +342,10 @@ export default function KraskaTransactionsPage() {
   const canSave =
     Boolean(item) &&
     Number(form.amountKg) > 0 &&
+    Number(form.amountKg) <= currentKg &&
     (!requiresMachine || (Boolean(form.machineType) && Boolean(form.machineId))) &&
     Boolean(form.date);
 
-  const mergedTransactions = useMemo<KraskaTransaction[]>(() => {
-    if (!item) return transactions;
-    const initial: KraskaTransaction = {
-      id: `${item.id}-initial`,
-      kraskaId: item.id,
-      date: item.createdDate,
-      type: 'in',
-      amountKg: item.totalKg,
-      machineType: 'pechat',
-      machineId: '',
-      note: t('kraskaTransactionsPage.generatedFromStock'),
-      createdAt: Date.parse(item.createdDate) || 0,
-    };
-    return [initial, ...transactions].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  }, [item, t, transactions]);
-
-  const currentKg = useMemo(
-    () =>
-      mergedTransactions.reduce(
-        (sum, tx) => (tx.type === 'in' || tx.type === 'return' ? sum + tx.amountKg : sum - tx.amountKg),
-        0
-      ),
-    [mergedTransactions]
-  );
 
   useEffect(() => {
     if (!item || typeof window === 'undefined') return;
@@ -350,9 +353,9 @@ export default function KraskaTransactionsPage() {
     const updated = stored.map((it) =>
       it.id === item.id
         ? {
-            ...it,
-            totalKg: Math.max(0, Number(currentKg.toFixed(3))),
-          }
+          ...it,
+          totalKg: Math.max(0, Number(currentKg.toFixed(3))),
+        }
         : it
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -478,8 +481,8 @@ export default function KraskaTransactionsPage() {
                                 tx.type === 'in'
                                   ? t('kraskaTransactionsPage.typeIn')
                                   : tx.type === 'out'
-                                  ? t('kraskaTransactionsPage.typeOut')
-                                  : 'Return'
+                                    ? t('kraskaTransactionsPage.typeOut')
+                                    : 'Return'
                               }
                               color={tx.type === 'in' || tx.type === 'return' ? 'success' : 'warning'}
                               size="small"
@@ -553,21 +556,6 @@ export default function KraskaTransactionsPage() {
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  select
-                  fullWidth
-                  label={t('kraskaTransactionsPage.form.type')}
-                  value={form.type}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, type: e.target.value as 'in' | 'out' | 'return' }))
-                  }
-                >
-                  <MenuItem value="in">{t('kraskaTransactionsPage.typeIn')}</MenuItem>
-                  <MenuItem value="out">{t('kraskaTransactionsPage.typeOut')}</MenuItem>
-                  <MenuItem value="return">Return</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
                   type="date"
                   fullWidth
                   label={t('kraskaTransactionsPage.form.date')}
@@ -623,10 +611,16 @@ export default function KraskaTransactionsPage() {
                   value={form.amountKg}
                   onChange={(e) => setForm((prev) => ({ ...prev, amountKg: e.target.value }))}
                   type="number"
-                  inputProps={{ min: 0, step: 0.01 }}
+                  inputProps={{ min: 0, step: 0.01, max: currentKg }}
+                  helperText={
+                    Number(form.amountKg) > currentKg
+                      ? t('validation.exceedsStockKg', { available: currentKg })
+                      : ''
+                  }
+                  error={Number(form.amountKg) > currentKg}
                 />
               </Grid>
-              
+
               {form.type === 'out' || form.type === 'return' ? (
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Autocomplete

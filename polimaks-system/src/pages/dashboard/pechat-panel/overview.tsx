@@ -329,7 +329,7 @@ export default function PechatPanelOverviewPage() {
   const [totalKg, setTotalKg] = useState('');
   const [dispatchDestination, setDispatchDestination] = useState<'laminatsiya' | 'reska' | 'angren' | ''>('');
   const [selectedBrigadaForDispatch, setSelectedBrigadaForDispatch] = useState('');
-  
+
 
 
   useEffect(() => {
@@ -412,9 +412,9 @@ export default function PechatPanelOverviewPage() {
   const loadAvailableMaterials = (plan?: PlanItem) => {
     const planMachineId = plan?.machineId || selectedMachineId;
     const planOrderId = plan?.orderId;
-    
+
     console.log('Loading materials for:', { planMachineId, planOrderId });
-    
+
     if (!planMachineId) return;
 
     // Load suyuq kraska from transactions
@@ -423,13 +423,13 @@ export default function PechatPanelOverviewPage() {
     suyuqKraskaData.forEach((item: any) => {
       if (item?.id) suyuqKraskaItems.set(item.id, item);
     });
-    
+
     const suyuqKraskaTxs = readLocalArray('ombor-suyuq-kraska-transactions', []);
     console.log('Suyuq kraska transactions:', suyuqKraskaTxs);
     const availableSuyuq = suyuqKraskaTxs
-      .filter((tx: any) => 
-        ['out'].includes(tx.type) && 
-        tx.machineType === 'pechat' && 
+      .filter((tx: any) =>
+        ['out'].includes(tx.type) &&
+        tx.machineType === 'pechat' &&
         tx.machineId === planMachineId &&
         (!planOrderId || tx.orderId === planOrderId)
       )
@@ -450,13 +450,13 @@ export default function PechatPanelOverviewPage() {
     kraskaData.forEach((item: any) => {
       if (item?.id) kraskaItems.set(item.id, item);
     });
-    
+
     const kraskaTxs = readLocalArray('ombor-kraska-transactions', []);
     console.log('Kraska transactions:', kraskaTxs);
     const availableKraskaList = kraskaTxs
-      .filter((tx: any) => 
-        ['out', 'return'].includes(tx.type) && 
-        tx.machineType === 'pechat' && 
+      .filter((tx: any) =>
+        ['out', 'return'].includes(tx.type) &&
+        tx.machineType === 'pechat' &&
         tx.machineId === planMachineId &&
         (!planOrderId || tx.orderId === planOrderId)
       )
@@ -478,13 +478,13 @@ export default function PechatPanelOverviewPage() {
     mixtureData.forEach((item: any) => {
       if (item?.id) mixtureItems.set(item.id, item);
     });
-    
+
     const mixtureTxs = readLocalArray('ombor-mixture-transactions', []);
     console.log('Mixture transactions:', mixtureTxs);
     const availableMixtures = mixtureTxs
-      .filter((tx: any) => 
-        ['out'].includes(tx.type) && 
-        tx.machineType === 'pechat' && 
+      .filter((tx: any) =>
+        ['out'].includes(tx.type) &&
+        tx.machineType === 'pechat' &&
         tx.machineId === planMachineId &&
         (!planOrderId || tx.orderId === planOrderId)
       )
@@ -554,16 +554,16 @@ export default function PechatPanelOverviewPage() {
   const handleOpenStatusDialog = (plan: PlanItem) => {
     // Load available materials from transactions
     loadAvailableMaterials(plan);
-    
+
     // Initialize total values
     setTotalMeters(plan.totalMeters?.toString() || '');
     setTotalKg(plan.totalKg?.toString() || '');
-    
+
     // Reset selections
     setMaterialUsage(new Map());
     setDispatchDestination('');
     setSelectedBrigadaForDispatch('');
-    
+
     setStatusPlan(plan);
     setStatusValue(plan.status || 'in_progress');
     setStatusDialogOpen(true);
@@ -601,16 +601,16 @@ export default function PechatPanelOverviewPage() {
         const angrenStorage = JSON.parse(localStorage.getItem('ombor-tayyor-mahsulotlar-angren') || '[]');
         angrenStorage.push({ ...productData, location: 'angren' });
         localStorage.setItem('ombor-tayyor-mahsulotlar-angren', JSON.stringify(angrenStorage));
-        
+
         console.log('Product dispatched to Angren warehouse:', productData);
       } else if (dispatchDestination === 'laminatsiya' || dispatchDestination === 'reska') {
         // Add to next stage planning
-        const nextStorageKey = dispatchDestination === 'laminatsiya' ? 
-          'buyurtma-planlashtirish-laminatsiya' : 
+        const nextStorageKey = dispatchDestination === 'laminatsiya' ?
+          'buyurtma-planlashtirish-laminatsiya' :
           'buyurtma-planlashtirish-reska';
-        
+
         const nextStagePlanning = JSON.parse(localStorage.getItem(nextStorageKey) || '[]');
-        
+
         const nextPlan = {
           ...plan,
           id: `${dispatchDestination}-${plan.id}-${Date.now()}`,
@@ -625,10 +625,10 @@ export default function PechatPanelOverviewPage() {
             materialUsage: Object.fromEntries(materialUsage)
           }
         };
-        
+
         nextStagePlanning.push(nextPlan);
         localStorage.setItem(nextStorageKey, JSON.stringify(nextStagePlanning));
-        
+
         console.log(`Product dispatched to ${dispatchDestination}:`, nextPlan);
       }
 
@@ -641,11 +641,11 @@ export default function PechatPanelOverviewPage() {
         finishedAt: new Date().toISOString()
       });
       localStorage.setItem('pechat-paneli-yakunlangan', JSON.stringify(yakunlanganStorage));
-      
+
       // Reset dispatch selections
       setDispatchDestination('');
       setSelectedBrigadaForDispatch('');
-      
+
     } catch (error) {
       console.error('Error dispatching product:', error);
     }
@@ -656,23 +656,23 @@ export default function PechatPanelOverviewPage() {
 
     const updatedPlans = plans.map((plan) =>
       plan.id === statusPlan.id
-        ? { 
-            ...plan, 
-            status: statusValue,
-            materialUsage: Object.fromEntries(materialUsage),
-            totalMeters: parseFloat(totalMeters) || 0,
-            totalKg: parseFloat(totalKg) || 0,
-            completedAt: statusValue === 'finished' ? new Date().toISOString() : plan.completedAt
-          }
+        ? {
+          ...plan,
+          status: statusValue,
+          materialUsage: Object.fromEntries(materialUsage),
+          totalMeters: parseFloat(totalMeters) || 0,
+          totalKg: parseFloat(totalKg) || 0,
+          completedAt: statusValue === 'finished' ? new Date().toISOString() : plan.completedAt
+        }
         : plan
     );
     persistPlans(updatedPlans);
-    
+
     // Handle dispatch if status is finished and destination is selected
     if (statusValue === 'finished' && dispatchDestination) {
       handleDispatchProduct(statusPlan);
     }
-    
+
     handleCloseStatusDialog();
   };
 
@@ -684,9 +684,9 @@ export default function PechatPanelOverviewPage() {
 
   const machineTypeLabel = (value?: string) => {
     if (!value) return '';
-    if (value === 'pechat') return 'Pechat';
-    if (value === 'reska') return 'Reska';
-    if (value === 'laminatsiya') return 'Laminatsiya';
+    if (value === 'pechat') return t('pechatPanel.machineTypes.pechat');
+    if (value === 'reska') return t('pechatPanel.machineTypes.reska');
+    if (value === 'laminatsiya') return t('pechatPanel.machineTypes.laminatsiya');
     return value;
   };
 
@@ -694,7 +694,7 @@ export default function PechatPanelOverviewPage() {
     <>
       <title>{title}</title>
 
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <div>
             <Typography variant="h3" gutterBottom>
@@ -753,12 +753,12 @@ export default function PechatPanelOverviewPage() {
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {selectedMachineId
                 ? t('pechatPanel.overview.selection', {
-                    machine: machines.find((m: any) => m.id === selectedMachineId)?.name || selectedMachineId,
-                    brigada:
-                      brigadas.find((b: any) => b.id === selectedBrigadaId)?.name ||
-                      selectedBrigadaId ||
-                      t('pechatPanel.noBrigadas'),
-                  })
+                  machine: machines.find((m: any) => m.id === selectedMachineId)?.name || selectedMachineId,
+                  brigada:
+                    brigadas.find((b: any) => b.id === selectedBrigadaId)?.name ||
+                    selectedBrigadaId ||
+                    t('pechatPanel.noBrigadas'),
+                })
                 : t('pechatPanel.noMachines')}
             </Typography>
 
@@ -940,7 +940,7 @@ export default function PechatPanelOverviewPage() {
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 {t('pechatPanel.materialSelection.title')}
               </Typography>
-              
+
               {/* Top Section: Kraska and Razvaritel */}
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 {/* Kraska */}
@@ -949,23 +949,23 @@ export default function PechatPanelOverviewPage() {
                     <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
                       {t('pechatPanel.materialSelection.kraskaTitle')}
                     </Typography>
-                    <Box sx={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                      gap: 1 
+                    <Box sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: 1
                     }}>
                       {availableKraska.map((item) => (
                         <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box 
-                              sx={{ 
-                                width: 16, 
-                                height: 16, 
-                                borderRadius: '50%', 
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: '50%',
                                 backgroundColor: item.colorCode || '#cccccc',
                                 border: '1px solid #ddd',
                                 flexShrink: 0
-                              }} 
+                              }}
                             />
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                               <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
@@ -988,10 +988,10 @@ export default function PechatPanelOverviewPage() {
                     <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
                       {t('pechatPanel.materialSelection.razvaritelAralashmasiTitle')}
                     </Typography>
-                    <Box sx={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                      gap: 1 
+                    <Box sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: 1
                     }}>
                       {availableRazvaritelAralashmasi.map((item) => (
                         <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
@@ -1028,15 +1028,15 @@ export default function PechatPanelOverviewPage() {
                       <Box key={item.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                         {/* Header with color and name */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                          <Box 
-                            sx={{ 
-                              width: 20, 
-                              height: 20, 
-                              borderRadius: '50%', 
+                          <Box
+                            sx={{
+                              width: 20,
+                              height: 20,
+                              borderRadius: '50%',
                               backgroundColor: item.colorCode || '#cccccc',
                               border: '1px solid #ddd',
                               flexShrink: 0
-                            }} 
+                            }}
                           />
                           <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
                             {item.seriyaNumber || item.id} - {item.colorName || t('razvaritelTransactionsPage.unknown')}
@@ -1045,25 +1045,25 @@ export default function PechatPanelOverviewPage() {
                             <Typography variant="caption" sx={{ color: 'primary.main', display: 'block' }}>
                               {t('pechatPanel.materialSelection.available')}: {item.amount}
                             </Typography>
-                            <Typography variant="caption" sx={{ 
+                            <Typography variant="caption" sx={{
                               color: (() => {
-                                const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
-                                                 (materialUsage.get(`leftover:${item.id}`) || 0);
+                                const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) +
+                                  (materialUsage.get(`leftover:${item.id}`) || 0);
                                 return totalUsed > (item.amount || 0) ? 'error.main' : 'text.secondary';
                               })(),
                               display: 'block'
                             }}>
-                              Used: {((materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
-                                     (materialUsage.get(`leftover:${item.id}`) || 0)).toFixed(1)}
+                              Used: {((materialUsage.get(`suyuq-used:${item.id}`) || 0) +
+                                (materialUsage.get(`leftover:${item.id}`) || 0)).toFixed(1)}
                             </Typography>
                           </Box>
                         </Box>
-                        
+
                         {/* 2x2 Grid of Fields */}
-                        <Box sx={{ 
-                          display: 'grid', 
-                          gridTemplateColumns: '1fr 1fr', 
-                          gap: 1.5 
+                        <Box sx={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: 1.5
                         }}>
                           <TextField
                             label="Suyuq (ish)"
@@ -1080,13 +1080,13 @@ export default function PechatPanelOverviewPage() {
                             }}
                             inputProps={{ min: 0, step: 0.1 }}
                             error={(() => {
-                              const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
-                                               (materialUsage.get(`leftover:${item.id}`) || 0);
+                              const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) +
+                                (materialUsage.get(`leftover:${item.id}`) || 0);
                               return totalUsed > (item.amount || 0);
                             })()}
-                            sx={{ 
-                              '& .MuiInputBase-input': { 
-                                textAlign: 'center', 
+                            sx={{
+                              '& .MuiInputBase-input': {
+                                textAlign: 'center',
                                 fontSize: '0.875rem'
                               }
                             }}
@@ -1102,9 +1102,9 @@ export default function PechatPanelOverviewPage() {
                               setMaterialUsage(prev => new Map(prev.set(`quyuq-used:${item.id}`, newValue)));
                             }}
                             inputProps={{ min: 0, step: 0.1 }}
-                            sx={{ 
-                              '& .MuiInputBase-input': { 
-                                textAlign: 'center', 
+                            sx={{
+                              '& .MuiInputBase-input': {
+                                textAlign: 'center',
                                 fontSize: '0.875rem'
                               }
                             }}
@@ -1120,9 +1120,9 @@ export default function PechatPanelOverviewPage() {
                               setMaterialUsage(prev => new Map(prev.set(`razvaritel-used:${item.id}`, newValue)));
                             }}
                             inputProps={{ min: 0, step: 0.1 }}
-                            sx={{ 
-                              '& .MuiInputBase-input': { 
-                                textAlign: 'center', 
+                            sx={{
+                              '& .MuiInputBase-input': {
+                                textAlign: 'center',
                                 fontSize: '0.875rem'
                               }
                             }}
@@ -1142,38 +1142,38 @@ export default function PechatPanelOverviewPage() {
                             }}
                             inputProps={{ min: 0, step: 0.1 }}
                             error={(() => {
-                              const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) + 
-                                               (materialUsage.get(`leftover:${item.id}`) || 0);
+                              const totalUsed = (materialUsage.get(`suyuq-used:${item.id}`) || 0) +
+                                (materialUsage.get(`leftover:${item.id}`) || 0);
                               return totalUsed > (item.amount || 0);
                             })()}
-                            sx={{ 
-                              '& .MuiInputBase-input': { 
-                                textAlign: 'center', 
+                            sx={{
+                              '& .MuiInputBase-input': {
+                                textAlign: 'center',
                                 fontSize: '0.875rem'
                               }
                             }}
                           />
                         </Box>
-                        
+
                         {/* Calculation Results */}
                         <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                           <Typography variant="subtitle2" sx={{ mb: 2, color: 'primary.main' }}>
                             {t('pechatPanel.materialSelection.calculations')}
                           </Typography>
-                          
+
                           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                             {/* Color Usage Calculation */}
-                            <Box sx={{ 
-                              p: 1.5, 
-                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50', 
-                              borderRadius: 1, 
-                              border: (theme) => `1px solid ${theme.palette.divider}` 
+                            <Box sx={{
+                              p: 1.5,
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+                              borderRadius: 1,
+                              border: (theme) => `1px solid ${theme.palette.divider}`
                             }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
                                   {t('pechatPanel.materialSelection.colorUsed')}:
                                 </Typography>
-                                <Tooltip 
+                                <Tooltip
                                   title={
                                     <Box sx={{ p: 1 }}>
                                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -1182,7 +1182,7 @@ export default function PechatPanelOverviewPage() {
                                       <Typography variant="body2" sx={{ mb: 2, fontFamily: 'monospace' }}>
                                         Suyuq kraska × 0.67 + Kraska - Qolgan × 0.67
                                       </Typography>
-                                      
+
                                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
                                         {t('pechatPanel.materialSelection.calculation')}:
                                       </Typography>
@@ -1208,14 +1208,14 @@ export default function PechatPanelOverviewPage() {
                                   arrow
                                   placement="top"
                                 >
-                                  <Iconify 
-                                    icon="eva:info-outline" 
-                                    width={16} 
-                                    sx={{ color: 'text.secondary', cursor: 'help' }} 
+                                  <Iconify
+                                    icon="eva:info-outline"
+                                    width={16}
+                                    sx={{ color: 'text.secondary', cursor: 'help' }}
                                   />
                                 </Tooltip>
                               </Box>
-                              <Typography variant="h6" sx={{ 
+                              <Typography variant="h6" sx={{
                                 color: (theme) => theme.palette.mode === 'dark' ? 'success.light' : 'success.dark',
                                 fontWeight: 'bold'
                               }}>
@@ -1227,19 +1227,19 @@ export default function PechatPanelOverviewPage() {
                                 })()}
                               </Typography>
                             </Box>
-                            
+
                             {/* Razvaritel Usage Calculation */}
-                            <Box sx={{ 
-                              p: 1.5, 
-                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50', 
-                              borderRadius: 1, 
-                              border: (theme) => `1px solid ${theme.palette.divider}` 
+                            <Box sx={{
+                              p: 1.5,
+                              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+                              borderRadius: 1,
+                              border: (theme) => `1px solid ${theme.palette.divider}`
                             }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
                                   {t('pechatPanel.materialSelection.razvaritelUsed')}:
                                 </Typography>
-                                <Tooltip 
+                                <Tooltip
                                   title={
                                     <Box sx={{ p: 1 }}>
                                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -1248,7 +1248,7 @@ export default function PechatPanelOverviewPage() {
                                       <Typography variant="body2" sx={{ mb: 2, fontFamily: 'monospace' }}>
                                         Suyuq kraska × 0.33 + Razvaritel Aralashmasi - Qolgan × 0.33
                                       </Typography>
-                                      
+
                                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
                                         {t('pechatPanel.materialSelection.calculation')}:
                                       </Typography>
@@ -1274,14 +1274,14 @@ export default function PechatPanelOverviewPage() {
                                   arrow
                                   placement="top"
                                 >
-                                  <Iconify 
-                                    icon="eva:info-outline" 
-                                    width={16} 
-                                    sx={{ color: 'text.secondary', cursor: 'help' }} 
+                                  <Iconify
+                                    icon="eva:info-outline"
+                                    width={16}
+                                    sx={{ color: 'text.secondary', cursor: 'help' }}
                                   />
                                 </Tooltip>
                               </Box>
-                              <Typography variant="h6" sx={{ 
+                              <Typography variant="h6" sx={{
                                 color: (theme) => theme.palette.mode === 'dark' ? 'info.light' : 'info.dark',
                                 fontWeight: 'bold'
                               }}>
@@ -1313,9 +1313,9 @@ export default function PechatPanelOverviewPage() {
               <Typography variant="subtitle2">
                 {t('pechatPanel.totalProduction.title')}
               </Typography>
-              <Box sx={{ 
-                display: 'grid', 
-                gap: 2, 
+              <Box sx={{
+                display: 'grid',
+                gap: 2,
                 gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
               }}>
                 <TextField
@@ -1342,7 +1342,7 @@ export default function PechatPanelOverviewPage() {
                 <Typography variant="subtitle2" sx={{ color: 'primary.main' }}>
                   Yuborish (Dispatch)
                 </Typography>
-                
+
                 <FormControl fullWidth size="small">
                   <InputLabel>Qayerga yuborish?</InputLabel>
                   <Select
@@ -1376,10 +1376,10 @@ export default function PechatPanelOverviewPage() {
                     </Select>
                   </FormControl>
                 )}
-                
+
                 {dispatchDestination && (
                   <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {dispatchDestination === 'angren' 
+                    {dispatchDestination === 'angren'
                       ? 'Mahsulot Angren omboriga yuboriladi'
                       : `Mahsulot ${dispatchDestination} bo'limiga yuboriladi`
                     }

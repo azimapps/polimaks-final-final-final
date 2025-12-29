@@ -1,10 +1,13 @@
-import { useMemo, useState, useEffect, type MouseEvent } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { useMemo, useState, useEffect, type MouseEvent, type ChangeEvent } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import Select from '@mui/material/Select';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
@@ -14,10 +17,14 @@ import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
+import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
+import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 
 import { CONFIG } from 'src/global-config';
@@ -95,14 +102,13 @@ type MaterialInfo = {
   value: string;
 };
 
-type MaterialRow = {
+type StockItemRow = {
   id: string;
-  date: string;
   materialLabel: string;
   itemLabel: string;
+  totalAmount: number;
+  unit: string;
   amountLabel: string;
-  note: string;
-  createdAt: number;
   info: MaterialInfo[];
 };
 
@@ -130,13 +136,6 @@ const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
 };
 
 const readTransactions = <T,>(key: string): T[] => readLocalArray<T>(key, []);
-
-const toCreatedAt = (tx: BaseTx, fallback: number) => {
-  if (typeof tx.createdAt === 'number' && !Number.isNaN(tx.createdAt)) return tx.createdAt;
-  const parsedTime = Date.parse(tx.date || '');
-  if (!Number.isNaN(parsedTime) && parsedTime > 0) return parsedTime;
-  return fallback;
-};
 
 const formatAmount = (value: number, unit: string) => (unit ? `${value} ${unit}` : `${value}`);
 
@@ -197,7 +196,7 @@ export default function PechatPanelMaterialsPage() {
   const getCountryCode = (code: string) =>
     LANGUAGE_OPTIONS.find((opt) => opt.code === code)?.country ?? '';
 
-  const rows = useMemo<MaterialRow[]>(() => {
+  const rows = useMemo<StockItemRow[]>(() => {
     if (!selectedMachineId) return [];
 
     const unknownLabel = t('pechatMaterialsPage.unknown');
@@ -223,15 +222,23 @@ export default function PechatPanelMaterialsPage() {
       readLocalArray<SilindirItem>('ombor-silindir', silindirSeed as SilindirItem[])
     );
 
-    const now = Date.now();
-    let fallbackIndex = 0;
-    const results: MaterialRow[] = [];
+    const resultMap = new Map<string, StockItemRow>();
 
-    const pushRow = (row: Omit<MaterialRow, 'createdAt'>, tx: BaseTx) => {
-      results.push({
-        ...row,
-        createdAt: toCreatedAt(tx, now + fallbackIndex++),
-      });
+    const addToMap = (
+      itemId: string,
+      amount: number,
+      base: Omit<StockItemRow, 'totalAmount' | 'amountLabel'>
+    ) => {
+      const existing = resultMap.get(itemId);
+      if (existing) {
+        existing.totalAmount += amount;
+      } else {
+        resultMap.set(itemId, {
+          ...base,
+          totalAmount: amount,
+          amountLabel: '', // updated later
+        });
+      }
     };
 
     const handlePlyonka = () => {
@@ -246,22 +253,18 @@ export default function PechatPanelMaterialsPage() {
           item?.subcategory || '',
         ].filter(Boolean);
         const label = parts.join(' / ');
-        pushRow(
-          {
-            id: `plyonka-${tx.id}`,
-            date: tx.date || '',
-            materialLabel: t('plyonkaPage.title'),
-            itemLabel: label,
-            amountLabel: formatAmount(Number(tx.amountKg) || 0, t('plyonkaPage.kg')),
-            note: tx.note || '',
-            info: [
-              { label: t('plyonkaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
-              { label: t('plyonkaPage.category'), value: item?.category || unknownLabel },
-              { label: t('plyonkaPage.subcategory'), value: item?.subcategory || unknownLabel },
-            ],
-          },
-          tx
-        );
+
+        addToMap(tx.plyonkaId, Number(tx.amountKg) || 0, {
+          id: `plyonka-${tx.plyonkaId}`,
+          materialLabel: t('plyonkaPage.title'),
+          itemLabel: label,
+          unit: t('plyonkaPage.kg'),
+          info: [
+            { label: t('plyonkaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+            { label: t('plyonkaPage.category'), value: item?.category || unknownLabel },
+            { label: t('plyonkaPage.subcategory'), value: item?.subcategory || unknownLabel },
+          ],
+        } as any);
       });
     };
 
@@ -277,22 +280,18 @@ export default function PechatPanelMaterialsPage() {
           item?.marka || '',
         ].filter(Boolean);
         const label = parts.join(' / ');
-        pushRow(
-          {
-            id: `kraska-${tx.id}`,
-            date: tx.date || '',
-            materialLabel: t('kraskaPage.title'),
-            itemLabel: label,
-            amountLabel: formatAmount(Number(tx.amountKg) || 0, t('kraskaPage.kg')),
-            note: tx.note || '',
-            info: [
-              { label: t('kraskaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
-              { label: t('kraskaPage.colorName'), value: item?.colorName || unknownLabel },
-              { label: t('kraskaPage.marka'), value: item?.marka || unknownLabel },
-            ],
-          },
-          tx
-        );
+
+        addToMap(tx.kraskaId, Number(tx.amountKg) || 0, {
+          id: `kraska-${tx.kraskaId}`,
+          materialLabel: t('kraskaPage.title'),
+          itemLabel: label,
+          unit: t('kraskaPage.kg'),
+          info: [
+            { label: t('kraskaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+            { label: t('kraskaPage.colorName'), value: item?.colorName || unknownLabel },
+            { label: t('kraskaPage.marka'), value: item?.marka || unknownLabel },
+          ],
+        } as any);
       });
     };
 
@@ -308,22 +307,18 @@ export default function PechatPanelMaterialsPage() {
           item?.marka || '',
         ].filter(Boolean);
         const label = parts.join(' / ');
-        pushRow(
-          {
-            id: `suyuq-kraska-${tx.id}`,
-            date: tx.date || '',
-            materialLabel: t('suyuqKraskaPage.title'),
-            itemLabel: label,
-            amountLabel: formatAmount(Number(tx.amountKg) || 0, t('suyuqKraskaPage.kg')),
-            note: tx.note || '',
-            info: [
-              { label: t('suyuqKraskaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
-              { label: t('suyuqKraskaPage.colorName'), value: item?.colorName || unknownLabel },
-              { label: t('suyuqKraskaPage.marka'), value: item?.marka || unknownLabel },
-            ],
-          },
-          tx
-        );
+
+        addToMap(tx.suyuqKraskaId, Number(tx.amountKg) || 0, {
+          id: `suyuq-kraska-${tx.suyuqKraskaId}`,
+          materialLabel: t('suyuqKraskaPage.title'),
+          itemLabel: label,
+          unit: t('suyuqKraskaPage.kg'),
+          info: [
+            { label: t('suyuqKraskaPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+            { label: t('suyuqKraskaPage.colorName'), value: item?.colorName || unknownLabel },
+            { label: t('suyuqKraskaPage.marka'), value: item?.marka || unknownLabel },
+          ],
+        } as any);
       });
     };
 
@@ -335,21 +330,17 @@ export default function PechatPanelMaterialsPage() {
         const item = razvaritelItems.get(tx.razvaritelId);
         const parts = [item?.seriyaNumber || unknownLabel, item?.type || ''].filter(Boolean);
         const label = parts.join(' / ');
-        pushRow(
-          {
-            id: `razvaritel-${tx.id}`,
-            date: tx.date || '',
-            materialLabel: t('razvaritelPage.title'),
-            itemLabel: label,
-            amountLabel: formatAmount(Number(tx.amountLiter) || 0, t('razvaritelPage.liter')),
-            note: tx.note || '',
-            info: [
-              { label: t('razvaritelPage.seriya'), value: item?.seriyaNumber || unknownLabel },
-              { label: t('razvaritelPage.type'), value: item?.type || unknownLabel },
-            ],
-          },
-          tx
-        );
+
+        addToMap(tx.razvaritelId, Number(tx.amountLiter) || 0, {
+          id: `razvaritel-${tx.razvaritelId}`,
+          materialLabel: t('razvaritelPage.title'),
+          itemLabel: label,
+          unit: t('razvaritelPage.liter'),
+          info: [
+            { label: t('razvaritelPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+            { label: t('razvaritelPage.type'), value: item?.type || unknownLabel },
+          ],
+        } as any);
       });
     };
 
@@ -367,23 +358,19 @@ export default function PechatPanelMaterialsPage() {
         const sizeLabel = sizeParts.length ? `${sizeParts.join('x')} ${t('silindirPage.mm')}` : '';
         const parts = [item?.seriyaNumber || unknownLabel, originLabel, sizeLabel].filter(Boolean);
         const label = parts.join(' / ');
-        pushRow(
-          {
-            id: `silindir-${tx.id}`,
-            date: tx.date || '',
-            materialLabel: t('silindirPage.title'),
-            itemLabel: label,
-            amountLabel: formatAmount(Number(tx.amountQty) || 0, ''),
-            note: tx.note || '',
-            info: [
-              { label: t('silindirPage.seriya'), value: item?.seriyaNumber || unknownLabel },
-              { label: t('silindirPage.originLabel'), value: originLabel || unknownLabel },
-              { label: t('silindirPage.length'), value: formatSize(item?.length) },
-              { label: t('silindirPage.diameter'), value: formatSize(item?.diameter) },
-            ],
-          },
-          tx
-        );
+
+        addToMap(tx.silindirId, Number(tx.amountQty) || 0, {
+          id: `silindir-${tx.silindirId}`,
+          materialLabel: t('silindirPage.title'),
+          itemLabel: label,
+          unit: '',
+          info: [
+            { label: t('silindirPage.seriya'), value: item?.seriyaNumber || unknownLabel },
+            { label: t('silindirPage.originLabel'), value: originLabel || unknownLabel },
+            { label: t('silindirPage.length'), value: formatSize(item?.length) },
+            { label: t('silindirPage.diameter'), value: formatSize(item?.diameter) },
+          ],
+        } as any);
       });
     };
 
@@ -393,14 +380,21 @@ export default function PechatPanelMaterialsPage() {
     handleRazvaritel();
     handleSilindir();
 
-    return results.sort((a, b) => b.createdAt - a.createdAt);
+    const results = Array.from(resultMap.values())
+      .filter((row) => row.totalAmount > 0)
+      .map((row) => ({
+        ...row,
+        amountLabel: formatAmount(row.totalAmount, row.unit),
+      }));
+
+    return results;
   }, [selectedMachineId, t]);
 
   const [infoAnchorEl, setInfoAnchorEl] = useState<HTMLElement | null>(null);
-  const [infoRow, setInfoRow] = useState<MaterialRow | null>(null);
+  const [infoRow, setInfoRow] = useState<StockItemRow | null>(null);
   const infoOpen = Boolean(infoAnchorEl);
 
-  const handleOpenInfo = (event: MouseEvent<HTMLButtonElement>, row: MaterialRow) => {
+  const handleOpenInfo = (event: MouseEvent<HTMLButtonElement>, row: StockItemRow) => {
     setInfoRow(row);
     setInfoAnchorEl(event.currentTarget);
   };
@@ -415,6 +409,72 @@ export default function PechatPanelMaterialsPage() {
   });
   const pageTitle = `${heading} | ${CONFIG.appName}`;
   const languageLabel = machine?.language_code ? t(`languages.${machine.language_code}`) : '-';
+
+  const [usageDialogOpen, setUsageDialogOpen] = useState(false);
+  const [usageTarget, setUsageTarget] = useState<StockItemRow | null>(null);
+  const [usageAmount, setUsageAmount] = useState('');
+  const [usageNote, setUsageNote] = useState('');
+
+  const handleOpenUsage = (row: StockItemRow) => {
+    setUsageTarget(row);
+    setUsageAmount('');
+    setUsageNote('');
+    setUsageDialogOpen(true);
+  };
+
+  const handleCloseUsage = () => {
+    setUsageDialogOpen(false);
+    setUsageTarget(null);
+  };
+
+  const handleSaveUsage = () => {
+    if (!usageTarget || !machine || !selectedMachineId) return;
+
+    const amount = Number(usageAmount);
+    if (isNaN(amount) || amount <= 0 || amount > usageTarget.totalAmount) return;
+
+    const baseTx = {
+      id: uuidv4(),
+      date: new Date().toISOString().slice(0, 10),
+      type: 'out',
+      machineType: 'pechat', // Assuming this page is for Pechat machines
+      machineId: selectedMachineId,
+      note: usageNote,
+      createdAt: Date.now(),
+    };
+
+    let storageKey = '';
+    let newTx: any = {};
+
+    if (usageTarget.id.startsWith('plyonka-')) {
+      storageKey = 'ombor-plyonka-transactions';
+      newTx = { ...baseTx, plyonkaId: usageTarget.id.replace('plyonka-', ''), amountKg: amount };
+    } else if (usageTarget.id.startsWith('kraska-')) {
+      storageKey = 'ombor-kraska-transactions';
+      newTx = { ...baseTx, kraskaId: usageTarget.id.replace('kraska-', ''), amountKg: amount };
+    } else if (usageTarget.id.startsWith('suyuq-kraska-')) {
+      storageKey = 'ombor-suyuq-kraska-transactions';
+      newTx = { ...baseTx, suyuqKraskaId: usageTarget.id.replace('suyuq-kraska-', ''), amountKg: amount };
+    } else if (usageTarget.id.startsWith('razvaritel-')) {
+      storageKey = 'ombor-razvaritel-transactions';
+      newTx = { ...baseTx, razvaritelId: usageTarget.id.replace('razvaritel-', ''), amountLiter: amount };
+    } else if (usageTarget.id.startsWith('silindir-')) {
+      storageKey = 'ombor-silindir-transactions';
+      newTx = { ...baseTx, silindirId: usageTarget.id.replace('silindir-', ''), amountQty: amount };
+    }
+
+    if (storageKey) {
+      const existingTxs = readTransactions<any>(storageKey);
+      const updatedTxs = [...existingTxs, newTx];
+      localStorage.setItem(storageKey, JSON.stringify(updatedTxs));
+
+      // Dispatch storage event to update UI immediately
+      window.dispatchEvent(new Event('storage'));
+      // Also force re-render if needed, but storage event listener normally handles it
+    }
+
+    handleCloseUsage();
+  };
 
   return (
     <>
@@ -497,9 +557,6 @@ export default function PechatPanelMaterialsPage() {
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: 120 }}>
-                      {t('pechatMaterialsPage.table.date')}
-                    </TableCell>
                     <TableCell sx={{ minWidth: 140 }}>
                       {t('pechatMaterialsPage.table.material')}
                     </TableCell>
@@ -509,13 +566,13 @@ export default function PechatPanelMaterialsPage() {
                     <TableCell sx={{ minWidth: 140 }}>
                       {t('pechatMaterialsPage.table.amount')}
                     </TableCell>
-                    <TableCell>{t('pechatMaterialsPage.table.note')}</TableCell>
+                    <TableCell align="right">{t('pechatMaterialsPage.table.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {rows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5}>
+                      <TableCell colSpan={4}>
                         <Box
                           sx={{
                             py: 6,
@@ -535,7 +592,6 @@ export default function PechatPanelMaterialsPage() {
                   ) : (
                     rows.map((row) => (
                       <TableRow key={row.id} hover>
-                        <TableCell>{row.date || '-'}</TableCell>
                         <TableCell>
                           <Chip size="small" label={row.materialLabel} variant="outlined" />
                         </TableCell>
@@ -556,7 +612,16 @@ export default function PechatPanelMaterialsPage() {
                           </Stack>
                         </TableCell>
                         <TableCell>{row.amountLabel}</TableCell>
-                        <TableCell>{row.note || '-'}</TableCell>
+                        <TableCell align="right">
+                          <Button
+                            variant="soft"
+                            color="error"
+                            size="small"
+                            onClick={() => handleOpenUsage(row)}
+                          >
+                            Chiqim (Use)
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -601,6 +666,61 @@ export default function PechatPanelMaterialsPage() {
           </Card>
         </Stack>
       </Container>
+
+      <Dialog open={usageDialogOpen} onClose={handleCloseUsage} maxWidth="sm" fullWidth>
+        <DialogTitle>Materiadan foydalanish (Chiqim)</DialogTitle>
+        <DialogContent>
+          {usageTarget && (
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              <Typography variant="subtitle2">
+                {usageTarget.materialLabel}: {usageTarget.itemLabel}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Mavjud: {usageTarget.amountLabel}
+              </Typography>
+
+              <TextField
+                fullWidth
+                label="Miqdor"
+                type="number"
+                value={usageAmount}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setUsageAmount(e.target.value)}
+                inputProps={{ max: usageTarget.totalAmount, min: 0 }}
+                helperText={
+                  Number(usageAmount) > usageTarget.totalAmount
+                    ? `Mavjud miqdordan oshib ketdi (${usageTarget.totalAmount})`
+                    : ''
+                }
+                error={Number(usageAmount) > usageTarget.totalAmount}
+              />
+
+              <TextField
+                fullWidth
+                label="Izoh (Log)"
+                multiline
+                rows={3}
+                value={usageNote}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setUsageNote(e.target.value)}
+              />
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseUsage}>Bekor qilish</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleSaveUsage}
+            disabled={
+              !usageAmount ||
+              Number(usageAmount) <= 0 ||
+              Number(usageAmount) > (usageTarget?.totalAmount || 0)
+            }
+          >
+            Tasdiqlash
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

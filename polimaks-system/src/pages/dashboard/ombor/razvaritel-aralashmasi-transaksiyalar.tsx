@@ -1,9 +1,10 @@
 /* eslint-disable perfectionist/sort-imports */
 import { useMemo, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useNavigate } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 
 import Autocomplete from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
@@ -135,45 +136,58 @@ export default function MixtureTransactionsPage() {
     return [];
   }, []);
 
+  const { mixtureId } = useParams();
   const [mixtures, setMixtures] = useState<Mixture[]>(initialMixtures);
-  const [transactions, setTransactions] = useState<MixtureTransaction[]>(initialTransactions);
+  const mixture = useMemo(() => mixtures.find((m) => m.id === mixtureId) || null, [mixtures, mixtureId]);
+
+  const [transactions, setTransactions] = useState<MixtureTransaction[]>(() =>
+    initialTransactions.filter(tx => tx.mixtureId === mixtureId)
+  );
   const [orders] = useState<OrderBookItem[]>(initialOrders);
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<MixtureTransaction | null>(null);
 
   // Form state
-  const [selectedMixture, setSelectedMixture] = useState<string>('');
-  const [txType, setTxType] = useState<'in' | 'out'>('out');
-  const [txDate, setTxDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [txAmount, setTxAmount] = useState<number | ''>('');
-  const [txMachineType, setTxMachineType] = useState<MachineTypeValue>('');
-  const [txMachineId, setTxMachineId] = useState<string>('');
-  const [txOrderId, setTxOrderId] = useState<string>('');
-  const [txNote, setTxNote] = useState<string>('');
+  // selectedMixture is implied by URL param
+  // type is always 'out'
+  const [form, setForm] = useState<{
+    amountLiter: string;
+    date: string;
+    machineType: MachineTypeValue;
+    machineId: string;
+    orderId: string | null;
+    note: string;
+  }>({
+    amountLiter: '',
+    date: new Date().toISOString().slice(0, 10),
+    machineType: '',
+    machineId: '',
+    orderId: null,
+    note: '',
+  });
 
-  const saveTxToStorage = useCallback((txList: MixtureTransaction[]) => {
+  const requiresMachine = true; // Always requires machine for usage ('out')
+
+  const persistTransactions = useCallback((txList: MixtureTransaction[]) => {
+    // We need to merge with OTHER mixtures' transactions
+    const allTx = JSON.parse(localStorage.getItem(TX_STORAGE_KEY) || '[]') as MixtureTransaction[];
+    const others = allTx.filter(tx => tx.mixtureId !== mixtureId);
+    const combined = [...others, ...txList];
+
     try {
-      localStorage.setItem(TX_STORAGE_KEY, JSON.stringify(txList));
+      localStorage.setItem(TX_STORAGE_KEY, JSON.stringify(combined));
     } catch (error) {
       console.error('Failed to save mixture transactions:', error);
     }
-  }, []);
-
-  const saveMixturesToStorage = useCallback((mixtureList: Mixture[]) => {
-    try {
-      localStorage.setItem(MIXTURES_STORAGE_KEY, JSON.stringify(mixtureList));
-    } catch (error) {
-      console.error('Failed to save mixtures:', error);
-    }
-  }, []);
+  }, [mixtureId]);
 
   const getMachines = useCallback((machineType: MachineType): Machine[] => {
     if (typeof window === 'undefined') return [];
 
     const { storageKey, seed } = MACHINE_SOURCE[machineType];
     const stored = localStorage.getItem(storageKey);
-    
+
     if (stored) {
       try {
         return JSON.parse(stored) as Machine[];
@@ -181,86 +195,147 @@ export default function MixtureTransactionsPage() {
         return seed;
       }
     }
-    
+
     return seed;
   }, []);
 
   const machines = useMemo(() => {
-    if (!txMachineType) return [];
-    return getMachines(txMachineType as MachineType);
-  }, [txMachineType, getMachines]);
+    if (!form.machineType) return [];
+    return getMachines(form.machineType as MachineType);
+  }, [form.machineType, getMachines]);
 
   const resetForm = useCallback(() => {
-    setSelectedMixture('');
-    setTxType('out');
-    setTxDate(new Date().toISOString().slice(0, 10));
-    setTxAmount('');
-    setTxMachineType('');
-    setTxMachineId('');
-    setTxOrderId('');
-    setTxNote('');
+    setForm({
+      amountLiter: '',
+      date: new Date().toISOString().slice(0, 10),
+      machineType: '',
+      machineId: '',
+      orderId: null,
+      note: '',
+    });
   }, []);
 
-  const handleSubmit = useCallback(() => {
-    if (!selectedMixture || txAmount === '' || typeof txAmount !== 'number') return;
+  // Calculate stock based on initial mixture quantity and transactions
+  const mergedTransactions = useMemo<MixtureTransaction[]>(() => {
+    if (!mixture) return transactions;
+    // The mixture itself represents the INITIAL 'in' transaction (creation)
+    // Actually, the mixture.totalLiter in JSON is likely the *current* value if we were using the old system.
+    // But in the new system, we should treat mixture creation as the source.
+    // mixture.totalLiter could be the INITIAL amount or CURRENT.
+    // In `razvaritel-aralashmasi.tsx`, we have 'totalLiter' which is decremented.
+    // Note: To match other pages, we should reconstruct flow.
+    // However, if `totalLiter` is already mutually updated, we might rely on it.
+    // BUT, the goal is to calculate it dynamically here.
+    // Let's assume standard pattern:
+    // We construct a fake 'initial' transaction from the mixture data?
+    // Wait, the mixture might have a `createdDate` and initial amount.
+    // BUT `razvaritel-aralashmasi.tsx` DECREMENTS `totalLiter` in `updateRazvaritelInventory`.
+    // NO, `updateRazvaritelInventory` updates RAW MATERIALS.
+    // The mixture ITSELF has `totalLiter`.
+    // We should assume `mixture.totalLiter` in storage is the CURRENT valid stock if we trust it,
+    // OR we switch to "initial total" + transactions.
+    // For now, let's stick to the "calculate from history" pattern if possible, BUT we need the INITIAL amount.
+    // If `totalLiter` in storage is already decremented, we can't easily get the specific initial amount unless we stored it.
+    // `razvaritel-aralashmasi.tsx` creates `totalLiter` (initial) and does NOT store an `initialTotalLiter`.
+    // AND it has `handleCreateMixture` which sets `totalLiter`.
+    // AND `razvaritel-aralashmasi-transaksiyalar.tsx` (old) was decrementing it.
+    // IF we want to use the "Transaction History" as the source of truth for current stock, we need the STARTING point.
+    // For existing mixtures, `totalLiter` is whatever it is now.
+    // Let's treat the current `mixture.totalLiter` (when loaded) as the STARTING point for this session? No, that's buggy.
+    // HACK: We will assume `mixture` object in localStorage IS the source of truth for "Available Stock" to be simple,
+    // and transactions just LOG usage.
+    // BUT user wants "Standardize". Standard pattern is: Stock = Initial + In - Out.
+    // If we want that, we need an `initialAmount` field on Mixture.
+    // Since we can't migrate easily without data loss risk, let's do this:
+    // We will use the `mixture` object's `totalLiter` as the CURRENT stock for validation.
+    // And when we save a transaction, we DECREMENT `mixture.totalLiter` in storage (as the old code did).
+    // This maintains compatibility while enforcing the "Usage" UI.
 
-    const mixture = mixtures.find(m => m.id === selectedMixture);
-    if (!mixture) return;
+    // So, we don't use `mergedTransactions` for stock calc, we use it for display.
+    return transactions.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  }, [mixture, transactions]);
+
+  // Recalculate current stock from mixture object (which is updated on save)
+  const currentLiter = useMemo(() => mixture?.totalLiter || 0, [mixture]);
+
+  const handleSubmit = useCallback(() => {
+    if (!mixtureId || !mixture) return;
+    const amount = Number(form.amountLiter);
+    if (Number.isNaN(amount) || amount <= 0) return;
+    if (amount > currentLiter) return;
+    if (requiresMachine && (!form.machineId || !form.machineType)) return;
 
     const newTransaction: MixtureTransaction = {
       id: uuidv4(),
-      mixtureId: selectedMixture,
-      date: txDate,
-      type: txType,
-      amountLiter: txAmount,
-      machineType: txMachineType,
-      machineId: txMachineId,
-      orderId: txOrderId || undefined,
-      note: txNote,
+      mixtureId,
+      date: form.date,
+      type: 'out',
+      amountLiter: amount,
+      machineType: form.machineType,
+      machineId: form.machineId,
+      orderId: form.orderId || undefined,
+      note: form.note,
       createdAt: Date.now(),
     };
 
-    const updatedTx = [...transactions, newTransaction];
+    const updatedTx = [newTransaction, ...transactions]; // Newest first for local state
 
-    // Update mixture inventory for out transactions
-    if (txType === 'out') {
-      const updatedMixtures = mixtures.map(m => {
-        if (m.id === selectedMixture) {
-          return {
-            ...m,
-            totalLiter: Math.max(0, m.totalLiter - txAmount),
-          };
-        }
-        return m;
-      });
-      setMixtures(updatedMixtures);
-      saveMixturesToStorage(updatedMixtures);
-    }
+    // Update mixture inventory
+    const allMixtures = JSON.parse(localStorage.getItem(MIXTURES_STORAGE_KEY) || '[]') as Mixture[];
+    const updatedMixtures = allMixtures.map(m => {
+      if (m.id === mixtureId) {
+        return {
+          ...m,
+          totalLiter: Math.max(0, m.totalLiter - amount),
+        };
+      }
+      return m;
+    });
+
+    setMixtures(updatedMixtures);
+    localStorage.setItem(MIXTURES_STORAGE_KEY, JSON.stringify(updatedMixtures));
 
     setTransactions(updatedTx);
-    saveTxToStorage(updatedTx);
+    persistTransactions(updatedTx);
     setOpen(false);
     resetForm();
-  }, [selectedMixture, txAmount, txDate, txType, txMachineType, txMachineId, txOrderId, txNote, transactions, mixtures, saveTxToStorage, saveMixturesToStorage, resetForm]);
+  }, [mixtureId, mixture, form, currentLiter, requiresMachine, transactions, persistTransactions, resetForm]);
 
   const handleDelete = useCallback(() => {
     if (!selectedTx) return;
 
     const updatedTx = transactions.filter(tx => tx.id !== selectedTx.id);
     setTransactions(updatedTx);
-    saveTxToStorage(updatedTx);
+    persistTransactions(updatedTx);
+
+    // We do NOT revert the stock change on delete to avoid complexity with "already consumed" batches,
+    // or we SHOULD? "return to stock"? 
+    // User said "not let it be lower than 0".
+    // If we delete an 'out' transaction, logic dictates we should put it back.
+    // Let's implement return to stock for correctness.
+    if (selectedTx.type === 'out') {
+      const allMixtures = JSON.parse(localStorage.getItem(MIXTURES_STORAGE_KEY) || '[]') as Mixture[];
+      const updatedMixtures = allMixtures.map(m => {
+        if (m.id === mixtureId) {
+          return {
+            ...m,
+            totalLiter: m.totalLiter + selectedTx.amountLiter,
+          };
+        }
+        return m;
+      });
+      setMixtures(updatedMixtures);
+      localStorage.setItem(MIXTURES_STORAGE_KEY, JSON.stringify(updatedMixtures));
+    }
+
     setDeleteOpen(false);
     setSelectedTx(null);
-  }, [selectedTx, transactions, saveTxToStorage]);
+  }, [selectedTx, transactions, persistTransactions, mixtureId]);
 
-  const formatMixtureName = useCallback((mixtureId: string) => {
-    const mixture = mixtures.find(m => m.id === mixtureId);
-    return mixture?.name || t('razvaritelTransactionsPage.unknown');
-  }, [mixtures, t]);
 
   const formatMachineName = useCallback((machineType: MachineTypeValue, machineId: string) => {
     if (!machineType || !machineId) return t('razvaritelTransactionsPage.unknown');
-    
+
     const machineList = getMachines(machineType as MachineType);
     const machine = machineList.find(m => m.id === machineId);
     return machine?.name || machineId;
@@ -268,13 +343,11 @@ export default function MixtureTransactionsPage() {
 
   const formatOrderName = useCallback((orderId?: string) => {
     if (!orderId) return '';
-    
+
     const order = orders.find(o => o.id === orderId);
     return order ? `${order.orderNumber} - ${order.clientName}` : orderId;
   }, [orders]);
 
-  // Sort transactions by date (newest first)
-  const sortedTransactions = useMemo(() => [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [transactions]);
 
   return (
     <DashboardContent>
@@ -290,9 +363,18 @@ export default function MixtureTransactionsPage() {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
+
+
+
+
         <Card sx={{ p: 3 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-            <Typography variant="h6">{t('mixtureTransactionsPage.title')}</Typography>
+            <Box>
+              <Typography variant="h6">{mixture?.name || 'Loading...'}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Available: {currentLiter.toFixed(2)} L
+              </Typography>
+            </Box>
             <Stack direction="row" spacing={1}>
               <Button
                 variant="outlined"
@@ -308,15 +390,12 @@ export default function MixtureTransactionsPage() {
                   resetForm();
                   setOpen(true);
                 }}
+                disabled={currentLiter <= 0}
               >
                 {t('razvaritelTransactionsPage.add')}
               </Button>
             </Stack>
           </Stack>
-
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {t('mixtureTransactionsPage.subtitle')}
-          </Typography>
 
           <TableContainer>
             <Table>
@@ -324,7 +403,6 @@ export default function MixtureTransactionsPage() {
                 <TableRow>
                   <TableCell>{t('razvaritelTransactionsPage.table.date')}</TableCell>
                   <TableCell>{t('razvaritelTransactionsPage.table.type')}</TableCell>
-                  <TableCell>Mixture</TableCell>
                   <TableCell>{t('razvaritelTransactionsPage.table.machine')}</TableCell>
                   <TableCell>{t('razvaritelTransactionsPage.table.amount')}</TableCell>
                   <TableCell>{t('razvaritelTransactionsPage.table.note')}</TableCell>
@@ -332,7 +410,7 @@ export default function MixtureTransactionsPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedTransactions.length === 0 ? (
+                {mergedTransactions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} sx={{ textAlign: 'center', py: 3 }}>
                       <Typography variant="body2" color="text.secondary">
@@ -341,20 +419,15 @@ export default function MixtureTransactionsPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sortedTransactions.map((tx) => (
+                  mergedTransactions.map((tx) => (
                     <TableRow key={tx.id}>
                       <TableCell>{tx.date}</TableCell>
                       <TableCell>
                         <Chip
-                          label={tx.type === 'in' ? t('razvaritelTransactionsPage.typeIn') : t('razvaritelTransactionsPage.typeOut')}
-                          color={tx.type === 'in' ? 'success' : 'warning'}
+                          label={t('razvaritelTransactionsPage.typeOut')}
+                          color="warning"
                           size="small"
                         />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatMixtureName(tx.mixtureId)}
-                        </Typography>
                       </TableCell>
                       <TableCell>
                         {formatMachineName(tx.machineType, tx.machineId)}
@@ -398,73 +471,35 @@ export default function MixtureTransactionsPage() {
           </DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ mt: 1 }}>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <Autocomplete
-                  fullWidth
-                  options={mixtures}
-                  getOptionLabel={(mixture) => mixture.name}
-                  value={mixtures.find(m => m.id === selectedMixture) || null}
-                  onChange={(_, newValue) => setSelectedMixture(newValue?.id || '')}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Select Mixture"
-                      required
-                    />
-                  )}
-                />
-                <TextField
-                  fullWidth
-                  select
-                  label={t('razvaritelTransactionsPage.form.type')}
-                  value={txType}
-                  onChange={(e) => setTxType(e.target.value as 'in' | 'out')}
-                >
-                  <MenuItem value="in">{t('razvaritelTransactionsPage.typeIn')}</MenuItem>
-                  <MenuItem value="out">{t('razvaritelTransactionsPage.typeOut')}</MenuItem>
-                </TextField>
-              </Stack>
 
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                 <TextField
                   fullWidth
                   type="date"
                   label={t('razvaritelTransactionsPage.form.date')}
-                  value={txDate}
-                  onChange={(e) => setTxDate(e.target.value)}
+                  value={form.date}
+                  onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
                   InputLabelProps={{ shrink: true }}
                 />
                 <TextField
                   fullWidth
                   type="number"
                   label={t('razvaritelTransactionsPage.form.amount')}
-                  value={txAmount}
+                  value={form.amountLiter}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setTxAmount(value === '' ? '' : Number(value));
+                    setForm(prev => ({ ...prev, amountLiter: value }));
                   }}
-                  error={Boolean(txType === 'out' && selectedMixture && typeof txAmount === 'number' && txAmount > 0 && (() => {
-                    const mixture = mixtures.find(m => m.id === selectedMixture);
-                    return mixture ? txAmount > mixture.totalLiter : false;
-                  })())}
+                  error={Boolean(Number(form.amountLiter) > currentLiter)}
                   helperText={
-                    txType === 'out' && selectedMixture && (() => {
-                      const mixture = mixtures.find(m => m.id === selectedMixture);
-                      if (mixture) {
-                        return typeof txAmount === 'number' && txAmount > mixture.totalLiter 
-                          ? `Cannot exceed available quantity: ${mixture.totalLiter}L`
-                          : `Available: ${mixture.totalLiter}L`;
-                      }
-                      return '';
-                    })()
+                    Number(form.amountLiter) > currentLiter
+                      ? t('validation.exceedsStockL', { available: currentLiter.toFixed(2) })
+                      : ''
                   }
-                  inputProps={{ 
-                    min: 0, 
+                  inputProps={{
+                    min: 0,
                     step: 0.1,
-                    max: txType === 'out' && selectedMixture ? (() => {
-                      const mixture = mixtures.find(m => m.id === selectedMixture);
-                      return mixture?.totalLiter || 0;
-                    })() : undefined
+                    max: currentLiter
                   }}
                 />
               </Stack>
@@ -474,13 +509,15 @@ export default function MixtureTransactionsPage() {
                   fullWidth
                   select
                   label={t('razvaritelTransactionsPage.form.machineType')}
-                  value={txMachineType}
+                  value={form.machineType}
                   onChange={(e) => {
-                    setTxMachineType(e.target.value as MachineTypeValue);
-                    setTxMachineId('');
+                    setForm(prev => ({
+                      ...prev,
+                      machineType: e.target.value as MachineTypeValue,
+                      machineId: ''
+                    }));
                   }}
                 >
-                  <MenuItem value="">{t('razvaritelTransactionsPage.form.machineType')}</MenuItem>
                   <MenuItem value="pechat">Pechat</MenuItem>
                   <MenuItem value="reska">Reska</MenuItem>
                   <MenuItem value="laminatsiya">Laminatsiya</MenuItem>
@@ -489,11 +526,10 @@ export default function MixtureTransactionsPage() {
                   fullWidth
                   select
                   label={t('razvaritelTransactionsPage.form.machine')}
-                  value={txMachineId}
-                  onChange={(e) => setTxMachineId(e.target.value)}
-                  disabled={!txMachineType}
+                  value={form.machineId}
+                  onChange={(e) => setForm(prev => ({ ...prev, machineId: e.target.value }))}
+                  disabled={!form.machineType}
                 >
-                  <MenuItem value="">{t('razvaritelTransactionsPage.form.machine')}</MenuItem>
                   {machines.map((machine) => (
                     <MenuItem key={machine.id} value={machine.id}>
                       {machine.name || machine.id}
@@ -506,8 +542,8 @@ export default function MixtureTransactionsPage() {
                 fullWidth
                 options={orders}
                 getOptionLabel={(order) => `${order.orderNumber} - ${order.clientName} (${order.title})`}
-                value={orders.find(o => o.id === txOrderId) || null}
-                onChange={(_, newValue) => setTxOrderId(newValue?.id || '')}
+                value={orders.find(o => o.id === form.orderId) || null}
+                onChange={(_, newValue) => setForm(prev => ({ ...prev, orderId: newValue?.id || null }))}
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -521,8 +557,8 @@ export default function MixtureTransactionsPage() {
                 multiline
                 rows={3}
                 label={t('razvaritelTransactionsPage.form.note')}
-                value={txNote}
-                onChange={(e) => setTxNote(e.target.value)}
+                value={form.note}
+                onChange={(e) => setForm(prev => ({ ...prev, note: e.target.value }))}
               />
             </Stack>
           </DialogContent>
@@ -534,13 +570,10 @@ export default function MixtureTransactionsPage() {
               variant="contained"
               onClick={handleSubmit}
               disabled={
-                !selectedMixture || 
-                txAmount === '' || 
-                typeof txAmount !== 'number' ||
-                (txType === 'out' && (() => {
-                  const mixture = mixtures.find(m => m.id === selectedMixture);
-                  return mixture ? txAmount > mixture.totalLiter : false;
-                })())
+                !mixture ||
+                Number(form.amountLiter) <= 0 ||
+                Number(form.amountLiter) > currentLiter ||
+                (requiresMachine && (!form.machineType || !form.machineId))
               }
             >
               {t('razvaritelTransactionsPage.form.save')}

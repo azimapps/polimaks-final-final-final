@@ -187,7 +187,7 @@ export default function SuyuqKraskaTransactionsPage() {
     () => items.find((it) => it.id === suyuqKraskaId) ?? null,
     [items, suyuqKraskaId]
   );
-  
+
   const allOrders = useMemo(() => readOrders(), []);
 
   const heading = t('suyuqKraskaTransactionsPage.title', {
@@ -211,7 +211,7 @@ export default function SuyuqKraskaTransactionsPage() {
     orderId: string | null;
     note: string;
   }>({
-    type: 'in',
+    type: 'out',
     amountKg: '',
     date: todayISO(),
     machineType: '',
@@ -220,7 +220,7 @@ export default function SuyuqKraskaTransactionsPage() {
     note: '',
   });
 
-  const requiresMachine = form.type === 'out';
+  const requiresMachine = true;
 
   const machines = useMemo(
     () => (requiresMachine && form.machineType ? readMachines(form.machineType) : []),
@@ -242,6 +242,31 @@ export default function SuyuqKraskaTransactionsPage() {
     setDialogOpen(false);
   }, [suyuqKraskaId]);
 
+  const mergedTransactions = useMemo<SuyuqKraskaTransaction[]>(() => {
+    if (!item) return transactions;
+    const initial: SuyuqKraskaTransaction = {
+      id: `${item.id}-initial`,
+      suyuqKraskaId: item.id,
+      date: item.createdDate,
+      type: 'in',
+      amountKg: item.totalKg,
+      machineType: 'pechat',
+      machineId: '',
+      note: t('suyuqKraskaTransactionsPage.generatedFromStock'),
+      createdAt: Date.parse(item.createdDate) || 0,
+    };
+    return [initial, ...transactions].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  }, [item, t, transactions]);
+
+  const currentKg = useMemo(
+    () =>
+      mergedTransactions.reduce(
+        (sum, tx) => (tx.type === 'in' ? sum + tx.amountKg : sum - tx.amountKg),
+        0
+      ),
+    [mergedTransactions]
+  );
+
   const persistForItem = useCallback(
     (next: SuyuqKraskaTransaction[]) => {
       const others = readTransactions().filter((tx) => tx.suyuqKraskaId !== suyuqKraskaId);
@@ -254,13 +279,14 @@ export default function SuyuqKraskaTransactionsPage() {
     if (!item || !suyuqKraskaId) return;
     const amount = Number(form.amountKg);
     if (Number.isNaN(amount) || amount <= 0) return;
+    if (amount > currentKg) return;
     if (requiresMachine && (!form.machineId || !form.machineType)) return;
 
     const payload: SuyuqKraskaTransaction = {
       id: editingTx?.id || uuidv4(),
       suyuqKraskaId,
       date: form.date || todayISO(),
-      type: form.type,
+      type: 'out',
       amountKg: amount,
       machineType: requiresMachine ? form.machineType : '',
       machineId: requiresMachine ? form.machineId : '',
@@ -297,7 +323,7 @@ export default function SuyuqKraskaTransactionsPage() {
   const startEdit = (tx: SuyuqKraskaTransaction) => {
     setEditingTx(tx);
     setForm({
-      type: tx.type,
+      type: 'out',
       amountKg: String(tx.amountKg),
       date: tx.date,
       machineType: tx.machineType,
@@ -316,33 +342,10 @@ export default function SuyuqKraskaTransactionsPage() {
   const canSave =
     Boolean(item) &&
     Number(form.amountKg) > 0 &&
+    Number(form.amountKg) <= currentKg &&
     (!requiresMachine || (Boolean(form.machineType) && Boolean(form.machineId))) &&
     Boolean(form.date);
 
-  const mergedTransactions = useMemo<SuyuqKraskaTransaction[]>(() => {
-    if (!item) return transactions;
-    const initial: SuyuqKraskaTransaction = {
-      id: `${item.id}-initial`,
-      suyuqKraskaId: item.id,
-      date: item.createdDate,
-      type: 'in',
-      amountKg: item.totalKg,
-      machineType: 'pechat',
-      machineId: '',
-      note: t('suyuqKraskaTransactionsPage.generatedFromStock'),
-      createdAt: Date.parse(item.createdDate) || 0,
-    };
-    return [initial, ...transactions].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  }, [item, t, transactions]);
-
-  const currentKg = useMemo(
-    () =>
-      mergedTransactions.reduce(
-        (sum, tx) => (tx.type === 'in' ? sum + tx.amountKg : sum - tx.amountKg),
-        0
-      ),
-    [mergedTransactions]
-  );
 
   useEffect(() => {
     if (!item || typeof window === 'undefined') return;
@@ -350,9 +353,9 @@ export default function SuyuqKraskaTransactionsPage() {
     const updated = stored.map((it) =>
       it.id === item.id
         ? {
-            ...it,
-            totalKg: Math.max(0, Number(currentKg.toFixed(3))),
-          }
+          ...it,
+          totalKg: Math.max(0, Number(currentKg.toFixed(3))),
+        }
         : it
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -559,20 +562,6 @@ export default function SuyuqKraskaTransactionsPage() {
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  select
-                  fullWidth
-                  label={t('suyuqKraskaTransactionsPage.form.type')}
-                  value={form.type}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, type: e.target.value as 'in' | 'out' }))
-                  }
-                >
-                  <MenuItem value="in">{t('suyuqKraskaTransactionsPage.typeIn')}</MenuItem>
-                  <MenuItem value="out">{t('suyuqKraskaTransactionsPage.typeOut')}</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
                   type="date"
                   fullWidth
                   label={t('suyuqKraskaTransactionsPage.form.date')}
@@ -628,10 +617,16 @@ export default function SuyuqKraskaTransactionsPage() {
                   value={form.amountKg}
                   onChange={(e) => setForm((prev) => ({ ...prev, amountKg: e.target.value }))}
                   type="number"
-                  inputProps={{ min: 0, step: 0.01 }}
+                  inputProps={{ min: 0, step: 0.01, max: currentKg }}
+                  helperText={
+                    Number(form.amountKg) > currentKg
+                      ? t('validation.exceedsStockKg', { available: currentKg })
+                      : ''
+                  }
+                  error={Number(form.amountKg) > currentKg}
                 />
               </Grid>
-              
+
               {form.type === 'out' ? (
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Autocomplete

@@ -749,7 +749,7 @@
     "form": {
       "mixtureName": "Mixture name",
       "eafRazvaritel": "EAF Thinner",
-      "etilinRazvaritel": "Etilin Thinner", 
+      "etilinRazvaritel": "Etilin Thinner",
       "metoksilRazvaritel": "Metoksil Thinner",
       "quantityL": "Quantity (L)",
       "available": "available",
@@ -775,7 +775,7 @@
     "table": {
       "name": "Name",
       "totalLiters": "Total liters",
-      "totalKg": "Total kg", 
+      "totalKg": "Total kg",
       "pricePerLiter": "Price (L)",
       "pricePerKg": "Price (KG)",
       "date": "Date",
@@ -806,7 +806,7 @@
     },
     "menu": {
       "view": "View",
-      "edit": "Edit", 
+      "edit": "Edit",
       "delete": "Delete"
     },
     "details": {
@@ -1509,7 +1509,7 @@
     "subtitle": "Plan and manage production orders and scheduling."
   },
   "orderPlanPage": {
-    "title": "Order Planning",
+    "title": "Title",
     "subtitle": "Manage production orders, material requirements and scheduling",
     "sortLabel": "Sort",
     "sortDefault": "Default order",
@@ -1527,7 +1527,6 @@
     "endDate": "End date",
     "orderNumber": "Order Number",
     "client": "Client",
-    "title": "Title",
     "quantityKg": "Quantity (kg)",
     "material": "Material",
     "subMaterial": "Sub Material",
@@ -1603,13 +1602,13 @@
     "materialSelection": {
       "title": "Material Selection",
       "suyuqKraskaTitle": "Suyuq Kraska",
-      "kraskaTitle": "Kraska", 
+      "kraskaTitle": "Kraska",
       "razvaritelAralashmasiTitle": "Razvaritel Aralashmasi",
       "available": "Available",
       "used": "Used",
       "usagePlaceholder": "Enter amount used",
       "noSuyuqKraska": "No suyuq kraska available in transactions for this order/machine",
-      "noKraska": "No kraska available in transactions for this order/machine", 
+      "noKraska": "No kraska available in transactions for this order/machine",
       "noRazvaritelAralashmasi": "No razvaritel aralashmasi available in transactions for this order/machine",
       "calculations": "Calculations",
       "colorUsed": "Color Used",
@@ -1722,5 +1721,10 @@
       "in_progress": "In progress",
       "resolved": "Resolved"
     }
+  },
+  "validation": {
+    "exceedsStockKg": "Exceeds stock: {{available}} kg available",
+    "exceedsStockLiters": "Exceeds stock: {{available}} liters available",
+    "exceedsStockL": "Exceeds stock: {{available}} L"
   }
 }

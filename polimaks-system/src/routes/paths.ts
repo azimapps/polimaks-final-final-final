@@ -25,7 +25,8 @@ export const paths = {
       razvaritelTransactions: (razvaritelId: string) =>
         `/ombor/razvaritel/${razvaritelId}/transaksiyalar`,
       razvaritelAralashmasi: '/ombor/razvaritel-aralashmasi',
-      razvaritelAralashmasiTransactions: '/ombor/razvaritel-aralashmasi/transaksiyalar',
+      razvaritelAralashmasiTransactions: (mixtureId: string) =>
+        `/ombor/razvaritel-aralashmasi/${mixtureId}/transaksiyalar`,
       silindir: '/ombor/silindir',
       silindirTransactions: (silindirId: string) =>
         `/ombor/silindir/${silindirId}/transaksiyalar`,

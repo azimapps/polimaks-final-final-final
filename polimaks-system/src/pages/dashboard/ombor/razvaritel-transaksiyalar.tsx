@@ -204,7 +204,7 @@ export default function RazvaritelTransactionsPage() {
     () => items.find((it) => it.id === razvaritelId) ?? null,
     [items, razvaritelId]
   );
-  
+
   const allOrders = useMemo(() => readOrders(), []);
 
   const heading = t('razvaritelTransactionsPage.title', {
@@ -228,7 +228,7 @@ export default function RazvaritelTransactionsPage() {
     orderId: string | null;
     note: string;
   }>({
-    type: 'in',
+    type: 'out',
     amountLiter: '',
     date: todayISO(),
     machineType: '',
@@ -237,7 +237,7 @@ export default function RazvaritelTransactionsPage() {
     note: '',
   });
 
-  const requiresMachine = form.type === 'out';
+  const requiresMachine = true;
 
   const machines = useMemo(
     () => (requiresMachine && form.machineType ? readMachines(form.machineType) : []),
@@ -259,6 +259,31 @@ export default function RazvaritelTransactionsPage() {
     setDialogOpen(false);
   }, [razvaritelId]);
 
+  const mergedTransactions = useMemo<RazvaritelTransaction[]>(() => {
+    if (!item) return transactions;
+    const initial: RazvaritelTransaction = {
+      id: `${item.id}-initial`,
+      razvaritelId: item.id,
+      date: item.createdDate,
+      type: 'in',
+      amountLiter: item.totalLiter,
+      machineType: 'pechat',
+      machineId: '',
+      note: t('razvaritelTransactionsPage.generatedFromStock'),
+      createdAt: Date.parse(item.createdDate) || 0,
+    };
+    return [initial, ...transactions].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  }, [item, t, transactions]);
+
+  const currentLiter = useMemo(
+    () =>
+      mergedTransactions.reduce(
+        (sum, tx) => (tx.type === 'in' ? sum + tx.amountLiter : sum - tx.amountLiter),
+        0
+      ),
+    [mergedTransactions]
+  );
+
   const persistForItem = useCallback(
     (next: RazvaritelTransaction[]) => {
       const others = readTransactions().filter((tx) => tx.razvaritelId !== razvaritelId);
@@ -271,13 +296,14 @@ export default function RazvaritelTransactionsPage() {
     if (!item || !razvaritelId) return;
     const amount = Number(form.amountLiter);
     if (Number.isNaN(amount) || amount <= 0) return;
+    if (amount > currentLiter) return;
     if (requiresMachine && (!form.machineId || !form.machineType)) return;
 
     const payload: RazvaritelTransaction = {
       id: editingTx?.id || uuidv4(),
       razvaritelId,
       date: form.date || todayISO(),
-      type: form.type,
+      type: 'out',
       amountLiter: amount,
       machineType: requiresMachine ? form.machineType : '',
       machineId: requiresMachine ? form.machineId : '',
@@ -314,7 +340,7 @@ export default function RazvaritelTransactionsPage() {
   const startEdit = (tx: RazvaritelTransaction) => {
     setEditingTx(tx);
     setForm({
-      type: tx.type,
+      type: 'out',
       amountLiter: String(tx.amountLiter),
       date: tx.date,
       machineType: tx.machineType,
@@ -333,33 +359,10 @@ export default function RazvaritelTransactionsPage() {
   const canSave =
     Boolean(item) &&
     Number(form.amountLiter) > 0 &&
+    Number(form.amountLiter) <= currentLiter &&
     (!requiresMachine || (Boolean(form.machineType) && Boolean(form.machineId))) &&
     Boolean(form.date);
 
-  const mergedTransactions = useMemo<RazvaritelTransaction[]>(() => {
-    if (!item) return transactions;
-    const initial: RazvaritelTransaction = {
-      id: `${item.id}-initial`,
-      razvaritelId: item.id,
-      date: item.createdDate,
-      type: 'in',
-      amountLiter: item.totalLiter,
-      machineType: 'pechat',
-      machineId: '',
-      note: t('razvaritelTransactionsPage.generatedFromStock'),
-      createdAt: Date.parse(item.createdDate) || 0,
-    };
-    return [initial, ...transactions].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  }, [item, t, transactions]);
-
-  const currentLiter = useMemo(
-    () =>
-      mergedTransactions.reduce(
-        (sum, tx) => (tx.type === 'in' ? sum + tx.amountLiter : sum - tx.amountLiter),
-        0
-      ),
-    [mergedTransactions]
-  );
 
   useEffect(() => {
     if (!item || typeof window === 'undefined') return;
@@ -367,9 +370,9 @@ export default function RazvaritelTransactionsPage() {
     const updated = stored.map((it) =>
       it.id === item.id
         ? {
-            ...it,
-            totalLiter: Math.max(0, Number(currentLiter.toFixed(3))),
-          }
+          ...it,
+          totalLiter: Math.max(0, Number(currentLiter.toFixed(3))),
+        }
         : it
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -584,20 +587,6 @@ export default function RazvaritelTransactionsPage() {
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  select
-                  fullWidth
-                  label={t('razvaritelTransactionsPage.form.type')}
-                  value={form.type}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, type: e.target.value as 'in' | 'out' }))
-                  }
-                >
-                  <MenuItem value="in">{t('razvaritelTransactionsPage.typeIn')}</MenuItem>
-                  <MenuItem value="out">{t('razvaritelTransactionsPage.typeOut')}</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
                   type="date"
                   fullWidth
                   label={t('razvaritelTransactionsPage.form.date')}
@@ -645,7 +634,7 @@ export default function RazvaritelTransactionsPage() {
                   </Grid>
                 </>
               ) : null}
-              
+
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
@@ -653,10 +642,16 @@ export default function RazvaritelTransactionsPage() {
                   value={form.amountLiter}
                   onChange={(e) => setForm((prev) => ({ ...prev, amountLiter: e.target.value }))}
                   type="number"
-                  inputProps={{ min: 0, step: 0.01 }}
+                  inputProps={{ min: 0, step: 0.01, max: currentLiter }}
+                  helperText={
+                    Number(form.amountLiter) > currentLiter
+                      ? t('validation.exceedsStockLiters', { available: currentLiter })
+                      : ''
+                  }
+                  error={Number(form.amountLiter) > currentLiter}
                 />
               </Grid>
-              
+
               {form.type === 'out' ? (
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Autocomplete

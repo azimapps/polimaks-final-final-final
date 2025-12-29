@@ -190,7 +190,7 @@ export default function PlyonkaTransactionsPage() {
     () => items.find((it) => it.id === plyonkaId) ?? null,
     [items, plyonkaId]
   );
-  
+
   const allOrders = useMemo(() => readOrders(), []);
 
   const heading = t('plyonkaTransactionsPage.title', {
@@ -214,7 +214,7 @@ export default function PlyonkaTransactionsPage() {
     orderId: string | null;
     note: string;
   }>({
-    type: 'in',
+    type: 'out',
     amountKg: '',
     date: todayISO(),
     machineType: '',
@@ -223,7 +223,7 @@ export default function PlyonkaTransactionsPage() {
     note: '',
   });
 
-  const requiresMachine = form.type === 'out';
+  const requiresMachine = true; // Always true since we only do 'out'
 
   const machines = useMemo(
     () => (requiresMachine && form.machineType ? readMachines(form.machineType) : []),
@@ -244,80 +244,6 @@ export default function PlyonkaTransactionsPage() {
     setEditingTx(null);
     setDialogOpen(false);
   }, [plyonkaId]);
-
-  const persistForRoll = useCallback((next: PlyonkaTransaction[]) => {
-    const others = readTransactions().filter((tx) => tx.plyonkaId !== plyonkaId);
-    persistTransactions([...others, ...next]);
-  }, [plyonkaId]);
-
-  const saveTransaction = useCallback(() => {
-    if (!item || !plyonkaId) return;
-    const amount = Number(form.amountKg);
-    if (Number.isNaN(amount) || amount <= 0) return;
-    if (requiresMachine && (!form.machineId || !form.machineType)) return;
-
-    const payload: PlyonkaTransaction = {
-      id: editingTx?.id || uuidv4(),
-      plyonkaId,
-      date: form.date || todayISO(),
-      type: form.type,
-      amountKg: amount,
-      machineType: requiresMachine ? form.machineType : '',
-      machineId: requiresMachine ? form.machineId : '',
-      orderId: form.orderId || undefined,
-      note: form.note.trim(),
-      createdAt: editingTx?.createdAt ?? Date.now(),
-    };
-
-    setTransactions((prev) => {
-      const next = editingTx
-        ? prev.map((tx) => (tx.id === editingTx.id ? payload : tx))
-        : [...prev, payload];
-      persistForRoll(next);
-      return next;
-    });
-    setForm((prev) => ({ ...prev, amountKg: '', note: '', orderId: null }));
-    setEditingTx(null);
-    setDialogOpen(false);
-  }, [
-    editingTx,
-    form.amountKg,
-    form.date,
-    form.machineId,
-    form.machineType,
-    form.note,
-    form.orderId,
-    form.type,
-    item,
-    plyonkaId,
-    persistForRoll,
-    requiresMachine,
-  ]);
-
-  const startEdit = (tx: PlyonkaTransaction) => {
-    setEditingTx(tx);
-    setForm({
-      type: tx.type,
-      amountKg: String(tx.amountKg),
-      date: tx.date,
-      machineType: tx.machineType,
-      machineId: tx.machineId,
-      orderId: tx.orderId || null,
-      note: tx.note,
-    });
-    setDialogOpen(true);
-  };
-
-  const deleteTransaction = (tx: PlyonkaTransaction) => {
-    setPendingDelete(tx);
-    setConfirmOpen(true);
-  };
-
-  const canSave =
-    Boolean(item) &&
-    Number(form.amountKg) > 0 &&
-    (!requiresMachine || (Boolean(form.machineType) && Boolean(form.machineId))) &&
-    Boolean(form.date);
 
   const mergedTransactions = useMemo<PlyonkaTransaction[]>(() => {
     if (!item) return transactions;
@@ -344,15 +270,97 @@ export default function PlyonkaTransactionsPage() {
     [mergedTransactions]
   );
 
+  const persistForRoll = useCallback((next: PlyonkaTransaction[]) => {
+    const others = readTransactions().filter((tx) => tx.plyonkaId !== plyonkaId);
+    persistTransactions([...others, ...next]);
+  }, [plyonkaId]);
+
+  const saveTransaction = useCallback(() => {
+    if (!item || !plyonkaId) return;
+    const amount = Number(form.amountKg);
+    if (Number.isNaN(amount) || amount <= 0) return;
+    // Check stock limit for 'out'
+    if (amount > currentKg) {
+      // alert or just return? Ideally UI disabled save button or showed error
+      return;
+    }
+
+    if (requiresMachine && (!form.machineId || !form.machineType)) return;
+
+    const payload: PlyonkaTransaction = {
+      id: editingTx?.id || uuidv4(),
+      plyonkaId,
+      date: form.date || todayISO(),
+      type: 'out', // Hardcoded out
+      amountKg: amount,
+      machineType: requiresMachine ? form.machineType : '',
+      machineId: requiresMachine ? form.machineId : '',
+      orderId: form.orderId || undefined,
+      note: form.note.trim(),
+      createdAt: editingTx?.createdAt ?? Date.now(),
+    };
+
+    setTransactions((prev) => {
+      const next = editingTx
+        ? prev.map((tx) => (tx.id === editingTx.id ? payload : tx))
+        : [...prev, payload];
+      persistForRoll(next);
+      return next;
+    });
+    setForm((prev) => ({ ...prev, amountKg: '', note: '', orderId: null }));
+    setEditingTx(null);
+    setDialogOpen(false);
+  }, [
+    editingTx,
+    form.amountKg,
+    form.date,
+    form.machineId,
+    form.machineType,
+    form.note,
+    form.orderId,
+    item,
+    plyonkaId,
+    persistForRoll,
+    requiresMachine,
+    currentKg
+  ]);
+
+  const startEdit = (tx: PlyonkaTransaction) => {
+    setEditingTx(tx);
+    setForm({
+      type: 'out',
+      amountKg: String(tx.amountKg),
+      date: tx.date,
+      machineType: tx.machineType,
+      machineId: tx.machineId,
+      orderId: tx.orderId || null,
+      note: tx.note,
+    });
+    setDialogOpen(true);
+  };
+
+  const deleteTransaction = (tx: PlyonkaTransaction) => {
+    setPendingDelete(tx);
+    setConfirmOpen(true);
+  };
+
+  const canSave =
+    Boolean(item) &&
+    Number(form.amountKg) > 0 &&
+    Number(form.amountKg) <= currentKg &&
+    (!requiresMachine || (Boolean(form.machineType) && Boolean(form.machineId))) &&
+    Boolean(form.date);
+
+
   useEffect(() => {
     if (!item || typeof window === 'undefined') return;
     const stored = readPlyonkaItems();
     const updated = stored.map((it) =>
       it.id === item.id
         ? {
-            ...it,
-            totalKg: Math.max(0, Number(currentKg.toFixed(3))),
-          }
+          ...it,
+          totalKg: Math.max(0, Number(currentKg.toFixed(3))),
+        }
         : it
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -567,20 +575,6 @@ export default function PlyonkaTransactionsPage() {
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  select
-                  fullWidth
-                  label={t('plyonkaTransactionsPage.form.type')}
-                  value={form.type}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, type: e.target.value as 'in' | 'out' }))
-                  }
-                >
-                  <MenuItem value="in">{t('plyonkaTransactionsPage.typeIn')}</MenuItem>
-                  <MenuItem value="out">{t('plyonkaTransactionsPage.typeOut')}</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
                   type="date"
                   fullWidth
                   label={t('plyonkaTransactionsPage.form.date')}
@@ -628,7 +622,7 @@ export default function PlyonkaTransactionsPage() {
                   </Grid>
                 </>
               ) : null}
-              
+
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
@@ -636,10 +630,16 @@ export default function PlyonkaTransactionsPage() {
                   value={form.amountKg}
                   onChange={(e) => setForm((prev) => ({ ...prev, amountKg: e.target.value }))}
                   type="number"
-                  inputProps={{ min: 0, step: 0.01 }}
+                  inputProps={{ min: 0, step: 0.01, max: currentKg }}
+                  helperText={
+                    Number(form.amountKg) > currentKg
+                      ? t('validation.exceedsStockKg', { available: currentKg })
+                      : ''
+                  }
+                  error={Number(form.amountKg) > currentKg}
                 />
               </Grid>
-              
+
               {form.type === 'out' ? (
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Autocomplete

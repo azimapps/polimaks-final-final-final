@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router';
+import { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -28,11 +29,24 @@ import TableContainer from '@mui/material/TableContainer';
 import { paths } from 'src/routes/paths';
 
 import { useTranslate } from 'src/locales';
+import reskaSeed from 'src/data/stanok-reska.json';
+import pechatSeed from 'src/data/stanok-pechat.json';
 import razvaritelData from 'src/data/razvaritel.json';
 import { DashboardContent } from 'src/layouts/dashboard';
+import laminatsiyaSeed from 'src/data/stanok-laminatsiya.json';
 
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
+type MachineType = 'pechat' | 'reska' | 'laminatsiya';
+type MachineTypeValue = MachineType | '';
+type Machine = { id: string; name?: string };
+
+const MACHINE_SOURCE: Record<MachineType, { storageKey: string; seed: Machine[] }> = {
+  pechat: { storageKey: 'stanok-pechat', seed: pechatSeed as any as Machine[] },
+  reska: { storageKey: 'stanok-reska', seed: reskaSeed as any as Machine[] },
+  laminatsiya: { storageKey: 'stanok-laminatsiya', seed: laminatsiyaSeed as any as Machine[] },
+};
 
 type RazvaritelType = 'eaf' | 'etilin' | 'metoksil';
 
@@ -80,6 +94,14 @@ const getDensity = (type: RazvaritelType): number => {
 
 const RAZVARITEL_STORAGE_KEY = 'ombor-razvaritel';
 const MIXTURES_STORAGE_KEY = 'ombor-razvaritel-mixtures';
+const TX_STORAGE_KEY = 'ombor-mixture-transactions';
+
+const initialUsageForm = {
+  amountLiter: '' as number | '',
+  machineType: 'pechat' as MachineTypeValue,
+  machineId: '',
+  note: '',
+};
 
 const normalizeRazvaritelItems = (items: any[]): RazvaritelItem[] =>
   items.map((item, index) => ({
@@ -102,7 +124,7 @@ const calculateKgFromLiter = (liter: number, type: RazvaritelType): number => li
 export default function RazvaritelAralashmasiPage() {
   const { t } = useTranslate('pages');
   const navigate = useNavigate();
-  
+
   // Load razvaritel data from the same source as /ombor/razvaritel
   const initialRazvaritelData = useMemo<RazvaritelItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -119,7 +141,7 @@ export default function RazvaritelAralashmasiPage() {
   }, []);
 
   const [razvaritelItems, setRazvaritelItems] = useState<RazvaritelItem[]>(initialRazvaritelData);
-  
+
   // Load mixtures from localStorage
   const initialMixtures = useMemo<Mixture[]>(() => {
     if (typeof window !== 'undefined') {
@@ -134,7 +156,7 @@ export default function RazvaritelAralashmasiPage() {
     }
     return [];
   }, []);
-  
+
   const [mixtures, setMixtures] = useState<Mixture[]>(initialMixtures);
   const [open, setOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
@@ -142,15 +164,44 @@ export default function RazvaritelAralashmasiPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuMixture, setMenuMixture] = useState<Mixture | null>(null);
-  
+
+  const [usageOpen, setUsageOpen] = useState(false);
+  const [usageForm, setUsageForm] = useState(initialUsageForm);
+  const [machineOptions, setMachineOptions] = useState<Machine[]>([]);
+
+  // Load machines when type changes
+  useEffect(() => {
+    if (usageForm.machineType) {
+      const source = MACHINE_SOURCE[usageForm.machineType as MachineType];
+      if (source) {
+        if (typeof window !== 'undefined') {
+          const stored = localStorage.getItem(source.storageKey);
+          if (stored) {
+            try {
+              setMachineOptions(JSON.parse(stored));
+              return;
+            } catch {
+              // ignore
+            }
+          }
+        }
+        setMachineOptions(source.seed);
+      } else {
+        setMachineOptions([]);
+      }
+    } else {
+      setMachineOptions([]);
+    }
+  }, [usageForm.machineType]);
+
   const [selectedEaf, setSelectedEaf] = useState('');
   const [selectedEtilin, setSelectedEtilin] = useState('');
   const [selectedMetoksil, setSelectedMetoksil] = useState('');
-  
+
   const [eafQuantity, setEafQuantity] = useState<number | ''>('');
   const [etilinQuantity, setEtilinQuantity] = useState<number | ''>('');
   const [metoksilQuantity, setMetoksilQuantity] = useState<number | ''>('');
-  
+
   const [mixtureName, setMixtureName] = useState('');
 
   const eafItems = razvaritelItems.filter(item => item.type === 'eaf');
@@ -161,17 +212,17 @@ export default function RazvaritelAralashmasiPage() {
 
   const validateQuantity = (quantity: number | '', selectedId: string): { isValid: boolean; error?: string } => {
     if (quantity === '' || quantity === 0) return { isValid: true };
-    
+
     const item = getSelectedItem(selectedId);
     if (!item) return { isValid: false, error: t('razvaritelAralashmasiPage.validation.productNotSelected') };
-    
+
     if (typeof quantity === 'number' && quantity > item.totalLiter) {
-      return { 
-        isValid: false, 
-        error: `${t('razvaritelAralashmasiPage.validation.exceededQuantity')} ${item.totalLiter}L` 
+      return {
+        isValid: false,
+        error: `${t('razvaritelAralashmasiPage.validation.exceededQuantity')} ${item.totalLiter}L`
       };
     }
-    
+
     return { isValid: true };
   };
 
@@ -194,7 +245,7 @@ export default function RazvaritelAralashmasiPage() {
 
     // Update local state
     setRazvaritelItems(updatedItems);
-    
+
     // Update localStorage to sync with /ombor/razvaritel page
     try {
       localStorage.setItem(RAZVARITEL_STORAGE_KEY, JSON.stringify(updatedItems));
@@ -236,12 +287,12 @@ export default function RazvaritelAralashmasiPage() {
     const eafNum = typeof eafQuantity === 'number' ? eafQuantity : 0;
     const etilinNum = typeof etilinQuantity === 'number' ? etilinQuantity : 0;
     const metoksilNum = typeof metoksilQuantity === 'number' ? metoksilQuantity : 0;
-    
+
     const totalLiter = eafNum + etilinNum + metoksilNum;
-    
+
     let totalKg = 0;
     let totalCost = 0;
-    
+
     // Calculate weight and cost for each component
     if (eafNum > 0) {
       const eafItem = getSelectedItem(selectedEaf);
@@ -264,30 +315,30 @@ export default function RazvaritelAralashmasiPage() {
         totalCost += metoksilNum * metoksilItem.pricePerLiter;
       }
     }
-    
+
     const calculatedPricePerLiter = totalLiter > 0 ? totalCost / totalLiter : 0;
     const calculatedPricePerKg = totalKg > 0 ? totalCost / totalKg : 0;
-    
+
     return { totalLiter, totalKg, calculatedPricePerLiter, calculatedPricePerKg, totalCost };
   };
 
   const handleCreateMixture = () => {
     if (!mixtureName.trim()) return;
-    
+
     // Validate all quantities
     const eafValid = validateQuantity(eafQuantity, selectedEaf);
     const etilinValid = validateQuantity(etilinQuantity, selectedEtilin);
     const metoksilValid = validateQuantity(metoksilQuantity, selectedMetoksil);
-    
+
     if (!eafValid.isValid || !etilinValid.isValid || !metoksilValid.isValid) {
       return; // Don't create if validation fails
     }
-    
+
     const { totalLiter, totalKg, calculatedPricePerLiter, calculatedPricePerKg } = calculateTotals();
     const eafNum = typeof eafQuantity === 'number' ? eafQuantity : 0;
     const etilinNum = typeof etilinQuantity === 'number' ? etilinQuantity : 0;
     const metoksilNum = typeof metoksilQuantity === 'number' ? metoksilQuantity : 0;
-    
+
     // Prepare inventory updates for decrementing used quantities
     const inventoryUpdates = [];
     if (selectedEaf && eafNum > 0) {
@@ -299,12 +350,12 @@ export default function RazvaritelAralashmasiPage() {
     if (selectedMetoksil && metoksilNum > 0) {
       inventoryUpdates.push({ id: selectedMetoksil, quantityUsed: metoksilNum });
     }
-    
+
     // Update inventory
     if (inventoryUpdates.length > 0) {
       updateRazvaritelInventory(inventoryUpdates);
     }
-    
+
     const mixtureData: Mixture = {
       id: `mixture-${Date.now()}`,
       name: mixtureName,
@@ -317,12 +368,12 @@ export default function RazvaritelAralashmasiPage() {
       pricePerKg: calculatedPricePerKg,
       createdDate: new Date().toISOString().slice(0, 10),
     };
-    
+
     const updatedMixtures = [...mixtures, mixtureData];
-    
+
     setMixtures(updatedMixtures);
     saveMixturesToStorage(updatedMixtures);
-    
+
     // Reset form
     setMixtureName('');
     setSelectedEaf('');
@@ -354,13 +405,6 @@ export default function RazvaritelAralashmasiPage() {
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <Typography variant="h6">{t('razvaritelAralashmasiPage.title')}</Typography>
-                <Button 
-                  variant="outlined" 
-                  size="small"
-                  onClick={() => navigate(paths.dashboard.inventory.razvaritelAralashmasiTransactions)}
-                >
-                  {t('razvaritelAralashmasiPage.transactions')}
-                </Button>
               </Stack>
               <Button
                 variant="contained"
@@ -466,9 +510,9 @@ export default function RazvaritelAralashmasiPage() {
                         setEafQuantity(value === '' ? '' : Number(value));
                       }}
                       error={!!getQuantityError(eafQuantity, selectedEaf)}
-                      inputProps={{ 
+                      inputProps={{
                         max: getSelectedItem(selectedEaf)?.totalLiter || 0,
-                        min: 0 
+                        min: 0
                       }}
                       sx={{ mt: 2 }}
                       helperText={getQuantityError(eafQuantity, selectedEaf) || `${t('razvaritelAralashmasiPage.form.available')}: ${getSelectedItem(selectedEaf)?.totalLiter || 0}L`}
@@ -503,9 +547,9 @@ export default function RazvaritelAralashmasiPage() {
                         setEtilinQuantity(value === '' ? '' : Number(value));
                       }}
                       error={!!getQuantityError(etilinQuantity, selectedEtilin)}
-                      inputProps={{ 
+                      inputProps={{
                         max: getSelectedItem(selectedEtilin)?.totalLiter || 0,
-                        min: 0 
+                        min: 0
                       }}
                       sx={{ mt: 2 }}
                       helperText={getQuantityError(etilinQuantity, selectedEtilin) || `${t('razvaritelAralashmasiPage.form.available')}: ${getSelectedItem(selectedEtilin)?.totalLiter || 0}L`}
@@ -540,9 +584,9 @@ export default function RazvaritelAralashmasiPage() {
                         setMetoksilQuantity(value === '' ? '' : Number(value));
                       }}
                       error={!!getQuantityError(metoksilQuantity, selectedMetoksil)}
-                      inputProps={{ 
+                      inputProps={{
                         max: getSelectedItem(selectedMetoksil)?.totalLiter || 0,
-                        min: 0 
+                        min: 0
                       }}
                       sx={{ mt: 2 }}
                       helperText={getQuantityError(metoksilQuantity, selectedMetoksil) || `${t('razvaritelAralashmasiPage.form.available')}: ${getSelectedItem(selectedMetoksil)?.totalLiter || 0}L`}
@@ -600,11 +644,11 @@ export default function RazvaritelAralashmasiPage() {
             <Button onClick={() => setOpen(false)}>
               {t('razvaritelAralashmasiPage.buttons.cancel')}
             </Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={handleCreateMixture}
               disabled={
-                !mixtureName.trim() || 
+                !mixtureName.trim() ||
                 totalLiter === 0 ||
                 !!getQuantityError(eafQuantity, selectedEaf) ||
                 !!getQuantityError(etilinQuantity, selectedEtilin) ||
@@ -612,6 +656,125 @@ export default function RazvaritelAralashmasiPage() {
               }
             >
               {t('razvaritelAralashmasiPage.buttons.createMixture')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Usage Dialog */}
+        <Dialog open={usageOpen} onClose={() => setUsageOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>{t('razvaritelAralashmasiPage.dialogs.usage.title')}</DialogTitle>
+          <DialogContent>
+            <Stack spacing={3} sx={{ mt: 1 }}>
+              <TextField
+                fullWidth
+                label={t('razvaritelAralashmasiPage.form.amountLiter')}
+                type="number"
+                value={usageForm.amountLiter}
+                onChange={(e) => {
+                  const val = e.target.value === '' ? '' : Number(e.target.value);
+                  setUsageForm(prev => ({ ...prev, amountLiter: val }));
+                }}
+                error={
+                  !!(typeof usageForm.amountLiter === 'number' && selectedMixture && usageForm.amountLiter > selectedMixture.totalLiter)
+                }
+                helperText={
+                  (typeof usageForm.amountLiter === 'number' && selectedMixture && usageForm.amountLiter > selectedMixture.totalLiter)
+                    ? `${t('razvaritelAralashmasiPage.validation.exceededQuantity')} ${selectedMixture.totalLiter}`
+                    : `${t('razvaritelAralashmasiPage.form.available')}: ${selectedMixture?.totalLiter || 0} L`
+                }
+              />
+
+              <FormControl fullWidth>
+                <InputLabel>{t('razvaritelAralashmasiPage.form.machineType')}</InputLabel>
+                <Select
+                  label={t('razvaritelAralashmasiPage.form.machineType')}
+                  value={usageForm.machineType}
+                  onChange={(e) => {
+                    setUsageForm(prev => ({
+                      ...prev,
+                      machineType: e.target.value as MachineTypeValue,
+                      machineId: '' // Reset machine when type changes
+                    }));
+                  }}
+                >
+                  <MenuItem value="pechat">Pechat</MenuItem>
+                  <MenuItem value="reska">Reska</MenuItem>
+                  <MenuItem value="laminatsiya">Laminatsiya</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>{t('razvaritelAralashmasiPage.form.machine')}</InputLabel>
+                <Select
+                  label={t('razvaritelAralashmasiPage.form.machine')}
+                  value={usageForm.machineId}
+                  onChange={(e) => setUsageForm(prev => ({ ...prev, machineId: e.target.value }))}
+                  disabled={!usageForm.machineType}
+                >
+                  {machineOptions.map((m) => (
+                    <MenuItem key={m.id} value={m.id}>{m.name || m.id}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                label={t('razvaritelAralashmasiPage.form.note')}
+                value={usageForm.note}
+                onChange={(e) => setUsageForm(prev => ({ ...prev, note: e.target.value }))}
+                multiline
+                rows={2}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setUsageOpen(false)}>{t('razvaritelAralashmasiPage.buttons.cancel')}</Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                const amount = Number(usageForm.amountLiter);
+                if (!selectedMixture || amount <= 0 || amount > selectedMixture.totalLiter || !usageForm.machineId) return;
+
+                // Create transaction
+                const newTransaction = {
+                  id: uuidv4(),
+                  mixtureId: selectedMixture.id,
+                  date: new Date().toISOString(),
+                  type: 'out' as const,
+                  amountLiter: amount,
+                  machineType: usageForm.machineType,
+                  machineId: usageForm.machineId,
+                  note: usageForm.note,
+                  createdAt: Date.now(),
+                };
+
+                // Save transaction
+                const storedTx = JSON.parse(localStorage.getItem(TX_STORAGE_KEY) || '[]');
+                const updatedTx = [newTransaction, ...storedTx];
+                localStorage.setItem(TX_STORAGE_KEY, JSON.stringify(updatedTx));
+
+                // Update stock
+                const updatedMixtures = mixtures.map(m => {
+                  if (m.id === selectedMixture.id) {
+                    return { ...m, totalLiter: m.totalLiter - amount };
+                  }
+                  return m;
+                });
+                setMixtures(updatedMixtures);
+                localStorage.setItem(MIXTURES_STORAGE_KEY, JSON.stringify(updatedMixtures));
+
+                setUsageOpen(false);
+                setUsageForm(initialUsageForm);
+              }}
+              disabled={
+                !usageForm.amountLiter ||
+                Number(usageForm.amountLiter) <= 0 ||
+                !selectedMixture ||
+                Number(usageForm.amountLiter) > selectedMixture.totalLiter ||
+                !usageForm.machineId
+              }
+            >
+              {t('razvaritelAralashmasiPage.buttons.save')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -790,6 +953,31 @@ export default function RazvaritelAralashmasiPage() {
           </MenuItem>
           <MenuItem
             onClick={() => {
+              if (menuMixture) {
+                navigate(paths.dashboard.inventory.razvaritelAralashmasiTransactions(menuMixture.id));
+              }
+              closeMenu();
+            }}
+          >
+            <Iconify icon="solar:transfer-horizontal-bold-duotone" width={18} height={18} style={{ marginRight: 8 }} />
+            {t('razvaritelAralashmasiPage.transactions')}
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              if (menuMixture) {
+                setSelectedMixture(menuMixture);
+                setUsageForm(initialUsageForm);
+                setUsageOpen(true);
+              }
+              closeMenu();
+            }}
+            sx={{ color: 'warning.main' }}
+          >
+            <Iconify icon="eva:minus-circle-fill" width={18} height={18} style={{ marginRight: 8 }} />
+            {t('razvaritelAralashmasiPage.menu.use')}
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
               setDeleteOpen(true);
               closeMenu();
             }}
@@ -800,6 +988,6 @@ export default function RazvaritelAralashmasiPage() {
           </MenuItem>
         </Menu>
       </Container>
-    </DashboardContent>
+    </DashboardContent >
   );
 }

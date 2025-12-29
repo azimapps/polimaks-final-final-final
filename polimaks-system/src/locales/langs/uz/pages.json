@@ -1521,7 +1521,7 @@
     "subtitle": "Ishlab chiqarish buyurtmalarini rejalashtiring va boshqaring."
   },
   "orderPlanPage": {
-    "title": "Buyurtma planlashtirish",
+    "title": "Nomi",
     "subtitle": "Ishlab chiqarish buyurtmalari, material talablari va rejalashtirish boshqaruvi",
     "sortLabel": "Saralash",
     "sortDefault": "Asl tartib",
@@ -1538,7 +1538,6 @@
     "orderDate": "Buyurtma sanasi",
     "orderNumber": "Buyurtma raqami",
     "client": "Mijoz",
-    "title": "Nomi",
     "quantityKg": "Miqdori (kg)",
     "material": "Material",
     "subMaterial": "Qo'shimcha material",
@@ -1615,7 +1614,7 @@
     "materialSelection": {
       "title": "Material tanlash",
       "suyuqKraskaTitle": "Suyuq kraska",
-      "kraskaTitle": "Kraska", 
+      "kraskaTitle": "Kraska",
       "razvaritelAralashmasiTitle": "Razvaritel aralashmasi",
       "available": "Mavjud",
       "used": "Ishlatilgan",
@@ -1734,5 +1733,10 @@
       "in_progress": "Jarayonda",
       "resolved": "Hal qilindi"
     }
+  },
+  "validation": {
+    "exceedsStockKg": "Ombor qoldiqidan oshib ketdi: {{available}} kg mavjud",
+    "exceedsStockLiters": "Ombor qoldiqidan oshib ketdi: {{available}} litr mavjud",
+    "exceedsStockL": "Ombor qoldiqidan oshib ketdi: {{available}} L"
   }
 }

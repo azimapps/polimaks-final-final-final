@@ -1510,7 +1510,7 @@
     "subtitle": "Планируйте и управляйте производственными заказами."
   },
   "orderPlanPage": {
-    "title": "Планирование заказов",
+    "title": "Название",
     "subtitle": "Управление производственными заказами, требованиями к материалам и планированием",
     "sortLabel": "Сортировка",
     "sortDefault": "Исходный порядок",
@@ -1527,7 +1527,6 @@
     "orderDate": "Дата заказа",
     "orderNumber": "Номер заказа",
     "client": "Клиент",
-    "title": "Название",
     "quantityKg": "Количество (кг)",
     "material": "Материал",
     "subMaterial": "Подматериал",
@@ -1604,7 +1603,7 @@
     "materialSelection": {
       "title": "Выбор материалов",
       "suyuqKraskaTitle": "Жидкая краска",
-      "kraskaTitle": "Краска", 
+      "kraskaTitle": "Краска",
       "razvaritelAralashmasiTitle": "Смесь разбавителя",
       "available": "Доступно",
       "used": "Использовано",
@@ -1723,5 +1722,10 @@
       "in_progress": "В работе",
       "resolved": "Решена"
     }
+  },
+  "validation": {
+    "exceedsStockKg": "Превышает запас: {{available}} кг доступно",
+    "exceedsStockLiters": "Превышает запас: {{available}} литров доступно",
+    "exceedsStockL": "Превышает запас: {{available}} Л"
   }
 }

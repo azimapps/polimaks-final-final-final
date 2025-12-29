@@ -173,7 +173,10 @@ export const routesSection: RouteObject[] = [
           { path: 'razvaritel', element: <RazvaritelPage /> },
           { path: 'razvaritel/:razvaritelId/transaksiyalar', element: <RazvaritelTransactionsPage /> },
           { path: 'razvaritel-aralashmasi', element: <RazvaritelAralashmasiPage /> },
-          { path: 'razvaritel-aralashmasi/transaksiyalar', element: <RazvaritelAralashmasiTransactionsPage /> },
+          {
+            path: 'razvaritel-aralashmasi/:mixtureId/transaksiyalar',
+            element: <RazvaritelAralashmasiTransactionsPage />,
+          },
           { path: 'silindir', element: <SilindirPage /> },
           { path: 'silindir/:silindirId/transaksiyalar', element: <SilindirTransactionsPage /> },
           { path: 'kley', element: <KleyPage /> },
@@ -184,16 +187,16 @@ export const routesSection: RouteObject[] = [
           { path: 'tayyor-mahsulotlar-angren', element: <TayyorMahsulotlarAngrenPage /> },
         ],
       },
-          {
-            path: 'stanok',
-            children: [
-              { index: true, element: <StanokIndexPage /> },
-              { path: 'pechat', element: <PechatPage /> },
-              { path: 'pechat/:machineId/profile', element: <PechatProfilePage /> },
-              { path: 'reska', element: <ReskaPage /> },
-              { path: 'laminatsiya', element: <LaminatsiyaPage /> },
-              { path: 'pechat/:machineId/brigada', element: <BrigadaPechatPage /> },
-              { path: 'reska/:machineId/brigada', element: <BrigadaReskaPage /> },
+      {
+        path: 'stanok',
+        children: [
+          { index: true, element: <StanokIndexPage /> },
+          { path: 'pechat', element: <PechatPage /> },
+          { path: 'pechat/:machineId/profile', element: <PechatProfilePage /> },
+          { path: 'reska', element: <ReskaPage /> },
+          { path: 'laminatsiya', element: <LaminatsiyaPage /> },
+          { path: 'pechat/:machineId/brigada', element: <BrigadaPechatPage /> },
+          { path: 'reska/:machineId/brigada', element: <BrigadaReskaPage /> },
           { path: 'laminatsiya/:machineId/brigada', element: <BrigadaLaminatsiyaPage /> },
           { path: 'pechat/:machineId/materials', element: <MaterialsPechatPage /> },
           { path: 'reska/:machineId/materials', element: <MaterialsReskaPage /> },
@@ -234,17 +237,17 @@ export const routesSection: RouteObject[] = [
           { path: 'order-book', element: <ClientsOrderBookPage /> },
         ],
       },
-          {
-            path: 'ishlab-chiqarish',
-            children: [
-              { index: true, element: <IshlabChiqarishIndexPage /> },
-              { path: 'hisobotlar', element: <IshlabChiqarishHisobotlar /> },
-            ],
-          },
-          {
-            path: 'buyurtma-planlashtirish',
-            element: <BuyurtmaPlanlashtirish />,
-          },
+      {
+        path: 'ishlab-chiqarish',
+        children: [
+          { index: true, element: <IshlabChiqarishIndexPage /> },
+          { path: 'hisobotlar', element: <IshlabChiqarishHisobotlar /> },
+        ],
+      },
+      {
+        path: 'buyurtma-planlashtirish',
+        element: <BuyurtmaPlanlashtirish />,
+      },
     ],
   },
   {
