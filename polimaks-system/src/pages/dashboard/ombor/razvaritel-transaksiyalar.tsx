@@ -330,11 +330,11 @@ export default function RazvaritelTransactionsPage() {
     form.machineType,
     form.note,
     form.orderId,
-    form.type,
     item,
     razvaritelId,
     persistForItem,
     requiresMachine,
+    currentLiter,
   ]);
 
   const startEdit = (tx: RazvaritelTransaction) => {

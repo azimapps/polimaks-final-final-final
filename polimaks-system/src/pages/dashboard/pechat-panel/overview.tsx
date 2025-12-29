@@ -29,7 +29,9 @@ import TableContainer from '@mui/material/TableContainer';
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 import stanokPechatSeed from 'src/data/stanok-pechat.json';
+import brigadaReskaSeed from 'src/data/stanok-brigada-reska.json';
 import brigadaPechatSeed from 'src/data/stanok-brigada-pechat.json';
+import brigadaLaminatsiyaSeed from 'src/data/stanok-brigada-laminatsiya.json';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -109,86 +111,10 @@ type MaterialUsage = {
 };
 
 
-type MaterialOption = {
-  id: string;
-  label: string;
-  materialLabel: string;
-  itemLabel: string;
-  unitLabel: string;
-  available?: number;
-};
-
-type PlyonkaItem = {
-  id: string;
-  seriyaNumber?: string;
-  category?: string;
-  subcategory?: string;
-  totalKg?: number;
-};
-
-type KraskaItem = {
-  id: string;
-  seriyaNumber?: string;
-  colorName?: string;
-  marka?: string;
-  totalKg?: number;
-};
-
-type SuyuqKraskaItem = {
-  id: string;
-  seriyaNumber?: string;
-  colorName?: string;
-  marka?: string;
-  totalKg?: number;
-};
-
-type RazvaritelItem = {
-  id: string;
-  seriyaNumber?: string;
-  type?: string;
-  totalLiter?: number;
-};
-
-type SilindirItem = {
-  id: string;
-  seriyaNumber?: string;
-  origin?: 'china' | 'germany';
-  length?: number;
-  diameter?: number;
-  quantity?: number;
-};
-
-type BaseTx = {
-  id: string;
-  date: string;
-  type: 'in' | 'out' | 'return';
-  machineType?: string;
-  machineId?: string;
-  orderId?: string;
-  source?: string;
-};
-
-type PlyonkaTx = BaseTx & { plyonkaId: string; amountKg?: number };
-type KraskaTx = BaseTx & { kraskaId: string; amountKg?: number };
-type SuyuqKraskaTx = BaseTx & { suyuqKraskaId: string; amountKg?: number };
-type RazvaritelTx = BaseTx & { razvaritelId: string; amountLiter?: number };
-type SilindirTx = BaseTx & { silindirId: string; amountQty?: number };
-
-type MaterialItemWithId = { id: string };
-
-const buildUsageId = (prefix: string) =>
-  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-
 const ORDER_PLAN_STORAGE_KEY = 'orderPlansV2';
 const LEGACY_ORDER_PLAN_STORAGE_KEY = 'orderPlans';
 const PECHAT_SELECTED_MACHINE_KEY = 'pechat-panel-selected-machine';
-const ORDER_BOOK_STORAGE_KEY = 'clients-order-book';
 
-type OrderBookItem = {
-  id: string;
-  orderNumber: string;
-  numberOfColors?: number;
-};
 const PLAN_SEED: PlanItem[] = [
   {
     id: 'pechat-plan-1',
@@ -285,25 +211,6 @@ const readLocalArray = <T,>(key: string, fallback: T[]): T[] => {
   }
 };
 
-const readTransactions = <T,>(key: string): T[] => readLocalArray<T>(key, []);
-
-
-
-
-
-
-
-const loadOrderBook = (): OrderBookItem[] => {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(ORDER_BOOK_STORAGE_KEY);
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored) as OrderBookItem[];
-  } catch {
-    return [];
-  }
-};
-
 export default function PechatPanelOverviewPage() {
   const { t } = useTranslate('pages');
   const title = `${t('pechatPanel.title')} | ${CONFIG.appName}`;
@@ -330,6 +237,7 @@ export default function PechatPanelOverviewPage() {
   const [totalKg, setTotalKg] = useState('');
   const [dispatchDestination, setDispatchDestination] = useState<'laminatsiya' | 'reska' | 'angren' | ''>('');
   const [selectedBrigadaForDispatch, setSelectedBrigadaForDispatch] = useState('');
+  const [brigadasForDispatch, setBrigadasForDispatch] = useState<any[]>([]);
 
 
 
@@ -379,6 +287,16 @@ export default function PechatPanelOverviewPage() {
       }
     };
   }, [selectedMachineId]);
+
+  useEffect(() => {
+    if (dispatchDestination === 'reska') {
+      setBrigadasForDispatch(readLocalArray('stanok-brigada-reska', brigadaReskaSeed as any[]));
+    } else if (dispatchDestination === 'laminatsiya') {
+      setBrigadasForDispatch(readLocalArray('stanok-brigada-laminatsiya', brigadaLaminatsiyaSeed as any[]));
+    } else {
+      setBrigadasForDispatch([]);
+    }
+  }, [dispatchDestination]);
 
   useEffect(() => {
     if (!selectedMachineId && machines[0]?.id) {
@@ -628,11 +546,30 @@ export default function PechatPanelOverviewPage() {
 
       if (dispatchDestination === 'angren') {
         // Send to Angren warehouse
+        const totalKgValue = parseFloat(totalKg) || plan.quantityKg || 0;
+        const angrenProduct = {
+          id: productData.id,
+          receivedDate: productData.completedDate,
+          numberIdentifier: productData.orderNumber,
+          type: plan.material || 'Pechat',
+          supplier: 'Pechat Bo\'limi',
+          client: productData.clientName,
+          name: productData.title,
+          quantity: 1, // Defaulting to 1 lot
+          netWeight: totalKgValue,
+          grossWeight: totalKgValue,
+          totalNetWeight: totalKgValue,
+          totalGrossWeight: totalKgValue,
+          price: productData.pricePerKg,
+          priceCurrency: productData.priceCurrency as any,
+          description: productData.description
+        };
+
         const angrenStorage = JSON.parse(localStorage.getItem('ombor-tayyor-mahsulotlar-angren') || '[]');
-        angrenStorage.push({ ...productData, location: 'angren' });
+        angrenStorage.push(angrenProduct);
         localStorage.setItem('ombor-tayyor-mahsulotlar-angren', JSON.stringify(angrenStorage));
 
-        console.log('Product dispatched to Angren warehouse:', productData);
+        console.log('Product dispatched to Angren warehouse:', angrenProduct);
       } else if (dispatchDestination === 'laminatsiya' || dispatchDestination === 'reska') {
         // Add to next stage planning
         const nextStorageKey = dispatchDestination === 'laminatsiya' ?
@@ -1570,57 +1507,56 @@ export default function PechatPanelOverviewPage() {
               </Box>
             </Stack>
 
-            {statusValue === 'finished' && (
-              <Stack spacing={2} sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                <Typography variant="subtitle2" sx={{ color: 'primary.main' }}>
-                  Yuborish (Dispatch)
-                </Typography>
+            {/* Dispatch Section - Always visible */}
+            <Stack spacing={2} sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: 'primary.main' }}>
+                Yuborish (Dispatch)
+              </Typography>
 
+              <FormControl fullWidth size="small">
+                <InputLabel>Qayerga yuborish?</InputLabel>
+                <Select
+                  value={dispatchDestination}
+                  label="Qayerga yuborish?"
+                  onChange={(event) => {
+                    setDispatchDestination(event.target.value as any);
+                    setSelectedBrigadaForDispatch(''); // Reset brigada when destination changes
+                  }}
+                >
+                  <MenuItem value="">Tanlang...</MenuItem>
+                  <MenuItem value="reska">Reska</MenuItem>
+                  <MenuItem value="laminatsiya">Laminatsiya</MenuItem>
+                  <MenuItem value="angren">Angren Sklad (Tayyor Mahsulotlar)</MenuItem>
+                </Select>
+              </FormControl>
+
+              {(dispatchDestination === 'laminatsiya' || dispatchDestination === 'reska') && (
                 <FormControl fullWidth size="small">
-                  <InputLabel>Qayerga yuborish?</InputLabel>
+                  <InputLabel>Brigada tanlang</InputLabel>
                   <Select
-                    value={dispatchDestination}
-                    label="Qayerga yuborish?"
-                    onChange={(event) => {
-                      setDispatchDestination(event.target.value as any);
-                      setSelectedBrigadaForDispatch(''); // Reset brigada when destination changes
-                    }}
+                    value={selectedBrigadaForDispatch}
+                    label="Brigada tanlang"
+                    onChange={(event) => setSelectedBrigadaForDispatch(event.target.value)}
                   >
                     <MenuItem value="">Tanlang...</MenuItem>
-                    <MenuItem value="laminatsiya">Laminatsiya</MenuItem>
-                    <MenuItem value="reska">Reska</MenuItem>
-                    <MenuItem value="angren">Angren ombori</MenuItem>
+                    {brigadasForDispatch.map((brigada) => (
+                      <MenuItem key={brigada.id} value={brigada.id}>
+                        {brigada.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
+              )}
 
-                {(dispatchDestination === 'laminatsiya' || dispatchDestination === 'reska') && (
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Brigada tanlang</InputLabel>
-                    <Select
-                      value={selectedBrigadaForDispatch}
-                      label="Brigada tanlang"
-                      onChange={(event) => setSelectedBrigadaForDispatch(event.target.value)}
-                    >
-                      <MenuItem value="">Brigadani tanlang...</MenuItem>
-                      {/* TODO: Load brigadas for selected machine type */}
-                      <MenuItem value="brigada-1">Brigada 1</MenuItem>
-                      <MenuItem value="brigada-2">Brigada 2</MenuItem>
-                      <MenuItem value="brigada-3">Brigada 3</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-
-                {dispatchDestination && (
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {dispatchDestination === 'angren'
-                      ? 'Mahsulot Angren omboriga yuboriladi'
-                      : `Mahsulot ${dispatchDestination} bo'limiga yuboriladi`
-                    }
-                    {selectedBrigadaForDispatch && ` (${selectedBrigadaForDispatch})`}
-                  </Typography>
-                )}
-              </Stack>
-            )}
+              {dispatchDestination && (
+                <Typography variant="caption" sx={{ color: 'success.main', fontStyle: 'italic' }}>
+                  {dispatchDestination === 'angren'
+                    ? 'Mahsulot Angren skladiga yuboriladi'
+                    : `Mahsulot ${dispatchDestination} bo'limiga yuboriladi`}
+                  {selectedBrigadaForDispatch && ` (${selectedBrigadaForDispatch})`}
+                </Typography>
+              )}
+            </Stack>
           </Stack>
         </DialogContent>
         <DialogActions>

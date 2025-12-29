@@ -313,11 +313,11 @@ export default function SuyuqKraskaTransactionsPage() {
     form.machineType,
     form.note,
     form.orderId,
-    form.type,
     item,
     suyuqKraskaId,
     persistForItem,
     requiresMachine,
+    currentKg,
   ]);
 
   const startEdit = (tx: SuyuqKraskaTransaction) => {

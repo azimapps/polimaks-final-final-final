@@ -2,8 +2,10 @@ import React, { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
@@ -92,25 +94,38 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   note: raw?.note,
 });
 
-const loadPlanItems = (): PlanItem[] => {
+const loadPlanItems = (): (PlanItem & { sourceStage?: string })[] => {
   if (typeof window === 'undefined') return PLAN_SEED;
 
   try {
+    const plans: any[] = [];
+
+    // Load from main planning storage
     const stored = localStorage.getItem(ORDER_PLAN_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as any[];
-      const normalized = parsed.map((item, idx) => normalizePlanItem(item, idx));
-      const plans = normalized.filter((plan) => plan.machineType === 'laminatsiya');
-      if (plans.length) return plans;
+      plans.push(...parsed.map((item, idx) => normalizePlanItem(item, idx)));
     }
 
+    // Load from legacy planning storage
     const legacy = localStorage.getItem(LEGACY_ORDER_PLAN_STORAGE_KEY);
     if (legacy) {
       const parsed = JSON.parse(legacy) as any[];
-      const normalized = parsed.map((item, idx) => normalizePlanItem(item, idx));
-      const plans = normalized.filter((plan) => plan.machineType === 'laminatsiya');
-      if (plans.length) return plans;
+      plans.push(...parsed.map((item, idx) => normalizePlanItem(item, idx)));
     }
+
+    // Load from Pechat dispatch storage
+    const dispatched = localStorage.getItem('buyurtma-planlashtirish-laminatsiya');
+    if (dispatched) {
+      const parsed = JSON.parse(dispatched) as any[];
+      plans.push(...parsed.map((item, idx) => ({
+        ...normalizePlanItem(item, idx),
+        sourceStage: 'pechat'
+      })));
+    }
+
+    const filteredPlans = plans.filter((plan) => plan.machineType === 'laminatsiya');
+    if (filteredPlans.length) return filteredPlans;
   } catch {
     // ignore parse errors
   }
@@ -299,12 +314,12 @@ export default function LaminatsiyaOverviewPage() {
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {selectedMachineId
                 ? t('laminatsiyaPanel.overview.selection', {
-                    machine: machines.find((m: any) => m.id === selectedMachineId)?.name || selectedMachineId,
-                    brigada:
-                      brigadas.find((b: any) => b.id === selectedBrigadaId)?.name ||
-                      selectedBrigadaId ||
-                      t('laminatsiyaPanel.noBrigadas'),
-                  })
+                  machine: machines.find((m: any) => m.id === selectedMachineId)?.name || selectedMachineId,
+                  brigada:
+                    brigadas.find((b: any) => b.id === selectedBrigadaId)?.name ||
+                    selectedBrigadaId ||
+                    t('laminatsiyaPanel.noBrigadas'),
+                })
                 : t('laminatsiyaPanel.noMachines')}
             </Typography>
 
@@ -343,6 +358,15 @@ export default function LaminatsiyaOverviewPage() {
                             <TableCell>{plan.title}</TableCell>
                             <TableCell align="right">{plan.quantityKg}</TableCell>
                             <TableCell>{plan.startDate ? formatDate(plan.startDate) : t('orderPlanPage.date')}</TableCell>
+                            {(plan as any).sourceStage === 'pechat' && (
+                              <Chip
+                                label="Pechatdan keldi"
+                                size="small"
+                                color="info"
+                                variant="soft"
+                                sx={{ ml: 1, height: 20, fontSize: '0.65rem' }}
+                              />
+                            )}
                           </TableRow>
 
                           <TableRow>
@@ -393,6 +417,29 @@ export default function LaminatsiyaOverviewPage() {
                                           .join(' · ')}
                                       />
                                       <DetailItem label="Izoh" value={plan.note || ''} />
+                                      {(plan as any).sourceStage === 'pechat' && (plan as any).pechatResults && (
+                                        <>
+                                          <DetailItem
+                                            label="Pechat Natijasi (kg)"
+                                            value={`${(plan as any).pechatResults.totalKg} kg`}
+                                          />
+                                          <DetailItem
+                                            label="Pechat Natijasi (m)"
+                                            value={`${(plan as any).pechatResults.totalMeters} m`}
+                                          />
+                                        </>
+                                      )}
+                                    </Box>
+
+                                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                                      <Button
+                                        variant="contained"
+                                        size="small"
+                                        disabled
+                                        startIcon={<Iconify icon="solar:pen-bold" />}
+                                      >
+                                        Statusni yangilash
+                                      </Button>
                                     </Box>
                                   </Stack>
                                 </Box>

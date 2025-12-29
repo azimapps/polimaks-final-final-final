@@ -2,8 +2,10 @@ import React, { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
 import Select from '@mui/material/Select';
 import Collapse from '@mui/material/Collapse';
 import MenuItem from '@mui/material/MenuItem';
@@ -92,25 +94,38 @@ const normalizePlanItem = (raw: any, index: number): PlanItem => ({
   note: raw?.note,
 });
 
-const loadPlanItems = (): PlanItem[] => {
+const loadPlanItems = (): (PlanItem & { sourceStage?: string })[] => {
   if (typeof window === 'undefined') return PLAN_SEED;
 
   try {
+    const plans: any[] = [];
+
+    // Load from main planning storage
     const stored = localStorage.getItem(ORDER_PLAN_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as any[];
-      const normalized = parsed.map((item, idx) => normalizePlanItem(item, idx));
-      const reskaPlans = normalized.filter((plan) => plan.machineType === 'reska');
-      if (reskaPlans.length) return reskaPlans;
+      plans.push(...parsed.map((item, idx) => normalizePlanItem(item, idx)));
     }
 
+    // Load from legacy planning storage
     const legacy = localStorage.getItem(LEGACY_ORDER_PLAN_STORAGE_KEY);
     if (legacy) {
       const parsed = JSON.parse(legacy) as any[];
-      const normalized = parsed.map((item, idx) => normalizePlanItem(item, idx));
-      const reskaPlans = normalized.filter((plan) => plan.machineType === 'reska');
-      if (reskaPlans.length) return reskaPlans;
+      plans.push(...parsed.map((item, idx) => normalizePlanItem(item, idx)));
     }
+
+    // Load from Pechat dispatch storage
+    const dispatched = localStorage.getItem('buyurtma-planlashtirish-reska');
+    if (dispatched) {
+      const parsed = JSON.parse(dispatched) as any[];
+      plans.push(...parsed.map((item, idx) => ({
+        ...normalizePlanItem(item, idx),
+        sourceStage: 'pechat'
+      })));
+    }
+
+    const reskaPlans = plans.filter((plan) => plan.machineType === 'reska');
+    if (reskaPlans.length) return reskaPlans;
   } catch {
     // ignore parse errors
   }
@@ -298,12 +313,12 @@ export default function ReskaOverviewPage() {
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {selectedMachineId
                 ? t('reskaPanel.overview.selection', {
-                    machine: machines.find((m: any) => m.id === selectedMachineId)?.name || selectedMachineId,
-                    brigada:
-                      brigadas.find((b: any) => b.id === selectedBrigadaId)?.name ||
-                      selectedBrigadaId ||
-                      t('reskaPanel.noBrigadas'),
-                  })
+                  machine: machines.find((m: any) => m.id === selectedMachineId)?.name || selectedMachineId,
+                  brigada:
+                    brigadas.find((b: any) => b.id === selectedBrigadaId)?.name ||
+                    selectedBrigadaId ||
+                    t('reskaPanel.noBrigadas'),
+                })
                 : t('reskaPanel.noMachines')}
             </Typography>
 
@@ -345,6 +360,15 @@ export default function ReskaOverviewPage() {
                               {plan.startDate
                                 ? new Date(plan.startDate).toLocaleDateString()
                                 : t('orderPlanPage.date')}
+                              {(plan as any).sourceStage === 'pechat' && (
+                                <Chip
+                                  label="Pechatdan keldi"
+                                  size="small"
+                                  color="info"
+                                  variant="soft"
+                                  sx={{ ml: 1, height: 20, fontSize: '0.65rem' }}
+                                />
+                              )}
                             </TableCell>
                           </TableRow>
 
@@ -400,6 +424,29 @@ export default function ReskaOverviewPage() {
                                           .join(' · ')}
                                       />
                                       <DetailItem label="Izoh" value={plan.note || ''} />
+                                      {(plan as any).sourceStage === 'pechat' && (plan as any).pechatResults && (
+                                        <>
+                                          <DetailItem
+                                            label="Pechat Natijasi (kg)"
+                                            value={`${(plan as any).pechatResults.totalKg} kg`}
+                                          />
+                                          <DetailItem
+                                            label="Pechat Natijasi (m)"
+                                            value={`${(plan as any).pechatResults.totalMeters} m`}
+                                          />
+                                        </>
+                                      )}
+                                    </Box>
+
+                                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                                      <Button
+                                        variant="contained"
+                                        size="small"
+                                        disabled
+                                        startIcon={<Iconify icon="solar:pen-bold" />}
+                                      >
+                                        Statusni yangilash
+                                      </Button>
                                     </Box>
                                   </Stack>
                                 </Box>

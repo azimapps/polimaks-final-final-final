@@ -313,11 +313,11 @@ export default function KraskaTransactionsPage() {
     form.machineType,
     form.note,
     form.orderId,
-    form.type,
     item,
     kraskaId,
     persistForItem,
     requiresMachine,
+    currentKg,
   ]);
 
   const startEdit = (tx: KraskaTransaction) => {
