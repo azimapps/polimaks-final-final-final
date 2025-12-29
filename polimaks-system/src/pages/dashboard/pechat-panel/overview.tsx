@@ -325,6 +325,7 @@ export default function PechatPanelOverviewPage() {
   const [availableSuyuqKraska, setAvailableSuyuqKraska] = useState<any[]>([]);
   const [availableKraska, setAvailableKraska] = useState<any[]>([]);
   const [availableRazvaritelAralashmasi, setAvailableRazvaritelAralashmasi] = useState<any[]>([]);
+  const [availablePlyonka, setAvailablePlyonka] = useState<any[]>([]);
   const [totalMeters, setTotalMeters] = useState('');
   const [totalKg, setTotalKg] = useState('');
   const [dispatchDestination, setDispatchDestination] = useState<'laminatsiya' | 'reska' | 'angren' | ''>('');
@@ -500,11 +501,40 @@ export default function PechatPanelOverviewPage() {
       })
       .filter((item: any) => item && item.id);
 
-    console.log('Final results:', { availableSuyuq, availableKraskaList, availableMixtures });
+    // Load plyonka from transactions
+    const plyonkaItems = new Map();
+    const plyonkaData = readLocalArray('ombor-plyonka', []);
+    console.log('Plyonka items:', plyonkaData);
+    plyonkaData.forEach((item: any) => {
+      if (item?.id) plyonkaItems.set(item.id, item);
+    });
+
+    const plyonkaTxs = readLocalArray('ombor-plyonka-transactions', []);
+    console.log('Plyonka transactions:', plyonkaTxs);
+    const availablePlyonkaList = plyonkaTxs
+      .filter((tx: any) =>
+        ['out'].includes(tx.type) &&
+        tx.machineType === 'pechat' &&
+        tx.machineId === planMachineId &&
+        (!planOrderId || tx.orderId === planOrderId)
+      )
+      .map((tx: any) => {
+        const item = plyonkaItems.get(tx.plyonkaId);
+        return {
+          ...item,
+          txId: tx.id,
+          amount: tx.amountKg,
+          type: tx.type
+        };
+      })
+      .filter((item: any) => item && item.id);
+
+    console.log('Final results:', { availableSuyuq, availableKraskaList, availableMixtures, availablePlyonkaList });
 
     setAvailableSuyuqKraska(availableSuyuq);
     setAvailableKraska(availableKraskaList);
     setAvailableRazvaritelAralashmasi(availableMixtures);
+    setAvailablePlyonka(availablePlyonkaList);
 
   };
 
@@ -684,6 +714,7 @@ export default function PechatPanelOverviewPage() {
           suyuqKraska: {} as any,
           kraska: {} as any,
           razvaritelAralashmasi: {} as any,
+          plyonka: {} as any,
         },
         production: {
           totalMeters: parseFloat(totalMeters) || 0,
@@ -731,6 +762,33 @@ export default function PechatPanelOverviewPage() {
             createdAt: Date.now(),
           });
           localStorage.setItem('ombor-suyuq-kraska-transactions', JSON.stringify(suyuqTransactions));
+        }
+      });
+
+      // Process Plyonka usage
+      availablePlyonka.forEach((item) => {
+        const amount = materialUsage.get(`plyonka:${item.id}`) || 0;
+        if (amount > 0) {
+          if (!usageRecord.materials.plyonka) usageRecord.materials.plyonka = {};
+          usageRecord.materials.plyonka[item.id] = { amount };
+
+          // Create "out" transaction for plyonka
+          const plyonkaTransactions = JSON.parse(
+            localStorage.getItem('ombor-plyonka-transactions') || '[]'
+          );
+          plyonkaTransactions.push({
+            id: `tx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            plyonkaId: item.id,
+            date: new Date().toISOString().slice(0, 10),
+            type: 'out',
+            amountKg: amount,
+            machineType: 'pechat',
+            machineId: selectedMachineId,
+            orderId: statusPlan.orderId,
+            note: `Used in order ${statusPlan.orderNumber}`,
+            createdAt: Date.now(),
+          });
+          localStorage.setItem('ombor-plyonka-transactions', JSON.stringify(plyonkaTransactions));
         }
       });
 
@@ -1124,10 +1182,71 @@ export default function PechatPanelOverviewPage() {
                     </Box>
                   </Box>
                 )}
+
+                {/* Plyonka */}
+                {availablePlyonka.length > 0 && (
+                  <Box sx={{ flex: 1, minWidth: '300px' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                      Plyonka
+                    </Typography>
+                    <Box sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: 1
+                    }}>
+                      {availablePlyonka.map((item) => {
+                        const usedAmount = materialUsage.get(`plyonka:${item.id}`) || 0;
+                        const remaining = (item.amount || 0) - usedAmount;
+                        const hasError = remaining < 0;
+
+                        return (
+                          <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: hasError ? 'error.main' : 'divider', borderRadius: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
+                                  {item.seriyaNumber || item.id}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', display: 'block' }} noWrap>
+                                  {item.category} · {item.thickness}μm · {item.width}mm
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
+                                  {t('pechatPanel.materialSelection.available')}: {item.amount} kg
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <TextField
+                              size="small"
+                              type="number"
+                              label="Ishlatilgan (kg)"
+                              placeholder="0"
+                              value={materialUsage.get(`plyonka:${item.id}`) || ''}
+                              onChange={(e) => {
+                                const newValue = parseFloat(e.target.value) || 0;
+                                if (newValue <= (item.amount || 0)) {
+                                  setMaterialUsage(prev => new Map(prev.set(`plyonka:${item.id}`, newValue)));
+                                }
+                              }}
+                              inputProps={{ min: 0, step: 0.1, max: item.amount }}
+                              error={hasError}
+                              helperText={hasError ? t('validation.exceedsStockKg', { available: item.amount }) : ''}
+                              fullWidth
+                              sx={{
+                                '& .MuiInputBase-input': {
+                                  textAlign: 'center',
+                                  fontSize: '0.875rem'
+                                }
+                              }}
+                            />
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                )}
               </Box>
 
               {/* Divider */}
-              {availableSuyuqKraska.length > 0 && (availableKraska.length > 0 || availableRazvaritelAralashmasi.length > 0) && (
+              {availableSuyuqKraska.length > 0 && (availableKraska.length > 0 || availableRazvaritelAralashmasi.length > 0 || availablePlyonka.length > 0) && (
                 <Divider sx={{ my: 1 }} />
               )}
 
@@ -1416,7 +1535,7 @@ export default function PechatPanelOverviewPage() {
               )}
 
               {/* No Materials Message */}
-              {availableSuyuqKraska.length === 0 && availableKraska.length === 0 && availableRazvaritelAralashmasi.length === 0 && (
+              {availableSuyuqKraska.length === 0 && availableKraska.length === 0 && availableRazvaritelAralashmasi.length === 0 && availablePlyonka.length === 0 && (
                 <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic', textAlign: 'center', py: 2 }}>
                   {t('pechatPanel.materialSelection.noSuyuqKraska')}
                 </Typography>
@@ -1538,6 +1657,12 @@ export default function PechatPanelOverviewPage() {
                   (materialUsage.get(`razvaritel-used:${suyuqItem.id}`) || 0) +
                   (materialUsage.get(`leftover:${suyuqItem.id}`) || 0);
                 if (totalUsed > (suyuqItem.amount || 0)) return true;
+              }
+
+              // Check Plyonka usage
+              for (const plyonkaItem of availablePlyonka) {
+                const usedAmount = materialUsage.get(`plyonka:${plyonkaItem.id}`) || 0;
+                if (usedAmount > (plyonkaItem.amount || 0)) return true;
               }
 
               return false;
