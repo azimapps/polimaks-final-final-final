@@ -668,6 +668,83 @@ export default function PechatPanelOverviewPage() {
     );
     persistPlans(updatedPlans);
 
+    // Create material usage record and transactions
+    if (materialUsage.size > 0) {
+      const usageRecord = {
+        id: `usage-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        orderId: statusPlan.orderId || '',
+        orderNumber: statusPlan.orderNumber,
+        planId: statusPlan.id,
+        machineId: selectedMachineId,
+        machineType: 'pechat' as const,
+        brigadaId: selectedBrigadaId,
+        date: new Date().toISOString(),
+        status: statusValue,
+        materials: {
+          suyuqKraska: {} as any,
+          kraska: {} as any,
+          razvaritelAralashmasi: {} as any,
+        },
+        production: {
+          totalMeters: parseFloat(totalMeters) || 0,
+          totalKg: parseFloat(totalKg) || 0,
+        },
+        createdAt: Date.now(),
+      };
+
+      // Process Suyuq Kraska usage and create transactions
+      const suyuqKraskaIds = new Set<string>();
+      materialUsage.forEach((_, key) => {
+        const match = key.match(/^(suyuq-used|quyuq-used|razvaritel-used|leftover):(.+)$/);
+        if (match) suyuqKraskaIds.add(match[2]);
+      });
+
+      suyuqKraskaIds.forEach((itemId) => {
+        const suyuqUsed = materialUsage.get(`suyuq-used:${itemId}`) || 0;
+        const kraskaUsed = materialUsage.get(`quyuq-used:${itemId}`) || 0;
+        const razvaritelUsed = materialUsage.get(`razvaritel-used:${itemId}`) || 0;
+        const leftover = materialUsage.get(`leftover:${itemId}`) || 0;
+        const totalUsed = suyuqUsed + kraskaUsed + razvaritelUsed + leftover;
+
+        if (totalUsed > 0) {
+          usageRecord.materials.suyuqKraska[itemId] = {
+            suyuqUsed,
+            kraskaUsed,
+            razvaritelUsed,
+            leftover,
+          };
+
+          // Create "out" transaction for suyuq kraska
+          const suyuqTransactions = JSON.parse(
+            localStorage.getItem('ombor-suyuq-kraska-transactions') || '[]'
+          );
+          suyuqTransactions.push({
+            id: `tx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            suyuqKraskaId: itemId,
+            date: new Date().toISOString().slice(0, 10),
+            type: 'out',
+            amountKg: totalUsed,
+            machineType: 'pechat',
+            machineId: selectedMachineId,
+            orderId: statusPlan.orderId,
+            note: `Used in order ${statusPlan.orderNumber}`,
+            createdAt: Date.now(),
+          });
+          localStorage.setItem('ombor-suyuq-kraska-transactions', JSON.stringify(suyuqTransactions));
+        }
+      });
+
+      // Save usage record
+      const usageRecords = JSON.parse(
+        localStorage.getItem('pechat-material-usage-records') || '[]'
+      );
+      usageRecords.push(usageRecord);
+      localStorage.setItem('pechat-material-usage-records', JSON.stringify(usageRecords));
+
+      // Trigger storage event for other tabs/windows
+      window.dispatchEvent(new Event('storage'));
+    }
+
     // Handle dispatch if status is finished and destination is selected
     if (statusValue === 'finished' && dispatchDestination) {
       handleDispatchProduct(statusPlan);
@@ -954,30 +1031,48 @@ export default function PechatPanelOverviewPage() {
                       gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                       gap: 1
                     }}>
-                      {availableKraska.map((item) => (
-                        <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: '50%',
-                                backgroundColor: item.colorCode || '#cccccc',
-                                border: '1px solid #ddd',
-                                flexShrink: 0
-                              }}
-                            />
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
-                                {item.seriyaNumber || item.id} - {item.colorName || t('razvaritelTransactionsPage.unknown')}
+                      {availableKraska.map((item) => {
+                        // Find matching suyuq kraska by color code
+                        const matchingSuyuq = availableSuyuqKraska.find(
+                          (sk) => sk.colorCode === item.colorCode || sk.colorName === item.colorName
+                        );
+                        const usedAmount = matchingSuyuq ? (materialUsage.get(`quyuq-used:${matchingSuyuq.id}`) || 0) : 0;
+                        const remaining = (item.amount || 0) - usedAmount;
+                        const hasError = remaining < 0;
+
+                        return (
+                          <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: hasError ? 'error.main' : 'divider', borderRadius: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box
+                                sx={{
+                                  width: 16,
+                                  height: 16,
+                                  borderRadius: '50%',
+                                  backgroundColor: item.colorCode || '#cccccc',
+                                  border: '1px solid #ddd',
+                                  flexShrink: 0
+                                }}
+                              />
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
+                                  {item.seriyaNumber || item.id} - {item.colorName || t('razvaritelTransactionsPage.unknown')}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
+                                  {t('pechatPanel.materialSelection.available')}: {item.amount}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Box sx={{ mt: 1, textAlign: 'center' }}>
+                              <Typography variant="h6" sx={{ color: hasError ? 'error.main' : 'success.main', fontWeight: 600 }}>
+                                {remaining.toFixed(1)}
                               </Typography>
-                              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
-                                {t('pechatPanel.materialSelection.available')}: {item.amount}
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                Qolgan
                               </Typography>
                             </Box>
                           </Box>
-                        </Box>
-                      ))}
+                        );
+                      })}
                     </Box>
                   </Box>
                 )}
@@ -993,20 +1088,39 @@ export default function PechatPanelOverviewPage() {
                       gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                       gap: 1
                     }}>
-                      {availableRazvaritelAralashmasi.map((item) => (
-                        <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
-                                {item.name || item.id}
+                      {availableRazvaritelAralashmasi.map((item) => {
+                        // Find matching suyuq kraska by checking all suyuq items
+                        // Since razvaritel is used across all colors, sum up all razvaritel-used values
+                        let totalUsed = 0;
+                        availableSuyuqKraska.forEach((sk) => {
+                          totalUsed += materialUsage.get(`razvaritel-used:${sk.id}`) || 0;
+                        });
+                        const remaining = (item.amount || 0) - totalUsed;
+                        const hasError = remaining < 0;
+
+                        return (
+                          <Box key={item.id} sx={{ p: 1.5, border: '1px solid', borderColor: hasError ? 'error.main' : 'divider', borderRadius: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, display: 'block' }} noWrap>
+                                  {item.name || item.id}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
+                                  {t('pechatPanel.materialSelection.available')}: {item.amount}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Box sx={{ mt: 1, textAlign: 'center' }}>
+                              <Typography variant="h6" sx={{ color: hasError ? 'error.main' : 'success.main', fontWeight: 600 }}>
+                                {remaining.toFixed(1)}
                               </Typography>
-                              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'primary.main' }}>
-                                {t('pechatPanel.materialSelection.available')}: {item.amount}
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                Qolgan
                               </Typography>
                             </Box>
                           </Box>
-                        </Box>
-                      ))}
+                        );
+                      })}
                     </Box>
                   </Box>
                 )}
@@ -1392,7 +1506,43 @@ export default function PechatPanelOverviewPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseStatusDialog}>{t('orderPlanPage.cancel')}</Button>
-          <Button variant="contained" onClick={handleSaveStatus}>
+          <Button
+            variant="contained"
+            onClick={handleSaveStatus}
+            disabled={(() => {
+              // Check if any material usage exceeds available stock
+
+              // Check Kraska
+              for (const kraskaItem of availableKraska) {
+                const matchingSuyuq = availableSuyuqKraska.find(
+                  (sk) => sk.colorCode === kraskaItem.colorCode || sk.colorName === kraskaItem.colorName
+                );
+                const usedAmount = matchingSuyuq ? (materialUsage.get(`quyuq-used:${matchingSuyuq.id}`) || 0) : 0;
+                if (usedAmount > (kraskaItem.amount || 0)) return true;
+              }
+
+              // Check Razvaritel Aralashmasi
+              for (const razItem of availableRazvaritelAralashmasi) {
+                let totalUsed = 0;
+                availableSuyuqKraska.forEach((sk) => {
+                  totalUsed += materialUsage.get(`razvaritel-used:${sk.id}`) || 0;
+                });
+                if (totalUsed > (razItem.amount || 0)) return true;
+              }
+
+              // Check Suyuq Kraska total usage
+              for (const suyuqItem of availableSuyuqKraska) {
+                const totalUsed =
+                  (materialUsage.get(`suyuq-used:${suyuqItem.id}`) || 0) +
+                  (materialUsage.get(`quyuq-used:${suyuqItem.id}`) || 0) +
+                  (materialUsage.get(`razvaritel-used:${suyuqItem.id}`) || 0) +
+                  (materialUsage.get(`leftover:${suyuqItem.id}`) || 0);
+                if (totalUsed > (suyuqItem.amount || 0)) return true;
+              }
+
+              return false;
+            })()}
+          >
             {t('orderPlanPage.save')}
           </Button>
         </DialogActions>
