@@ -50,12 +50,12 @@ function RangePickersDay({
       sx={(theme) => ({
         ...(isRange &&
           isHighlighting && {
-            borderRadius: 0,
-            backgroundColor: alpha(theme.palette.primary.main, 0.12),
-            '&:hover, &:focus': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.2),
-            },
-          }),
+          borderRadius: 0,
+          backgroundColor: alpha(theme.palette.primary.main, 0.12),
+          '&:hover, &:focus': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.2),
+          },
+        }),
         ...(isRangeEdge && {
           backgroundColor: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
@@ -65,18 +65,18 @@ function RangePickersDay({
         }),
         ...(isRange &&
           isStart && {
-            borderTopRightRadius: 0,
-            borderBottomRightRadius: 0,
-            borderTopLeftRadius: '50%',
-            borderBottomLeftRadius: '50%',
-          }),
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: 0,
+          borderTopLeftRadius: '50%',
+          borderBottomLeftRadius: '50%',
+        }),
         ...(isRange &&
           isEnd && {
-            borderTopLeftRadius: 0,
-            borderBottomLeftRadius: 0,
-            borderTopRightRadius: '50%',
-            borderBottomRightRadius: '50%',
-          }),
+          borderTopLeftRadius: 0,
+          borderBottomLeftRadius: 0,
+          borderTopRightRadius: '50%',
+          borderBottomRightRadius: '50%',
+        }),
       })}
     />
   );
@@ -93,11 +93,14 @@ export function CustomDateRangePicker({
   onChangeStartDate,
   onChangeEndDate,
   /********/
+  /********/
   slotProps,
   variant = 'input',
   title = 'Select date range',
+  minDate,
+  maxDate,
   ...other
-}: CustomDateRangePickerProps) {
+}: CustomDateRangePickerProps & { minDate?: any; maxDate?: any }) {
   const mdUp = useMediaQuery((theme) => theme.breakpoints.up('md'));
 
   const isCalendarView = variant === 'calendar';
@@ -171,11 +174,21 @@ export function CustomDateRangePicker({
           {isCalendarView ? (
             <>
               <Box sx={blockStyles}>
-                <DateCalendar value={startDate} onChange={onChangeStartDate} />
+                <DateCalendar
+                  value={startDate}
+                  onChange={onChangeStartDate}
+                  minDate={minDate}
+                  maxDate={maxDate}
+                />
               </Box>
 
               <Box sx={blockStyles}>
-                <DateCalendar value={endDate} onChange={onChangeEndDate} />
+                <DateCalendar
+                  value={endDate}
+                  onChange={onChangeEndDate}
+                  minDate={minDate}
+                  maxDate={maxDate}
+                />
               </Box>
             </>
           ) : isRangeView ? (
@@ -183,6 +196,8 @@ export function CustomDateRangePicker({
               <DateCalendar
                 value={endDate ?? startDate}
                 onChange={handleRangeSelect}
+                minDate={minDate}
+                maxDate={maxDate}
                 slots={{ day: RangePickersDay }}
                 slotProps={{
                   day: ({ day }) => {
@@ -204,8 +219,20 @@ export function CustomDateRangePicker({
             </Box>
           ) : (
             <>
-              <DatePicker label="Start date" value={startDate} onChange={onChangeStartDate} />
-              <DatePicker label="End date" value={endDate} onChange={onChangeEndDate} />
+              <DatePicker
+                label="Start date"
+                value={startDate}
+                onChange={onChangeStartDate}
+                minDate={minDate}
+                maxDate={maxDate}
+              />
+              <DatePicker
+                label="End date"
+                value={endDate}
+                onChange={onChangeEndDate}
+                minDate={minDate}
+                maxDate={maxDate}
+              />
             </>
           )}
         </Box>

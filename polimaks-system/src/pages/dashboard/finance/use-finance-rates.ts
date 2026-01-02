@@ -2,11 +2,11 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import { notifyFinanceRates, FINANCE_RATES_EVENT } from './finance-storage';
 
-export type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
+export type Currency = 'UZS' | 'USD';
 export type DateRateOverrides = Record<string, Partial<Record<Currency, number>>>;
 
 const STORAGE_KEY = 'finance-rates';
-export const DEFAULT_RATES: Record<Currency, number> = { USD: 12500, EUR: 13500, RUB: 150, UZS: 1 };
+export const DEFAULT_RATES: Record<Currency, number> = { USD: 12500, UZS: 1 };
 
 const readRateOverrides = (): DateRateOverrides => {
   if (typeof window === 'undefined') return {};
@@ -41,12 +41,6 @@ export function useFinanceRates() {
         if (uzsPerUsd) {
           fetched.USD = uzsPerUsd;
           fetched.UZS = 1;
-          if (data.rates?.EUR) {
-            fetched.EUR = uzsPerUsd / data.rates.EUR;
-          }
-          if (data.rates?.RUB) {
-            fetched.RUB = uzsPerUsd / data.rates.RUB;
-          }
         }
         if (active && Object.keys(fetched).length) {
           setRates((prev) => ({ ...prev, ...fetched }));
@@ -128,8 +122,8 @@ export function useFinanceRates() {
     (currency: Currency, date: string) => {
       const override = overrides[date]?.[currency];
       if (override != null) return override;
-  if (currency === 'UZS') return 1;
-  return rates[currency] ?? DEFAULT_RATES[currency] ?? 1;
+      if (currency === 'UZS') return 1;
+      return rates[currency] ?? DEFAULT_RATES[currency] ?? 1;
     },
     [overrides, rates]
   );

@@ -1372,7 +1372,7 @@
     "summaryPaid": "To'langan",
     "summaryPromised": "Va'da qilingan",
     "statusBalanced": "Muvozanat",
-    "statusWeOwe": "Biz klientga qarzdormiz",
+    "statusWeOwe": "Avans (Haqdor)",
     "statusTheyOwe": "Klient bizga qarzdor",
     "balanceBalanced": "To'lovlar va va'dalar teng.",
     "balanceWeOwe": "Biz {{amount}} qarzdormiz.",

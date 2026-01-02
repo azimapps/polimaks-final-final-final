@@ -7,25 +7,29 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
-import Dialog from '@mui/material/Dialog';
+import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import TableRow from '@mui/material/TableRow';
+import Dialog from '@mui/material/Dialog';
 import MenuItem from '@mui/material/MenuItem';
-import { useTheme } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
+import TableRow from '@mui/material/TableRow';
+import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
-import TableBody from '@mui/material/TableBody';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
+import { alpha, useTheme } from '@mui/material/styles';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import InputAdornment from '@mui/material/InputAdornment';
 import TableContainer from '@mui/material/TableContainer';
 
 import { fNumber } from 'src/utils/format-number';
 
 import { useTranslate } from 'src/locales';
 
+import { Iconify } from 'src/components/iconify';
 import { CustomDateRangePicker } from 'src/components/custom-date-range-picker';
 
 import { useFinanceRates } from './use-finance-rates';
@@ -50,8 +54,8 @@ type FinanceMethodSummaryProps = {
 };
 
 const STORAGE_KEYS = { income: 'finance-income', expense: 'finance-expense' };
-const SUPPORTED: Currency[] = ['UZS', 'USD', 'RUB', 'EUR'];
-const MANUAL_CURRENCIES: Currency[] = ['USD', 'EUR', 'RUB'];
+const SUPPORTED: Currency[] = ['UZS', 'USD'];
+const MANUAL_CURRENCIES: Currency[] = ['UZS', 'USD'];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const timestampISO = () => new Date().toISOString();
@@ -88,7 +92,7 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
     readFinanceStorage(STORAGE_KEYS.expense, 'expense')
   );
   const [displayCurrency, setDisplayCurrency] = useState<Currency>('UZS');
-  const { getRateForDate, setRateOverride, clearOverridesForDate, hasManualRate } = useFinanceRates();
+  const { getRateForDate, setRateOverride, hasManualRate } = useFinanceRates();
   const [rateDialogOpen, setRateDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -180,7 +184,10 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
     if (!rangeStart || !rangeEnd) return dates;
     let cursor = dayjs(rangeStart);
     const end = dayjs(rangeEnd);
+    const today = dayjs();
+
     while (cursor.isBefore(end) || cursor.isSame(end, 'day')) {
+      if (cursor.isAfter(today, 'day')) break;
       dates.push(cursor.format('YYYY-MM-DD'));
       cursor = cursor.add(1, 'day');
     }
@@ -230,7 +237,13 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
                 </MenuItem>
               ))}
             </TextField>
-            <Button size="small" variant="outlined" onClick={() => setRateDialogOpen(true)}>
+            <Button
+              size="small"
+              variant="soft"
+              color="primary"
+              startIcon={<Iconify icon="solar:settings-bold" />}
+              onClick={() => setRateDialogOpen(true)}
+            >
               {t('finance.analytics.rateManager')}
             </Button>
           </Stack>
@@ -270,23 +283,30 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
       </Stack>
 
       <Dialog open={rateDialogOpen} onClose={() => setRateDialogOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>{t('finance.analytics.rateDialogTitle')}</DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body2" sx={{ mb: 2 }}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {t('finance.analytics.rateDialogTitle')}
+          <IconButton onClick={() => setRateDialogOpen(false)}>
+            <Iconify icon="mingcute:close-line" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ pb: 3 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             {t('finance.analytics.rateDialogHint')}
           </Typography>
+
           <TableContainer
+            variant="outlined"
+            component={Paper}
             sx={{
-              bgcolor: paletteTheme.palette.mode === 'dark' ? '#0f1524' : paletteTheme.palette.background.paper,
+              boxShadow: 'none',
               borderRadius: 2,
-              border: (themeValue) => `1px solid ${themeValue.palette.divider}`,
-              overflow: 'hidden',
+              border: (theme) => `1px solid ${alpha(theme.palette.grey[500], 0.2)}`,
             }}
           >
-            <Table size="small">
+            <Table size="medium">
               <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600, py: 1.5, pl: 2 }}>Date</TableCell>
+                <TableRow sx={{ bgcolor: (theme) => alpha(theme.palette.grey[500], 0.08) }}>
+                  <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
                   {MANUAL_CURRENCIES.map((currency) => (
                     <TableCell key={`head-${currency}`} align="center" sx={{ fontWeight: 600 }}>
                       {currency}
@@ -296,37 +316,53 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
               </TableHead>
               <TableBody>
                 {rateDialogDates.map((date) => (
-                <TableRow
-                  key={date}
-                  sx={{
-                    backgroundColor: paletteTheme.palette.background.default,
-                    '&:nth-of-type(odd)': {
-                      backgroundColor: paletteTheme.palette.background.paper,
-                    },
-                  }}
-                >
-                    <TableCell sx={{ py: 1.5, pr: 2 }}>
-                      <Stack spacing={0.3}>
-                        <Typography variant="body2">{date}</Typography>
-                        {hasManualRate(date) && (
-                          <Button size="small" onClick={() => clearOverridesForDate(date)}>
-                            {t('finance.analytics.rateDialogReset')}
-                          </Button>
-                        )}
-                      </Stack>
+                  <TableRow key={date} hover>
+                    <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 500 }}>
+                      {dayjs(date).format('DD MMM YYYY')}
                     </TableCell>
                     {MANUAL_CURRENCIES.map((currency) => {
-                      const fieldValue = getRateForDate(currency, date);
+                      const isUzs = currency === 'UZS';
+                      const fieldValue = isUzs ? 1 : getRateForDate(currency, date);
+                      const isManual = !isUzs && hasManualRate(date) && fieldValue !== null;
+                      const isPast = dayjs(date).isBefore(dayjs(), 'day');
+                      const isDisabled = isUzs || (isPast && currency === 'USD');
+
                       return (
                         <TableCell key={`${date}-${currency}`} align="center">
                           <TextField
-                            variant="standard"
-                            type="number"
+                            fullWidth
+                            variant="outlined"
                             size="small"
-                            value={Number.isFinite(fieldValue) ? String(fieldValue) : ''}
-                            onChange={(event) => handleRateChange(date, currency, event.target.value)}
-                            inputProps={{ step: '0.01', min: 0 }}
-                            sx={{ minWidth: 90 }}
+                            value={Number.isFinite(fieldValue) ? String(Math.round(fieldValue)) : ''}
+                            onChange={(event) => !isDisabled && handleRateChange(date, currency, event.target.value)}
+                            onFocus={(event) => event.target.select()}
+                            type="number"
+                            disabled={isDisabled}
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <Typography variant="caption" color="text.disabled">
+                                    {currency}
+                                  </Typography>
+                                </InputAdornment>
+                              ),
+                            }}
+                            sx={{
+                              maxWidth: 140,
+                              '& .MuiOutlinedInput-root': {
+                                backgroundColor: isManual ? (theme) => alpha(theme.palette.primary.main, 0.04) : 'transparent',
+                                '& fieldset': {
+                                  borderColor: isManual ? 'primary.main' : alpha(paletteTheme.palette.grey[500], 0.2),
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: 'primary.main',
+                                },
+                                '&.Mui-disabled': {
+                                  backgroundColor: (theme) => alpha(theme.palette.action.disabledBackground, 0.02),
+                                }
+                              },
+                              '& input': { textAlign: 'center', fontWeight: 'bold' },
+                            }}
                           />
                         </TableCell>
                       );
@@ -338,7 +374,12 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
           </TableContainer>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRateDialogOpen(false)}>{t('finance.analytics.rateDialogClose')}</Button>
+          <Button onClick={() => setRateDialogOpen(false)} variant="outlined" color="inherit">
+            {t('finance.analytics.rateDialogClose')}
+          </Button>
+          <Button onClick={() => setRateDialogOpen(false)} variant="contained" autoFocus>
+            OK
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -352,6 +393,7 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
         onChangeEndDate={rangePicker.onChangeEndDate}
         onClose={rangePicker.onClose}
         error={rangePicker.error}
+        maxDate={dayjs()}
       />
     </Card>
   );

@@ -217,25 +217,25 @@ export default function ClientsPage() {
       const status =
         balance === 0
           ? {
-              label: t('clientsTransactionsPage.statusBalanced'),
-              color: 'success' as const,
-              caption: t('clientsTransactionsPage.balanceBalanced'),
-            }
+            label: t('clientsTransactionsPage.statusBalanced'),
+            color: 'success' as const,
+            caption: t('clientsTransactionsPage.balanceBalanced'),
+          }
           : balance > 0
             ? {
-                label: t('clientsTransactionsPage.statusWeOwe'),
-                color: 'warning' as const,
-                caption: t('clientsTransactionsPage.balanceWeOwe', {
-                  amount: formatAmount(balance),
-                }),
-              }
+              label: t('clientsTransactionsPage.statusWeOwe'),
+              color: 'info' as const,
+              caption: t('clientsTransactionsPage.balanceWeOwe', {
+                amount: formatAmount(balance),
+              }),
+            }
             : {
-                label: t('clientsTransactionsPage.statusTheyOwe'),
-                color: 'error' as const,
-                caption: t('clientsTransactionsPage.balanceClientOwes', {
-                  amount: formatAmount(Math.abs(balance)),
-                }),
-              };
+              label: t('clientsTransactionsPage.statusTheyOwe'),
+              color: 'error' as const,
+              caption: t('clientsTransactionsPage.balanceClientOwes', {
+                amount: formatAmount(Math.abs(balance)),
+              }),
+            };
 
       return {
         client,

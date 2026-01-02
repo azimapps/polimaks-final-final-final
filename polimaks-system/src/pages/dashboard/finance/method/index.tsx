@@ -20,6 +20,7 @@ import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
+import Autocomplete from '@mui/material/Autocomplete';
 import ToggleButton from '@mui/material/ToggleButton';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -34,10 +35,16 @@ import { useDateRangePicker, type UseDateRangePickerReturn } from 'src/component
 
 import { FinanceMethodSummary } from '../finance-method-summary';
 import { notifyFinanceStorage, FINANCE_STORAGE_EVENT } from '../finance-storage';
+import {
+  readClients,
+  readOrderBookPromises,
+  convertToDisplayCurrency,
+  readTransactions as readClientTransactions,
+} from '../../clients/transactions-data';
 
 type Method = 'cash' | 'transfer';
 type FinanceDirection = 'income' | 'expense';
-type Currency = 'UZS' | 'USD' | 'RUB' | 'EUR';
+type Currency = 'UZS' | 'USD';
 type FinanceStorageEntry = {
   id: string;
   name: string;
@@ -47,6 +54,7 @@ type FinanceStorageEntry = {
   date: string;
   createdAt: string;
   note: string;
+  clientId?: string;
 };
 type CombinedEntry = FinanceStorageEntry & { direction: FinanceDirection };
 
@@ -55,7 +63,7 @@ const STORAGE_KEYS = {
   expense: 'finance-expense',
 } as const;
 
-const SUPPORTED_CURRENCIES: Currency[] = ['UZS', 'USD', 'RUB', 'EUR'];
+const SUPPORTED_CURRENCIES: Currency[] = ['UZS', 'USD'];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const timestampISO = () => new Date().toISOString();
@@ -70,6 +78,7 @@ const normalizeFinanceEntries = (items: any[], prefix: string): FinanceStorageEn
     date: item?.date ? String(item.date) : todayISO(),
     createdAt: item?.createdAt || timestampISO(),
     note: item?.note || '',
+    clientId: item?.clientId,
   }));
 
 const readFinanceStorage = (key: string, prefix: string): FinanceStorageEntry[] => {
@@ -132,6 +141,7 @@ const getInitialTransactionFormState = () => ({
   currency: SUPPORTED_CURRENCIES[0],
   date: todayISO(),
   note: '',
+  clientId: '',
 });
 
 export default function FinanceMethodPage() {
@@ -181,6 +191,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
   const [menuEntry, setMenuEntry] = useState<CombinedEntry | null>(null);
   const [editingEntry, setEditingEntry] = useState<CombinedEntry | null>(null);
   const [pendingDelete, setPendingDelete] = useState<CombinedEntry | null>(null);
+  const [selectedClientBalance, setSelectedClientBalance] = useState<number | null>(null);
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const start = rangePicker.startDate ?? dayjs();
@@ -217,6 +228,42 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
     };
   }, [loadTransactions]);
 
+  // Clients Integration
+  const [clients] = useState(() => readClients());
+  const clientBalances = useMemo(() => {
+    const paidMap = new Map<string, number>();
+    const promiseMap = new Map<string, number>();
+
+    const clientTxs = readClientTransactions();
+    const clientPromises = readOrderBookPromises();
+    const all = [...clientTxs, ...clientPromises];
+
+    all.forEach((tx) => {
+      if (!tx.clientId) return;
+      // We assume USD for basic debt calc if currency mixing, but for simplicity
+      // we'll just sum raw or simple conversion.
+      // Ideally reuse convertToDisplayCurrency but we need a fixed base.
+      // Let's assume we want to know if they owe us in GENERAL.
+      // For this feature, let's just use the raw amount if currency matches or converted to USD.
+      // Actually, let's just stick to the logic from clients page:
+      const converted = convertToDisplayCurrency(tx.amount, tx.currency, 'USD');
+      // Using USD as base for debt check
+      if (tx.type === 'payment') {
+        paidMap.set(tx.clientId, (paidMap.get(tx.clientId) ?? 0) + converted);
+      } else {
+        promiseMap.set(tx.clientId, (promiseMap.get(tx.clientId) ?? 0) + converted);
+      }
+    });
+
+    const balances = new Map<string, number>();
+    clients.forEach((c) => {
+      const paid = paidMap.get(c.id) ?? 0;
+      const promised = promiseMap.get(c.id) ?? 0;
+      balances.set(c.fullName, paid - promised); // Key by name for easy lookup in Autocomplete
+    });
+    return balances;
+  }, [clients]);
+
   const directionLabels = useMemo(
     () => ({
       income: tNavbar('finance_income'),
@@ -245,6 +292,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
   const handleDialogClose = () => {
     setDialogOpen(false);
     setEditingEntry(null);
+    setSelectedClientBalance(null);
     setForm(getInitialTransactionFormState());
   };
 
@@ -259,6 +307,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
       date: form.date,
       createdAt: editingEntry?.createdAt || timestampISO(),
       note: form.note.trim(),
+      clientId: form.clientId,
     };
 
     if (editingEntry) {
@@ -295,8 +344,16 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
       currency: entry.currency,
       date: entry.date,
       note: entry.note,
+      clientId: entry.clientId || '',
     });
     setDialogOpen(true);
+
+    // Set balance display for editing if linked to a client
+    if (entry.clientId) {
+      // We can try to finding it by name if ID matches or just by name
+      const balance = clientBalances.get(entry.name);
+      setSelectedClientBalance(balance !== undefined ? balance : null);
+    }
   };
 
   const handleMenuEdit = () => {
@@ -372,35 +429,34 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
               filteredTransactions.map((entry) => (
                 <TableRow
                   key={`${entry.direction}-${entry.id}`}
-                sx={(theme) => ({
-                  backgroundColor:
-                    entry.direction === 'income'
-                      ? alpha(theme.palette.success.main, 0.08)
-                      : alpha(theme.palette.error.main, 0.08),
-                  borderLeft: `4px solid ${
-                    entry.direction === 'income' ? theme.palette.success.main : theme.palette.error.main
-                  }`,
-                })}
-              >
-                <TableCell>{directionLabels[entry.direction]}</TableCell>
-                <TableCell>{entry.name || '—'}</TableCell>
-                <TableCell align="right">{entry.amount.toLocaleString()}</TableCell>
-                <TableCell>{entry.currency}</TableCell>
-                <TableCell>{entry.date}</TableCell>
-                <TableCell>{entry.note || '—'}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    size="small"
-                    aria-label={tPages('finance.transactions.table.actions')}
-                    onClick={(event) => openRowMenu(event, entry)}
-                  >
-                    <Iconify icon="eva:more-vertical-fill" width={18} height={18} />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
+                  sx={(theme) => ({
+                    backgroundColor:
+                      entry.direction === 'income'
+                        ? alpha(theme.palette.success.main, 0.08)
+                        : alpha(theme.palette.error.main, 0.08),
+                    borderLeft: `4px solid ${entry.direction === 'income' ? theme.palette.success.main : theme.palette.error.main
+                      }`,
+                  })}
+                >
+                  <TableCell>{directionLabels[entry.direction]}</TableCell>
+                  <TableCell>{entry.name || '—'}</TableCell>
+                  <TableCell align="right">{entry.amount.toLocaleString()}</TableCell>
+                  <TableCell>{entry.currency}</TableCell>
+                  <TableCell>{entry.date}</TableCell>
+                  <TableCell>{entry.note || '—'}</TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      size="small"
+                      aria-label={tPages('finance.transactions.table.actions')}
+                      onClick={(event) => openRowMenu(event, entry)}
+                    >
+                      <Iconify icon="eva:more-vertical-fill" width={18} height={18} />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
         </Table>
       </TableContainer>
 
@@ -448,19 +504,96 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
               <ToggleButton value="income">{directionLabels.income}</ToggleButton>
               <ToggleButton value="expense">{directionLabels.expense}</ToggleButton>
             </ToggleButtonGroup>
-            <TextField
-              label={tPages('finance.transactions.form.name')}
+
+            <Autocomplete
+              freeSolo
+              options={clients.map((c) => c.fullName)}
               value={form.name}
-              onChange={(event) => handleFormChange('name', event.target.value)}
-              fullWidth
+              onChange={(_event, newValue) => {
+                const name = newValue || '';
+                handleFormChange('name', name);
+
+                // Find client object to set ID
+                const client = clients.find(c => c.fullName === name);
+                handleFormChange('clientId', client?.id || '');
+
+                const balance = clientBalances.get(name);
+                setSelectedClientBalance(balance !== undefined ? balance : null);
+
+                // Auto-calc debt
+                if (balance !== undefined && balance < 0) {
+                  const debt = Math.abs(balance);
+                  if (form.currency === 'USD') {
+                    handleFormChange('amount', String(Math.round(debt)));
+                  } else if (form.currency === 'UZS') {
+                    handleFormChange('amount', String(Math.round(debt)));
+                    handleFormChange('currency', 'USD');
+                  } else {
+                    handleFormChange('amount', String(Math.round(debt)));
+                  }
+                }
+              }}
+              onInputChange={(_event, newInputValue) => {
+                handleFormChange('name', newInputValue);
+                // Clear balance and ID if user clears or changes input
+                if (!newInputValue) {
+                  setSelectedClientBalance(null);
+                  handleFormChange('clientId', '');
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={tPages('finance.transactions.form.name')}
+                  fullWidth
+                  helperText={
+                    selectedClientBalance !== null ? (
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        sx={{
+                          color: selectedClientBalance < 0 ? 'error.main' : 'success.main',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {selectedClientBalance < 0
+                          ? `Debt: ${Math.abs(Math.round(selectedClientBalance))} USD` /* Simplistic label, assumes USD base */
+                          : `Credit: ${Math.round(selectedClientBalance)} USD`
+                        }
+                      </Typography>
+                    ) : null
+                  }
+                />
+              )}
             />
+
             <TextField
-              type="number"
-              inputProps={{ min: 0, step: 0.01 }}
+              inputProps={{ min: 0 }}
               label={tPages('finance.transactions.form.amount')}
               value={form.amount}
-              onChange={(event) => handleFormChange('amount', event.target.value)}
+              onChange={(event) => {
+                // Allow any text input for math expressions
+                handleFormChange('amount', event.target.value);
+              }}
+              onBlur={() => {
+                // Try to evaluate math expression safely
+                const value = form.amount.trim();
+                // Simple regex to check for allowed characters: numbers, operators, parens, decimal
+                if (new RegExp('^[\\d\\s+\\-*/.()]+$').test(value)) {
+                  try {
+                    const result = new Function(`return ${value}`)();
+                    if (typeof result === 'number' && !Number.isNaN(result) && Number.isFinite(result)) {
+                      // Update with calculated result rounded to 2 decimals if needed, or integers? 
+                      // Finance usually 2 decimals max.
+                      handleFormChange('amount', String(Math.round(result * 100) / 100));
+                    }
+                  } catch {
+                    // Ignore invalid expression, keep as is (user might fix it)
+                  }
+                }
+              }}
               fullWidth
+              helperText={tPages('finance.transactions.form.mathHint') || "Supports math: 100+50, 20*5"}
             />
             <TextField
               select

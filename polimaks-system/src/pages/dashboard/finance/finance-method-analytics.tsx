@@ -39,7 +39,7 @@ type FinanceMethodAnalyticsProps = {
 };
 
 const STORAGE_KEYS = { income: 'finance-income', expense: 'finance-expense' };
-const SUPPORTED: Currency[] = ['UZS', 'USD', 'RUB', 'EUR'];
+const SUPPORTED: Currency[] = ['UZS', 'USD'];
 const QUICK_RANGES = [7, 30] as const;
 
 const todayISO = () => new Date().toISOString().slice(0, 10);

@@ -63,25 +63,107 @@ export const readClients = (): ClientSummary[] => {
 
 export const readTransactions = (): ClientTransaction[] => {
   if (typeof window === 'undefined') return [];
+
+  const transactions: ClientTransaction[] = [];
+  const clients = readClients(); // Read clients to allow name matching fallback
+
+  // 1. Read legacy client transactions
   const stored = localStorage.getItem(TRANSACTIONS_KEY);
-  if (!stored) return [];
-  try {
-    const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed)) return [];
-    const normalized: ClientTransaction[] = parsed.map((entry: any) => ({
-      id: entry.id ?? uuidv4(),
-      clientId: entry.clientId ?? '',
-      // All manual entries are treated as payments now
-      type: 'payment',
-      amount: Number(entry.amount) || 0,
-      currency: (entry.currency ?? 'UZS').toString(),
-      date: entry.date ?? new Date().toISOString().split('T')[0],
-      notes: entry.notes ?? '',
-    }));
-    return normalized.filter((entry) => Boolean(entry.clientId));
-  } catch {
-    return [];
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        const normalized: ClientTransaction[] = parsed.map((entry: any) => ({
+          id: entry.id ?? uuidv4(),
+          clientId: entry.clientId ?? '',
+          type: 'payment',
+          amount: Number(entry.amount) || 0,
+          currency: (entry.currency ?? 'UZS').toString(),
+          date: entry.date ?? new Date().toISOString().split('T')[0],
+          notes: entry.notes ?? '',
+        }));
+        transactions.push(...normalized.filter((entry) => Boolean(entry.clientId)));
+      }
+    } catch {
+      // ignore
+    }
   }
+
+  // Helper to resolve Client ID (check stored ID first, then fallback to name match)
+  const resolveClientId = (entry: any): string | null => {
+    if (entry.clientId) return entry.clientId;
+    // Fallback: match by exact name
+    const found = clients.find(c => c.fullName.trim().toLowerCase() === (entry.name || '').trim().toLowerCase());
+    return found ? found.id : null;
+  };
+
+  // 2. Read Finance Income (Payments)
+  // Income in Finance = We received money = Payment from Client
+  const incomeRaw = localStorage.getItem('finance-income');
+  if (incomeRaw) {
+    try {
+      const parsed = JSON.parse(incomeRaw);
+      if (Array.isArray(parsed)) {
+        const normalized: ClientTransaction[] = parsed
+          .map((entry: any) => {
+            const clientId = resolveClientId(entry);
+            if (!clientId) return null;
+
+            return {
+              id: entry.id,
+              clientId,
+              type: 'payment', // Income is a payment FROM client
+              amount: Number(entry.amount) || 0,
+              currency: (entry.currency ?? 'UZS').toString(),
+              date: entry.date ? String(entry.date) : new Date().toISOString().split('T')[0],
+              notes: `Finance Income: ${entry.name} - ${entry.note || ''}`,
+            };
+          })
+          .filter(Boolean) as ClientTransaction[];
+        transactions.push(...normalized);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // 3. Read Finance Expense (Refunds? Or Payments TO client?)
+  // Expense in Finance = We paid money = Refund? 
+  // For now let's treat Expense linked to Client as "Giving Money Back" or "Loan to Client" -> Increases Debt (Promise)
+  // Or maybe it's just a reverse payment. 
+  // Let's assume Expense = We gave money to client.
+  // If Client Balance = Paid - Promised.
+  // We gave money -> Paid decreases? Or Promised increases?
+  // Let's treat it as a negative payment for now? Or just 'promise' type (debt increases).
+  const expenseRaw = localStorage.getItem('finance-expense');
+  if (expenseRaw) {
+    try {
+      const parsed = JSON.parse(expenseRaw);
+      if (Array.isArray(parsed)) {
+        const normalized: ClientTransaction[] = parsed
+          .map((entry: any) => {
+            const clientId = resolveClientId(entry);
+            if (!clientId) return null;
+
+            return {
+              id: entry.id,
+              clientId,
+              type: 'promise', // We gave money, so they owe us (Debt/Promise)
+              amount: Number(entry.amount) || 0,
+              currency: (entry.currency ?? 'UZS').toString(),
+              date: entry.date ? String(entry.date) : new Date().toISOString().split('T')[0],
+              notes: `Finance Expense: ${entry.name} - ${entry.note || ''}`,
+            };
+          })
+          .filter(Boolean) as ClientTransaction[];
+        transactions.push(...normalized);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return transactions;
 };
 
 export const persistTransactions = (transactions: ClientTransaction[]) => {
