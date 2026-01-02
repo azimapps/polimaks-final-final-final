@@ -1,7 +1,7 @@
 import type { UseDateRangePickerReturn } from 'src/components/custom-date-range-picker';
 
 import dayjs from 'dayjs';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -10,7 +10,6 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
@@ -33,85 +32,23 @@ import { Iconify } from 'src/components/iconify';
 import { CustomDateRangePicker } from 'src/components/custom-date-range-picker';
 
 import { useFinanceRates } from './use-finance-rates';
-import { FINANCE_STORAGE_EVENT } from './finance-storage';
+import { useFinanceAnalytics } from './use-finance-analytics';
 
 import type { Currency } from './use-finance-rates';
 
 type Method = 'cash' | 'transfer';
-
-type FinanceEntry = {
-  id: string;
-  type: Method;
-  amount: number;
-  currency: Currency;
-  date: string;
-  createdAt: string;
-};
 
 type FinanceMethodSummaryProps = {
   method: Method;
   rangePicker: UseDateRangePickerReturn;
 };
 
-const STORAGE_KEYS = { income: 'finance-income', expense: 'finance-expense' };
 const SUPPORTED: Currency[] = ['UZS', 'USD'];
 const MANUAL_CURRENCIES: Currency[] = ['UZS', 'USD'];
-
-const todayISO = () => new Date().toISOString().slice(0, 10);
-const timestampISO = () => new Date().toISOString();
-
-const normalizeEntries = (items: any[], prefix: string): FinanceEntry[] =>
-  items.map((item, index) => ({
-    id: item.id || `${prefix}-${index}`,
-    type: item.type === 'transfer' ? 'transfer' : 'cash',
-    amount: typeof item.amount === 'number' ? item.amount : Number(item.amount) || 0,
-    currency: (SUPPORTED.includes(item.currency) ? item.currency : 'UZS') as Currency,
-    date: item.date ? String(item.date).slice(0, 10) : todayISO(),
-    createdAt: item.createdAt || timestampISO(),
-  }));
-
-const readFinanceStorage = (key: string, prefix: string): FinanceEntry[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return [];
-    return normalizeEntries(JSON.parse(raw) as FinanceEntry[], prefix);
-  } catch {
-    return [];
-  }
-};
 
 export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSummaryProps) {
   const { t } = useTranslate('pages');
   const paletteTheme = useTheme();
-
-  const [incomeEntries, setIncomeEntries] = useState<FinanceEntry[]>(() =>
-    readFinanceStorage(STORAGE_KEYS.income, 'income')
-  );
-  const [expenseEntries, setExpenseEntries] = useState<FinanceEntry[]>(() =>
-    readFinanceStorage(STORAGE_KEYS.expense, 'expense')
-  );
-  const [displayCurrency, setDisplayCurrency] = useState<Currency>('UZS');
-  const { getRateForDate, setRateOverride, hasManualRate } = useFinanceRates();
-  const [rateDialogOpen, setRateDialogOpen] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const refresh = () => {
-      setIncomeEntries(readFinanceStorage(STORAGE_KEYS.income, 'income'));
-      setExpenseEntries(readFinanceStorage(STORAGE_KEYS.expense, 'expense'));
-    };
-
-    refresh();
-    window.addEventListener(FINANCE_STORAGE_EVENT, refresh);
-    window.addEventListener('storage', refresh);
-
-    return () => {
-      window.removeEventListener(FINANCE_STORAGE_EVENT, refresh);
-      window.removeEventListener('storage', refresh);
-    };
-  }, []);
 
   const { rangeStart, rangeEnd, dayBeforeStart } = useMemo(() => {
     const start = rangePicker.startDate ?? dayjs();
@@ -124,59 +61,13 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
     };
   }, [rangePicker.startDate, rangePicker.endDate]);
 
-  const methodIncomes = useMemo(
-    () => incomeEntries.filter((entry) => entry.type === method),
-    [incomeEntries, method]
-  );
-  const methodExpenses = useMemo(
-    () => expenseEntries.filter((entry) => entry.type === method),
-    [expenseEntries, method]
-  );
+  const { openingBalance, rangeNet, finalBalance } = useFinanceAnalytics(method, rangeStart, rangeEnd, dayBeforeStart);
 
-  const convertAmount = useMemo(
-    () => (amount: number, currency: Currency, date: string) => {
-      const fromRate = getRateForDate(currency, date);
-      const toRate = getRateForDate(displayCurrency, date);
-      if (!fromRate || !toRate) return amount;
-      return (amount * fromRate) / toRate;
-    },
-    [displayCurrency, getRateForDate]
-  );
+  const { setRateOverride, hasManualRate } = useFinanceRates();
+  const [rateDialogOpen, setRateDialogOpen] = useState(false);
+  const { getRateForDate } = useFinanceRates();
 
-  const openingBalance = useMemo(() => {
-    const incomeBefore = methodIncomes.reduce((sum, item) => {
-      if (item.date <= dayBeforeStart) {
-        return sum + convertAmount(item.amount, item.currency, item.date);
-      }
-      return sum;
-    }, 0);
-    const expenseBefore = methodExpenses.reduce((sum, item) => {
-      if (item.date <= dayBeforeStart) {
-        return sum + convertAmount(item.amount, item.currency, item.date);
-      }
-      return sum;
-    }, 0);
-    return incomeBefore - expenseBefore;
-  }, [convertAmount, dayBeforeStart, methodExpenses, methodIncomes]);
-
-  const rangeNet = useMemo(() => {
-    const incomeRange = methodIncomes.reduce((sum, item) => {
-      if (item.date >= rangeStart && item.date <= rangeEnd) {
-        return sum + convertAmount(item.amount, item.currency, item.date);
-      }
-      return sum;
-    }, 0);
-    const expenseRange = methodExpenses.reduce((sum, item) => {
-      if (item.date >= rangeStart && item.date <= rangeEnd) {
-        return sum + convertAmount(item.amount, item.currency, item.date);
-      }
-      return sum;
-    }, 0);
-    return incomeRange - expenseRange;
-  }, [convertAmount, methodExpenses, methodIncomes, rangeEnd, rangeStart]);
-
-  const finalBalance = openingBalance + rangeNet;
-  const rangeNetColor = rangeNet >= 0 ? 'success.main' : 'error.main';
+  const rangeNetColor = rangeNet.UZS >= 0 && rangeNet.USD >= 0 ? 'success.main' : 'error.main'; // Simplified color logic or keep per-item
 
   const rangeLabel = rangePicker.error ? t('finance.analytics.dateRange') : rangePicker.label || '';
   const rateDialogDates = useMemo(() => {
@@ -223,20 +114,6 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
           />
 
           <Stack direction="row" alignItems="center" spacing={1}>
-            <TextField
-              select
-              size="small"
-              label={t('finance.income.displayCurrency')}
-              value={displayCurrency}
-              onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
-              sx={{ minWidth: 160 }}
-            >
-              {SUPPORTED.map((cur) => (
-                <MenuItem key={cur} value={cur}>
-                  {cur}
-                </MenuItem>
-              ))}
-            </TextField>
             <Button
               size="small"
               variant="soft"
@@ -257,9 +134,9 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
         >
           {[
             { label: 'finance.analytics.startBalance', value: openingBalance },
-            { label: 'finance.analytics.rangeNet', value: rangeNet, color: rangeNetColor },
+            { label: 'finance.analytics.rangeNet', value: rangeNet, isNet: true },
             { label: 'finance.analytics.finishingBalance', value: finalBalance },
-          ].map(({ label, value, color }) => (
+          ].map(({ label, value, isNet }) => (
             <Box
               key={label}
               sx={{
@@ -271,12 +148,27 @@ export function FinanceMethodSummary({ method, rangePicker }: FinanceMethodSumma
                 border: (theme) => `1px solid ${theme.palette.divider}`,
               }}
             >
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
                 {t(label)}
               </Typography>
-              <Typography variant="h6" color={color}>
-                {fNumber(value, { maximumFractionDigits: 0 })} {displayCurrency}
-              </Typography>
+
+              <Stack spacing={0.5}>
+                {SUPPORTED.map((currency) => {
+                  const amount = value[currency as keyof typeof value] || 0;
+                  const color = isNet ? (amount >= 0 ? 'success.main' : 'error.main') : 'text.primary';
+
+                  return (
+                    <Stack key={currency} direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="h6" color={color}>
+                        {fNumber(amount, { maximumFractionDigits: 0 })}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        {currency}
+                      </Typography>
+                    </Stack>
+                  );
+                })}
+              </Stack>
             </Box>
           ))}
         </Stack>

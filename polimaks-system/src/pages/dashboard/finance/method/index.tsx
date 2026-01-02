@@ -33,6 +33,8 @@ import { useTranslate } from 'src/locales';
 import { Iconify } from 'src/components/iconify';
 import { useDateRangePicker, type UseDateRangePickerReturn } from 'src/components/custom-date-range-picker';
 
+import { useFinanceRates } from '../use-finance-rates';
+import { useFinanceAnalytics } from '../use-finance-analytics';
 import { FinanceMethodSummary } from '../finance-method-summary';
 import { notifyFinanceStorage, FINANCE_STORAGE_EVENT } from '../finance-storage';
 import {
@@ -55,6 +57,7 @@ type FinanceStorageEntry = {
   createdAt: string;
   note: string;
   clientId?: string;
+  exchangeRate?: number;
 };
 type CombinedEntry = FinanceStorageEntry & { direction: FinanceDirection };
 
@@ -65,7 +68,7 @@ const STORAGE_KEYS = {
 
 const SUPPORTED_CURRENCIES: Currency[] = ['UZS', 'USD'];
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
+const todayISO = () => dayjs().format('YYYY-MM-DD');
 const timestampISO = () => new Date().toISOString();
 
 const normalizeFinanceEntries = (items: any[], prefix: string): FinanceStorageEntry[] =>
@@ -79,6 +82,7 @@ const normalizeFinanceEntries = (items: any[], prefix: string): FinanceStorageEn
     createdAt: item?.createdAt || timestampISO(),
     note: item?.note || '',
     clientId: item?.clientId,
+    exchangeRate: item?.exchangeRate ? Number(item.exchangeRate) : undefined,
   }));
 
 const readFinanceStorage = (key: string, prefix: string): FinanceStorageEntry[] => {
@@ -142,6 +146,7 @@ const getInitialTransactionFormState = () => ({
   date: todayISO(),
   note: '',
   clientId: '',
+  exchangeRate: '',
 });
 
 export default function FinanceMethodPage() {
@@ -193,15 +198,20 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
   const [pendingDelete, setPendingDelete] = useState<CombinedEntry | null>(null);
   const [selectedClientBalance, setSelectedClientBalance] = useState<number | null>(null);
 
-  const { rangeStart, rangeEnd } = useMemo(() => {
+  const { getRateForDate } = useFinanceRates();
+
+  const { rangeStart, rangeEnd, dayBeforeStart } = useMemo(() => {
     const start = rangePicker.startDate ?? dayjs();
     const end = rangePicker.endDate ?? start;
     const [rangeStartDate, rangeEndDate] = start.isAfter(end) ? [end, start] : [start, end];
     return {
       rangeStart: rangeStartDate.format('YYYY-MM-DD'),
       rangeEnd: rangeEndDate.format('YYYY-MM-DD'),
+      dayBeforeStart: rangeStartDate.subtract(1, 'day').format('YYYY-MM-DD'),
     };
   }, [rangePicker.startDate, rangePicker.endDate]);
+
+  const { openingBalance, finalBalance } = useFinanceAnalytics(method, rangeStart, rangeEnd, dayBeforeStart);
 
   const loadTransactions = useCallback(() => {
     const withinRange = (entry: FinanceStorageEntry) =>
@@ -284,8 +294,30 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
   };
 
   const handleFormChange = (field: keyof ReturnType<typeof getInitialTransactionFormState>, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+
+      // Auto-set rate if date changes and rate is empty or user hasn't typed it yet
+      // Simple logic: if date matches, fetch rate.
+      // But here we just update state. We can use useEffect to sync rate with date.
+      return next;
+    });
   };
+
+  // ... (rest of methods)
+
+  // Sync Rate with Date
+  // Logic: When dialog opens or date changes, we fetch the rate for that date.
+  // We overwrite the field to ensure the user gets the correct rate for the chosen date.
+  // If the user wants to customize it, they can edit it AFTER the date is set.
+  useEffect(() => {
+    if (dialogOpen && !editingEntry) {
+      const rate = getRateForDate('USD', form.date);
+      // Always update the rate when date changes or dialog opens for new entry
+      setForm(prev => ({ ...prev, exchangeRate: rate ? String(rate) : '' }));
+    }
+  }, [dialogOpen, form.date, getRateForDate, editingEntry]);
+
 
   const canSave = Boolean(form.name.trim()) && Number.parseFloat(form.amount) > 0 && Boolean(form.date);
 
@@ -308,6 +340,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
       createdAt: editingEntry?.createdAt || timestampISO(),
       note: form.note.trim(),
       clientId: form.clientId,
+      exchangeRate: form.exchangeRate ? Number.parseFloat(form.exchangeRate) : undefined,
     };
 
     if (editingEntry) {
@@ -345,6 +378,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
       date: entry.date,
       note: entry.note,
       clientId: entry.clientId || '',
+      exchangeRate: entry.exchangeRate ? String(entry.exchangeRate) : '',
     });
     setDialogOpen(true);
 
@@ -378,6 +412,45 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
     }
     setPendingDelete(null);
   };
+
+  // Helper to show converted amount
+  const convertedAmountDisplay = useMemo(() => {
+    const amount = Number.parseFloat(form.amount);
+    const rate = Number.parseFloat(form.exchangeRate);
+    if (!amount || !rate || Number.isNaN(amount) || Number.isNaN(rate)) return null;
+
+    if (form.currency === 'USD') {
+      // USD -> UZS
+      const uzs = amount * rate;
+      return `≈ ${uzs.toLocaleString()} UZS`;
+    }
+    // UZS -> USD
+    const usd = amount / rate;
+    return `≈ ${usd.toLocaleString(undefined, { maximumFractionDigits: 2 })} USD`;
+  }, [form.amount, form.exchangeRate, form.currency]);
+
+  const renderBalanceRow = (label: string, balance: { UZS: number, USD: number }, isFooter: boolean = false) => (
+    <TableRow sx={{
+      backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
+      borderBottom: isFooter ? 'none' : undefined,
+      borderTop: isFooter ? '2px solid' : undefined,
+      borderColor: 'divider'
+    }}>
+      <TableCell colSpan={2} sx={{ fontWeight: 'bold' }}>
+        {label}
+      </TableCell>
+      <TableCell align="right" colSpan={5} sx={{ fontWeight: 'bold' }}>
+        <Stack direction="row" spacing={3} justifyContent="flex-end" sx={{ pr: 2 }}>
+          <Typography variant="subtitle2">
+            {balance.UZS.toLocaleString()} UZS
+          </Typography>
+          <Typography variant="subtitle2">
+            {balance.USD.toLocaleString()} USD
+          </Typography>
+        </Stack>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <Stack spacing={2}>
@@ -417,10 +490,12 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
             </TableRow>
           </TableHead>
           <TableBody>
+            {renderBalanceRow(tPages('finance.analytics.startBalance'), openingBalance)}
+
             {filteredTransactions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7}>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}>
                     {tPages('finance.transactions.table.empty')}
                   </Typography>
                 </TableCell>
@@ -440,7 +515,14 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
                 >
                   <TableCell>{directionLabels[entry.direction]}</TableCell>
                   <TableCell>{entry.name || '—'}</TableCell>
-                  <TableCell align="right">{entry.amount.toLocaleString()}</TableCell>
+                  <TableCell align="right">
+                    {entry.amount.toLocaleString()}
+                    {entry.exchangeRate && (
+                      <Typography variant="caption" display="block" color="text.secondary">
+                        Rate: {entry.exchangeRate}
+                      </Typography>
+                    )}
+                  </TableCell>
                   <TableCell>{entry.currency}</TableCell>
                   <TableCell>{entry.date}</TableCell>
                   <TableCell>{entry.note || '—'}</TableCell>
@@ -456,6 +538,8 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
                 </TableRow>
               ))
             )}
+
+            {renderBalanceRow(tPages('finance.analytics.finishingBalance'), finalBalance, true)}
           </TableBody>
         </Table>
       </TableContainer>
@@ -593,42 +677,62 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
                 }
               }}
               fullWidth
-              helperText={tPages('finance.transactions.form.mathHint') || "Supports math: 100+50, 20*5"}
+              helperText={
+                <Stack component="span" direction="row" justifyContent="space-between">
+                  <span>{tPages('finance.transactions.form.mathHint') || "Supports math: 100+50"}</span>
+                  {convertedAmountDisplay && <span>{convertedAmountDisplay}</span>}
+                </Stack>
+              }
             />
-            <TextField
-              select
-              label={tPages('finance.transactions.form.currency')}
-              value={form.currency}
-              onChange={(event) => handleFormChange('currency', event.target.value)}
-              fullWidth
-            >
-              {SUPPORTED_CURRENCIES.map((currency) => (
-                <MenuItem key={currency} value={currency}>
-                  {currency}
-                </MenuItem>
-              ))}
-            </TextField>
+
+            <Stack direction="row" spacing={2} alignItems="center">
+              <TextField
+                select
+                label={tPages('finance.transactions.form.currency')}
+                value={form.currency}
+                onChange={(e) => handleFormChange('currency', e.target.value)}
+                sx={{ width: '120px' }}
+              >
+                {SUPPORTED_CURRENCIES.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                label="Exchange Rate (1 USD)"
+                value={form.exchangeRate}
+                onChange={(e) => handleFormChange('exchangeRate', e.target.value)}
+                type="number"
+                fullWidth
+                helperText={form.date ? `Rate for ${form.date}` : "Current rate"}
+              />
+            </Stack>
+
             <TextField
               type="date"
               label={tPages('finance.transactions.form.date')}
               value={form.date}
-              onChange={(event) => handleFormChange('date', event.target.value)}
-              fullWidth
+              onChange={(e) => handleFormChange('date', e.target.value)}
               InputLabelProps={{ shrink: true }}
+              fullWidth
             />
+
             <TextField
               label={tPages('finance.transactions.form.note')}
               value={form.note}
-              onChange={(event) => handleFormChange('note', event.target.value)}
-              fullWidth
+              onChange={(e) => handleFormChange('note', e.target.value)}
               multiline
+              rows={3}
+              fullWidth
             />
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>{tPages('finance.transactions.form.cancel')}</Button>
-          <Button variant="contained" disabled={!canSave} onClick={handleSave}>
-            {tNavbar('finance_transactions_add')}
+          <Button onClick={handleSave} variant="contained" disabled={!canSave}>
+            {tPages('finance.transactions.form.save')}
           </Button>
         </DialogActions>
       </Dialog>

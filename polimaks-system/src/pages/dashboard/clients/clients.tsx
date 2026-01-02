@@ -201,7 +201,7 @@ export default function ClientsPage() {
 
     allTransactions.forEach((tx) => {
       if (!tx.clientId) return;
-      const converted = convertToDisplayCurrency(tx.amount, tx.currency, displayCurrency);
+      const converted = convertToDisplayCurrency(tx.amount, tx.currency, displayCurrency, tx.exchangeRate);
       if (tx.type === 'payment') {
         paidMap.set(tx.clientId, (paidMap.get(tx.clientId) ?? 0) + converted);
       } else {

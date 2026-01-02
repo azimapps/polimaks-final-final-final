@@ -985,6 +985,8 @@
         "currency": "Valyuta",
         "date": "Sana",
         "note": "Izoh",
+        "mathHint": "Hisoblash mumkin: 100+50",
+        "save": "Saqlash",
         "cancel": "Bekor qilish"
       },
       "menu": {

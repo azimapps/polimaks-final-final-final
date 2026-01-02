@@ -112,7 +112,7 @@ export default function ClientTransactionsDetailPage() {
     let promised = 0;
 
     clientTransactions.forEach((tx) => {
-      const value = convertToDisplayCurrency(tx.amount, tx.currency, displayCurrency);
+      const value = convertToDisplayCurrency(tx.amount, tx.currency, displayCurrency, tx.exchangeRate);
       if (tx.type === 'payment') paid += value;
       else promised += value;
     });
@@ -318,17 +318,6 @@ export default function ClientTransactionsDetailPage() {
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                     {status.caption}
                   </Typography>
-                  {exchangeRates.length > 0 && (
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {t('clientsTransactionsPage.detailExchangeRatesLabel')}:{' '}
-                      {exchangeRates
-                        .map(
-                          (rate) =>
-                            `1 ${rate.code} = ${formatRate(rate.value)} ${displayCurrency}`
-                        )
-                        .join(' · ')}
-                    </Typography>
-                  )}
                 </Stack>
               </Card>
 
@@ -380,9 +369,16 @@ export default function ClientTransactionsDetailPage() {
                                           : t('clientsTransactionsPage.types.promise')
                                       }
                                     />
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                      {formatAmount(tx.amount)} {tx.currency}
-                                    </Typography>
+                                    <Stack>
+                                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                        {formatAmount(tx.amount)} {tx.currency}
+                                      </Typography>
+                                      {tx.exchangeRate && tx.currency !== displayCurrency && (
+                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                          Rate: {formatAmount(tx.exchangeRate)}
+                                        </Typography>
+                                      )}
+                                    </Stack>
                                     <Typography component="span" sx={srOnlyStyles}>
                                       {tx.type === 'payment'
                                         ? t('clientsTransactionsPage.types.payment')

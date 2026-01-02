@@ -973,6 +973,8 @@
         "currency": "Currency",
         "date": "Date",
         "note": "Note",
+        "mathHint": "Supports math: 100+50",
+        "save": "Save",
         "cancel": "Cancel"
       },
       "menu": {

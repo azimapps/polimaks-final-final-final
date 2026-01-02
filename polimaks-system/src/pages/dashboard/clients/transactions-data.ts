@@ -15,18 +15,17 @@ export type ClientTransaction = {
   currency: string;
   date: string;
   notes: string;
+  exchangeRate?: number;
 };
 
 export const CLIENTS_KEY = 'clients-main';
 export const TRANSACTIONS_KEY = 'clients-transactions';
 export const ORDER_BOOK_KEY = 'clients-order-book';
 
-export const CURRENCY_OPTIONS = ['UZS', 'USD', 'EUR', 'RUB'] as const;
+export const CURRENCY_OPTIONS = ['USD', 'UZS'] as const;
 export const CURRENCY_RATES: Record<string, number> = {
   UZS: 1,
   USD: 11500,
-  EUR: 12400,
-  RUB: 130,
 };
 
 const FALLBACK_CLIENTS: ClientSummary[] = [
@@ -34,8 +33,15 @@ const FALLBACK_CLIENTS: ClientSummary[] = [
   { id: 'client-2', fullName: 'Dilnoza Rahimova' },
 ];
 
-export const convertToDisplayCurrency = (value: number, from: string, to: string) => {
-  const fromRate = CURRENCY_RATES[from] ?? 1;
+export const convertToDisplayCurrency = (
+  value: number,
+  from: string,
+  to: string,
+  manualRate?: number
+) => {
+  // If manualRate is provided, use it as the 'from' rate (assuming 'from' is the transaction currency)
+  // We assume manualRate is always relative to the base currency (UZS), i.e., 1 Unit = X UZS.
+  const fromRate = manualRate ?? CURRENCY_RATES[from] ?? 1;
   const toRate = CURRENCY_RATES[to] ?? 1;
   if (!fromRate || !toRate) return value;
   return (value * fromRate) / toRate;
@@ -81,6 +87,7 @@ export const readTransactions = (): ClientTransaction[] => {
           currency: (entry.currency ?? 'UZS').toString(),
           date: entry.date ?? new Date().toISOString().split('T')[0],
           notes: entry.notes ?? '',
+          exchangeRate: entry.exchangeRate ? Number(entry.exchangeRate) : undefined,
         }));
         transactions.push(...normalized.filter((entry) => Boolean(entry.clientId)));
       }
@@ -117,6 +124,7 @@ export const readTransactions = (): ClientTransaction[] => {
               currency: (entry.currency ?? 'UZS').toString(),
               date: entry.date ? String(entry.date) : new Date().toISOString().split('T')[0],
               notes: `Finance Income: ${entry.name} - ${entry.note || ''}`,
+              exchangeRate: entry.exchangeRate ? Number(entry.exchangeRate) : undefined,
             };
           })
           .filter(Boolean) as ClientTransaction[];
@@ -153,6 +161,7 @@ export const readTransactions = (): ClientTransaction[] => {
               currency: (entry.currency ?? 'UZS').toString(),
               date: entry.date ? String(entry.date) : new Date().toISOString().split('T')[0],
               notes: `Finance Expense: ${entry.name} - ${entry.note || ''}`,
+              exchangeRate: entry.exchangeRate ? Number(entry.exchangeRate) : undefined,
             };
           })
           .filter(Boolean) as ClientTransaction[];

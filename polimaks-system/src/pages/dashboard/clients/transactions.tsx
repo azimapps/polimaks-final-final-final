@@ -149,7 +149,7 @@ export function ClientsTransactionsSection({ embedded = false }: ClientsTransact
       const paid = paidMap.get(tx.clientId) ?? 0;
       const promise = promiseMap.get(tx.clientId) ?? 0;
 
-      const converted = convertToDisplayCurrency(tx.amount, tx.currency, displayCurrency);
+      const converted = convertToDisplayCurrency(tx.amount, tx.currency, displayCurrency, tx.exchangeRate);
       if (tx.type === 'payment') {
         paidMap.set(tx.clientId, paid + converted);
       } else {
@@ -166,19 +166,19 @@ export function ClientsTransactionsSection({ embedded = false }: ClientsTransact
       const status =
         balance === 0
           ? {
-              label: t('clientsTransactionsPage.statusBalanced'),
-              color: 'success' as const,
-              caption: t('clientsTransactionsPage.balanceBalanced'),
-            }
+            label: t('clientsTransactionsPage.statusBalanced'),
+            color: 'success' as const,
+            caption: t('clientsTransactionsPage.balanceBalanced'),
+          }
           : balance > 0
-          ? {
+            ? {
               label: t('clientsTransactionsPage.statusWeOwe'),
               color: 'warning' as const,
               caption: t('clientsTransactionsPage.balanceWeOwe', {
                 amount: formatAmount(balance),
               }),
             }
-          : {
+            : {
               label: t('clientsTransactionsPage.statusTheyOwe'),
               color: 'error' as const,
               caption: t('clientsTransactionsPage.balanceClientOwes', {
@@ -380,7 +380,7 @@ export function ClientsTransactionsSection({ embedded = false }: ClientsTransact
               onChange={(event) => setForm((prev) => ({ ...prev, currency: event.target.value }))}
               InputLabelProps={{ shrink: true }}
             >
-              {['UZS', 'USD', 'EUR', 'RUB'].map((code) => (
+              {CURRENCY_OPTIONS.map((code) => (
                 <MenuItem key={code} value={code}>
                   {code}
                 </MenuItem>
