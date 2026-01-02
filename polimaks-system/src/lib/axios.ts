@@ -58,3 +58,5 @@ export const endpoints = {
     search: '/api/product/search',
   },
 };
+
+
