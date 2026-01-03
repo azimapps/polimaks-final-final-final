@@ -921,6 +921,8 @@
   },
   "finance": {
     "title": "Moliya",
+    "cashTitle": "Naqd pul oqimi",
+    "transferTitle": "Perechisleniya",
     "subtitle": "Kirim va chiqimlarni naqd va o'tkazma bo'yicha kuzating.",
     "description": "Daromad va xarajat oqimlari uchun toifani tanlang.",
     "analytics": {

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { Navigate, useParams } from 'react-router';
-import { useMemo, useState, useEffect, useCallback, type MouseEvent } from 'react';
+import { useMemo, useState, useEffect, useCallback, type MouseEvent, Fragment } from 'react';
 
 import Menu from '@mui/material/Menu';
 import Paper from '@mui/material/Paper';
@@ -31,7 +31,7 @@ import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
-import { useDateRangePicker, type UseDateRangePickerReturn } from 'src/components/custom-date-range-picker';
+import { CustomDateRangePicker, type UseDateRangePickerReturn, useDateRangePicker } from 'src/components/custom-date-range-picker';
 
 import { useFinanceRates } from '../use-finance-rates';
 import { useFinanceAnalytics } from '../use-finance-analytics';
@@ -53,141 +53,169 @@ type FinanceStorageEntry = {
   type: Method;
   amount: number;
   currency: Currency;
-  date: string;
-  createdAt: string;
+  date: string; // YYYY-MM-DD
+  createdAt: string; // ISO timestamp
   note: string;
-  clientId?: string;
-  exchangeRate?: number;
+  clientId?: string; // Optional client link
+  exchangeRate?: number; // Snapshot rate at time of transaction
 };
-type CombinedEntry = FinanceStorageEntry & { direction: FinanceDirection };
 
 const STORAGE_KEYS = {
   income: 'finance-income',
   expense: 'finance-expense',
-} as const;
+};
 
-const SUPPORTED_CURRENCIES: Currency[] = ['UZS', 'USD'];
-
-const todayISO = () => dayjs().format('YYYY-MM-DD');
-const timestampISO = () => new Date().toISOString();
-
-const normalizeFinanceEntries = (items: any[], prefix: string): FinanceStorageEntry[] =>
-  items.map((item, index) => ({
-    id: item?.id || `${prefix}-${index}`,
-    name: item?.name || '',
-    type: item?.type === 'transfer' ? 'transfer' : 'cash',
-    amount: typeof item?.amount === 'number' ? item.amount : Number(item?.amount) || 0,
-    currency: (SUPPORTED_CURRENCIES.includes(item?.currency) ? item.currency : 'UZS') as Currency,
-    date: item?.date ? String(item.date) : todayISO(),
-    createdAt: item?.createdAt || timestampISO(),
-    note: item?.note || '',
-    clientId: item?.clientId,
-    exchangeRate: item?.exchangeRate ? Number(item.exchangeRate) : undefined,
-  }));
-
-const readFinanceStorage = (key: string, prefix: string): FinanceStorageEntry[] => {
+// Utils
+const readFinanceStorage = (key: string, direction: FinanceDirection): FinanceStorageEntry[] => {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return [];
-    return normalizeFinanceEntries(JSON.parse(raw), prefix);
-  } catch {
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('Failed to read finance storage:', e);
     return [];
   }
 };
 
-const directionMeta = (direction: FinanceDirection) => ({
-  key: direction === 'income' ? STORAGE_KEYS.income : STORAGE_KEYS.expense,
-  prefix: direction === 'income' ? 'income' : 'expense',
-});
+const persistFinanceEntry = (direction: FinanceDirection, entry: FinanceStorageEntry) => {
+  const key = direction === 'income' ? STORAGE_KEYS.income : STORAGE_KEYS.expense;
+  const current = readFinanceStorage(key, direction);
+  const updated = [entry, ...current];
+  localStorage.setItem(key, JSON.stringify(updated));
+  notifyFinanceStorage();
+};
 
-const setFinanceEntries = (direction: FinanceDirection, entries: FinanceStorageEntry[]) => {
-  if (typeof window === 'undefined') return;
-  const { key } = directionMeta(direction);
-  localStorage.setItem(key, JSON.stringify(entries));
+const removeFinanceEntry = (direction: FinanceDirection, id: string) => {
+  const key = direction === 'income' ? STORAGE_KEYS.income : STORAGE_KEYS.expense;
+  const current = readFinanceStorage(key, direction);
+  const updated = current.filter((e) => e.id !== id);
+  localStorage.setItem(key, JSON.stringify(updated));
   notifyFinanceStorage();
 };
 
 const upsertFinanceEntry = (direction: FinanceDirection, entry: FinanceStorageEntry) => {
-  const { key, prefix } = directionMeta(direction);
-  const existing = readFinanceStorage(key, prefix);
-  const next = existing.some((item) => item.id === entry.id)
-    ? existing.map((item) => (item.id === entry.id ? entry : item))
-    : [...existing, entry];
-  setFinanceEntries(direction, next);
-};
+  const key = direction === 'income' ? STORAGE_KEYS.income : STORAGE_KEYS.expense;
+  const current = readFinanceStorage(key, direction);
+  const existingIndex = current.findIndex((e) => e.id === entry.id);
 
-const removeFinanceEntry = (direction: FinanceDirection, id: string) => {
-  const { key, prefix } = directionMeta(direction);
-  const existing = readFinanceStorage(key, prefix);
-  const next = existing.filter((item) => item.id !== id);
-  if (next.length !== existing.length) {
-    setFinanceEntries(direction, next);
+  let updated;
+  if (existingIndex >= 0) {
+    updated = [...current];
+    updated[existingIndex] = entry;
+  } else {
+    updated = [entry, ...current];
   }
+  localStorage.setItem(key, JSON.stringify(updated));
+  notifyFinanceStorage();
 };
 
-const persistFinanceEntry = (direction: FinanceDirection, entry: FinanceStorageEntry) => {
-  upsertFinanceEntry(direction, entry);
-};
-
-const getEntryTimestamp = (entry: FinanceStorageEntry) => {
-  const iso = entry.createdAt || `${entry.date}T00:00:00Z`;
-  const parsed = Date.parse(iso);
-  return Number.isNaN(parsed) ? 0 : parsed;
-};
-
-const normalizeMethod = (method?: string): Method => (method === 'transfer' || method === 'cash' ? method : 'cash');
+const timestampISO = () => new Date().toISOString();
 
 const getInitialTransactionFormState = () => ({
   direction: 'income' as FinanceDirection,
   name: '',
   amount: '',
-  currency: SUPPORTED_CURRENCIES[0],
-  date: todayISO(),
+  currency: 'USD' as Currency,
+  date: dayjs().format('YYYY-MM-DD'),
   note: '',
   clientId: '',
   exchangeRate: '',
 });
 
+const SUPPORTED_CURRENCIES: Currency[] = ['USD', 'UZS'];
+
+const getEntryTimestamp = (entry: FinanceStorageEntry) => {
+  // Use createdAt if available, else fallback to date (start of day)
+  if (entry.createdAt) return new Date(entry.createdAt).getTime();
+  return new Date(entry.date).getTime();
+};
+
+const readLegacyClientTransactions = (): Partial<FinanceStorageEntry>[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem('clients-transactions');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item: any) => item.type === 'payment')
+      .map((item: any) => ({
+        id: item.id,
+        name: item.clientName || 'Client Payment',
+        type: 'cash',
+        amount: Number(item.amount) || 0,
+        currency: (SUPPORTED_CURRENCIES.includes(item.currency) ? item.currency : 'UZS') as Currency,
+        date: item.date ? String(item.date).slice(0, 10) : new Date().toISOString().split('T')[0],
+        createdAt: item.date,
+        note: item.notes || '',
+        exchangeRate: item.exchangeRate ? Number(item.exchangeRate) : undefined,
+        clientId: item.clientId,
+      }));
+  } catch {
+    return [];
+  }
+};
+
 export default function FinanceMethodPage() {
-  const { t: tNavbar } = useTranslate('navbar');
-  const { method } = useParams() as { method?: string };
-  const rangePicker = useDateRangePicker(dayjs().subtract(6, 'day'), dayjs());
+  const params = useParams();
+  const method = params.method as Method;
+  const { t } = useTranslate('pages');
+  const rangePicker = useDateRangePicker(dayjs(), dayjs());
 
-  const resolvedMethod: Method = normalizeMethod(method);
-
-  const methodLabel = useMemo(
-    () => (resolvedMethod === 'transfer' ? tNavbar('finance_transfer') : tNavbar('finance_cash')),
-    [resolvedMethod, tNavbar]
-  );
-  const pageTitle = `${methodLabel} | ${CONFIG.appName}`;
+  // Verify method is valid
+  if (!['cash', 'transfer'].includes(method)) {
+    return <Navigate to="/dashboard/finance/cash" replace />;
+  }
 
   return (
-    <>
-      <title>{pageTitle}</title>
-
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        <Stack spacing={2} sx={{ mb: 3 }}>
-          <Typography variant="overline" sx={{ color: 'text.secondary' }}>
-            {methodLabel}
+    <Container maxWidth="xl">
+      <Stack spacing={3}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between">
+          <Typography variant="h4">
+            {method === 'cash' ? t('finance.cashTitle') : t('finance.transferTitle')}
           </Typography>
-          <FinanceMethodSummary method={resolvedMethod} rangePicker={rangePicker} />
+          <Button
+            variant="outlined"
+            onClick={rangePicker.onOpen}
+            startIcon={<Iconify icon="solar:calendar-date-bold" />}
+          >
+            {rangePicker.label}
+          </Button>
+          <CustomDateRangePicker
+            open={rangePicker.open}
+            startDate={rangePicker.startDate}
+            endDate={rangePicker.endDate}
+            onChangeStartDate={rangePicker.onChangeStartDate}
+            onChangeEndDate={rangePicker.onChangeEndDate}
+            onClose={rangePicker.onClose}
+            error={rangePicker.error}
+          />
         </Stack>
 
-        <FinanceTransactionsSection method={resolvedMethod} rangePicker={rangePicker} />
-      </Container>
-    </>
+        <FinanceMethodSummary method={method} rangePicker={rangePicker} />
+
+        <FinanceTransactionsSection
+          method={method}
+          rangePicker={rangePicker}
+        />
+      </Stack>
+    </Container>
   );
 }
 
-type FinanceTransactionsSectionProps = {
+// ----------------------------------------------------------------------
+
+type CombinedEntry = FinanceStorageEntry & { direction: FinanceDirection };
+
+function FinanceTransactionsSection({
+  method,
+  rangePicker,
+}: {
   method: Method;
   rangePicker: UseDateRangePickerReturn;
-};
-
-function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactionsSectionProps) {
-  const { t: tNavbar } = useTranslate('navbar');
+}) {
   const { t: tPages } = useTranslate('pages');
+  const { t: tNavbar } = useTranslate('navbar');
   const [filter, setFilter] = useState<'all' | FinanceDirection>('all');
   const [transactions, setTransactions] = useState<CombinedEntry[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -211,7 +239,66 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
     };
   }, [rangePicker.startDate, rangePicker.endDate]);
 
-  const { openingBalance, finalBalance } = useFinanceAnalytics(method, rangeStart, rangeEnd, dayBeforeStart);
+  const { openingBalance } = useFinanceAnalytics(method, rangeStart, rangeEnd, dayBeforeStart);
+
+  const dailyGroups = useMemo(() => {
+    // 1. Sort global transactions ASC for calculation
+    const sortedDetails = [...transactions].sort((a, b) => {
+      if (a.date < b.date) return -1;
+      if (a.date > b.date) return 1;
+      return getEntryTimestamp(a) - getEntryTimestamp(b);
+    });
+
+    // 2. Group
+    const groups: Record<string, CombinedEntry[]> = {};
+    const days: string[] = [];
+
+    sortedDetails.forEach(t => {
+      if (!groups[t.date]) {
+        groups[t.date] = [];
+        days.push(t.date);
+      }
+      groups[t.date].push(t);
+    });
+
+    // 3. Iterate ASC to calc balances
+    const result: {
+      date: string;
+      start: { UZS: number; USD: number };
+      end: { UZS: number; USD: number };
+      entries: CombinedEntry[]
+    }[] = [];
+
+    const currentBalance = { ...openingBalance };
+
+    days.forEach(date => {
+      const dayEntries = groups[date];
+      const start = { ...currentBalance };
+
+      dayEntries.forEach(entry => {
+        if (entry.direction === 'income') {
+          if (entry.currency === 'UZS' || entry.currency === 'USD') {
+            currentBalance[entry.currency] += entry.amount;
+          }
+        } else {
+          if (entry.currency === 'UZS' || entry.currency === 'USD') {
+            currentBalance[entry.currency] -= entry.amount;
+          }
+        }
+      });
+
+      const end = { ...currentBalance };
+
+      result.push({
+        date,
+        start,
+        end,
+        entries: dayEntries.sort((a, b) => getEntryTimestamp(b) - getEntryTimestamp(a)),
+      });
+    });
+
+    return result.reverse();
+  }, [transactions, openingBalance]);
 
   const loadTransactions = useCallback(() => {
     const withinRange = (entry: FinanceStorageEntry) =>
@@ -224,7 +311,25 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
       .filter((entry) => entry.type === method && withinRange(entry))
       .map((entry) => ({ ...entry, direction: 'expense' as FinanceDirection }));
 
-    const combined = [...incomes, ...expenses].sort((a, b) => getEntryTimestamp(b) - getEntryTimestamp(a));
+    // 3. Read Client Transactions (Legacy only)
+    const clients = method === 'cash' ? readLegacyClientTransactions() : [];
+
+    // Normalize clients
+    const normalizedClients: CombinedEntry[] = clients.map((t: any) => ({
+      id: t.id,
+      name: t.name || 'Client Payment',
+      type: 'cash',
+      amount: t.amount,
+      currency: t.currency,
+      date: t.date,
+      createdAt: t.createdAt,
+      note: t.note,
+      direction: 'income',
+      exchangeRate: t.exchangeRate,
+      clientId: t.clientId
+    }));
+
+    const combined = [...incomes, ...expenses, ...normalizedClients].sort((a, b) => getEntryTimestamp(b) - getEntryTimestamp(a));
     setTransactions(combined);
   }, [method, rangeEnd, rangeStart]);
 
@@ -281,11 +386,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
     }), [tNavbar]
   );
 
-  const filteredTransactions = useMemo(
-    () =>
-      transactions.filter((entry) => filter === 'all' || entry.direction === filter),
-    [filter, transactions]
-  );
+
 
   const handleFilterChange = (_event: MouseEvent<HTMLElement>, nextFilter: 'all' | FinanceDirection | null) => {
     if (nextFilter) {
@@ -304,8 +405,6 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
     });
   };
 
-  // ... (rest of methods)
-
   // Sync Rate with Date
   // Logic: When dialog opens or date changes, we fetch the rate for that date.
   // We overwrite the field to ensure the user gets the correct rate for the chosen date.
@@ -313,8 +412,8 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
   useEffect(() => {
     if (dialogOpen && !editingEntry) {
       const rate = getRateForDate('USD', form.date);
-      // Always update the rate when date changes or dialog opens for new entry
-      setForm(prev => ({ ...prev, exchangeRate: rate ? String(rate) : '' }));
+      // Always update the rate when date changes or dialog opens for new entry (Round to integer)
+      setForm(prev => ({ ...prev, exchangeRate: rate ? String(Math.round(rate)) : '' }));
     }
   }, [dialogOpen, form.date, getRateForDate, editingEntry]);
 
@@ -490,9 +589,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
             </TableRow>
           </TableHead>
           <TableBody>
-            {renderBalanceRow(tPages('finance.analytics.startBalance'), openingBalance)}
-
-            {filteredTransactions.length === 0 ? (
+            {dailyGroups.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7}>
                   <Typography variant="body2" sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}>
@@ -501,45 +598,62 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTransactions.map((entry) => (
-                <TableRow
-                  key={`${entry.direction}-${entry.id}`}
-                  sx={(theme) => ({
-                    backgroundColor:
-                      entry.direction === 'income'
-                        ? alpha(theme.palette.success.main, 0.08)
-                        : alpha(theme.palette.error.main, 0.08),
-                    borderLeft: `4px solid ${entry.direction === 'income' ? theme.palette.success.main : theme.palette.error.main
-                      }`,
-                  })}
-                >
-                  <TableCell>{directionLabels[entry.direction]}</TableCell>
-                  <TableCell>{entry.name || '—'}</TableCell>
-                  <TableCell align="right">
-                    {entry.amount.toLocaleString()}
-                    {entry.exchangeRate && (
-                      <Typography variant="caption" display="block" color="text.secondary">
-                        Rate: {entry.exchangeRate}
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>{entry.currency}</TableCell>
-                  <TableCell>{entry.date}</TableCell>
-                  <TableCell>{entry.note || '—'}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      aria-label={tPages('finance.transactions.table.actions')}
-                      onClick={(event) => openRowMenu(event, entry)}
-                    >
-                      <Iconify icon="eva:more-vertical-fill" width={18} height={18} />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+              dailyGroups.map((group) => {
+                const visibleEntries = group.entries.filter(e => filter === 'all' || e.direction === filter);
+                if (visibleEntries.length === 0 && filter !== 'all') return null;
 
-            {renderBalanceRow(tPages('finance.analytics.finishingBalance'), finalBalance, true)}
+                return (
+                  <Fragment key={group.date}>
+                    <TableRow sx={{ backgroundColor: (theme) => alpha(theme.palette.text.primary, 0.04) }}>
+                      <TableCell colSpan={7} sx={{ fontWeight: 'bold', py: 1 }}>
+                        {dayjs(group.date).format('DD MMM YYYY')}
+                      </TableCell>
+                    </TableRow>
+
+                    {renderBalanceRow(tPages('finance.analytics.startBalance'), group.start)}
+
+                    {visibleEntries.map((entry) => (
+                      <TableRow
+                        key={`${entry.direction}-${entry.id}`}
+                        sx={(theme) => ({
+                          backgroundColor:
+                            entry.direction === 'income'
+                              ? alpha(theme.palette.success.main, 0.08)
+                              : alpha(theme.palette.error.main, 0.08),
+                          borderLeft: `4px solid ${entry.direction === 'income' ? theme.palette.success.main : theme.palette.error.main
+                            }`,
+                        })}
+                      >
+                        <TableCell>{directionLabels[entry.direction]}</TableCell>
+                        <TableCell>{entry.name || '—'}</TableCell>
+                        <TableCell align="right">
+                          {entry.amount.toLocaleString()}
+                          {entry.exchangeRate && (
+                            <Typography variant="caption" display="block" color="text.secondary">
+                              Rate: {entry.exchangeRate}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell>{entry.currency}</TableCell>
+                        <TableCell>{entry.date}</TableCell>
+                        <TableCell>{entry.note || '—'}</TableCell>
+                        <TableCell align="right">
+                          <IconButton
+                            size="small"
+                            aria-label={tPages('finance.transactions.table.actions')}
+                            onClick={(event) => openRowMenu(event, entry)}
+                          >
+                            <Iconify icon="eva:more-vertical-fill" width={18} height={18} />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+
+                    {renderBalanceRow(tPages('finance.analytics.finishingBalance'), group.end, true)}
+                  </Fragment>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -741,12 +855,7 @@ function FinanceTransactionsSection({ method, rangePicker }: FinanceTransactions
 }
 
 export function FinanceMethodFlowRedirect() {
-  const { method } = useParams() as { method?: string };
-
-  if (!method) {
-    return <Navigate to="/finance" replace />;
-  }
-
-  const resolvedMethod = normalizeMethod(method);
-  return <Navigate to={`/finance/${resolvedMethod}`} replace />;
+  const params = useParams();
+  const method = params.method as Method;
+  return <Navigate to={`/dashboard/finance/${method}`} replace />;
 }

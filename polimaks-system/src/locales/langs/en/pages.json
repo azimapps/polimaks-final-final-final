@@ -914,6 +914,8 @@
   },
   "finance": {
     "title": "Finance",
+    "cashTitle": "Cash Flow",
+    "transferTitle": "Transfers",
     "subtitle": "Track incoming and outgoing cash and transfers.",
     "description": "Pick a subcategory to manage income and expense flows.",
     "analytics": {
