@@ -46,7 +46,6 @@ export const useNavData = (): NavSectionProps['data'] => {
               { title: t('inventory_analytics'), path: paths.dashboard.inventory.analytics },
               { title: t('plyonka'), path: paths.dashboard.inventory.plyonka },
               { title: t('kraska'), path: paths.dashboard.inventory.kraska },
-              { title: t('suyuq_kraska'), path: paths.dashboard.inventory.suyuqKraska },
               { title: t('razvaritel'), path: paths.dashboard.inventory.razvaritel },
               { title: t('razvaritel_aralashmasi'), path: paths.dashboard.inventory.razvaritelAralashmasi },
               { title: t('silindir'), path: paths.dashboard.inventory.silindir },
@@ -79,6 +78,11 @@ export const useNavData = (): NavSectionProps['data'] => {
             ],
           },
           {
+            title: t('partners'),
+            path: paths.dashboard.partners.root,
+            icon: ICONS.clients,
+          },
+          {
             title: t('clients'),
             path: paths.dashboard.clients.root,
             icon: ICONS.clients,
@@ -104,6 +108,7 @@ export const useNavData = (): NavSectionProps['data'] => {
               },
             ],
           },
+
           {
             title: t('ishlab_chiqarish'),
             path: paths.dashboard.ishlabChiqarish.root,

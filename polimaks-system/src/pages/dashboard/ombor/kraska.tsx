@@ -52,6 +52,8 @@ type KraskaItem = {
 };
 
 const STORAGE_KEY = 'ombor-kraska';
+const PARTNERS_STORAGE_KEY = 'partners-main';
+
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -90,6 +92,31 @@ export default function KraskaPage() {
     }
     return normalizeItems(seedData as KraskaItem[]);
   }, []);
+
+  const partners = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(PARTNERS_STORAGE_KEY);
+      if (stored) {
+        try {
+          return JSON.parse(stored) as { company: string; fullName: string; categories?: string[] }[];
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return [];
+  }, []);
+
+  const partnerOptions = useMemo(
+    () =>
+      partners
+        .filter((p) => p.categories?.includes('Kraska'))
+        .map((p) => p.company || p.fullName)
+        .filter(Boolean),
+    [partners]
+  );
+
+
 
   const [items, setItems] = useState<KraskaItem[]>(initialData);
   const [editing, setEditing] = useState<KraskaItem | null>(null);
@@ -492,11 +519,19 @@ export default function KraskaPage() {
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('kraskaPage.supplier')}
+                <Autocomplete
+                  freeSolo
+                  options={partnerOptions}
                   value={form.supplier}
-                  onChange={(e) => setForm((prev) => ({ ...prev, supplier: e.target.value }))}
+                  onChange={(event, newValue) => {
+                    setForm((prev) => ({ ...prev, supplier: newValue || '' }));
+                  }}
+                  onInputChange={(event, newInputValue) => {
+                    setForm((prev) => ({ ...prev, supplier: newInputValue || '' }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} fullWidth label={t('kraskaPage.supplier')} />
+                  )}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>

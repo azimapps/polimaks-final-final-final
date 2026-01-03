@@ -61,6 +61,8 @@ const CATEGORIES: Record<CategoryKey, string[]> = {
 };
 
 const STORAGE_KEY = 'ombor-plyonka';
+const PARTNERS_STORAGE_KEY = 'partners-main';
+
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -112,6 +114,31 @@ export default function PlyonkaPage() {
     }
     return normalizeItems(seedData as PlyonkaItem[]);
   }, []);
+
+  const partners = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(PARTNERS_STORAGE_KEY);
+      if (stored) {
+        try {
+          return JSON.parse(stored) as { company: string; fullName: string; categories?: string[] }[];
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return [];
+  }, []);
+
+  const partnerOptions = useMemo(
+    () =>
+      partners
+        .filter((p) => p.categories?.includes('Plyonka'))
+        .map((p) => p.company || p.fullName)
+        .filter(Boolean),
+    [partners]
+  );
+
+
 
   const [items, setItems] = useState<PlyonkaItem[]>(initialData);
   const [editing, setEditing] = useState<PlyonkaItem | null>(null);
@@ -441,22 +468,22 @@ export default function PlyonkaPage() {
                     filteredItems.map((item) => (
                       <TableRow key={item.id} hover>
                         <TableCell>
-                      <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                        {item.admin || '—'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{item.createdDate}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{item.seriyaNumber}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2">{item.category}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                        {item.subcategory}
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.admin || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.createdDate}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{item.seriyaNumber}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="subtitle2">{item.category}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {item.subcategory}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -629,11 +656,19 @@ export default function PlyonkaPage() {
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label={t('plyonkaPage.admin')}
+                <Autocomplete
+                  freeSolo
+                  options={partnerOptions}
                   value={form.admin}
-                  onChange={(e) => setForm((prev) => ({ ...prev, admin: e.target.value }))}
+                  onChange={(event, newValue) => {
+                    setForm((prev) => ({ ...prev, admin: newValue || '' }));
+                  }}
+                  onInputChange={(event, newInputValue) => {
+                    setForm((prev) => ({ ...prev, admin: newInputValue || '' }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} fullWidth label={t('plyonkaPage.admin')} />
+                  )}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>

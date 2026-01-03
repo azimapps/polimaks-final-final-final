@@ -143,5 +143,9 @@ export const paths = {
         edit: (id: string) => `/odd-one-out/${id}/update`,
       },
     },
+    partners: {
+      root: '/partners',
+    },
   },
 };
+

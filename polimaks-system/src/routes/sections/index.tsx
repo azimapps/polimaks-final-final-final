@@ -29,10 +29,6 @@ const KraskaPage = lazy(() => import('src/pages/dashboard/ombor/kraska'));
 const KraskaTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/kraska-transaksiyalar')
 );
-const SuyuqKraskaPage = lazy(() => import('src/pages/dashboard/ombor/suyuq-kraska'));
-const SuyuqKraskaTransactionsPage = lazy(
-  () => import('src/pages/dashboard/ombor/suyuq-kraska-transaksiyalar')
-);
 const RazvaritelPage = lazy(() => import('src/pages/dashboard/ombor/razvaritel'));
 const RazvaritelTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/razvaritel-transaksiyalar')
@@ -96,6 +92,7 @@ const ClientMaterialsDetailPage = lazy(
   () => import('src/pages/dashboard/clients/client-materials')
 );
 const ClientDetailPage = lazy(() => import('src/pages/dashboard/clients/client-detail'));
+const PartnersPage = lazy(() => import('src/pages/dashboard/partners'));
 const IshlabChiqarishIndexPage = lazy(() => import('src/pages/dashboard/ishlab-chiqarish'));
 const IshlabChiqarishHisobotlar = lazy(() => import('src/pages/dashboard/ishlab-chiqarish/hisobotlar'));
 const BuyurtmaPlanlashtirish = lazy(() => import('src/pages/dashboard/buyurtma-planlashtirish/buyurtma-planlashtirish'));
@@ -168,8 +165,6 @@ export const routesSection: RouteObject[] = [
           { path: 'plyonka/:plyonkaId/transaksiyalar', element: <PlyonkaTransactionsPage /> },
           { path: 'kraska', element: <KraskaPage /> },
           { path: 'kraska/:kraskaId/transaksiyalar', element: <KraskaTransactionsPage /> },
-          { path: 'suyuq-kraska', element: <SuyuqKraskaPage /> },
-          { path: 'suyuq-kraska/:suyuqKraskaId/transaksiyalar', element: <SuyuqKraskaTransactionsPage /> },
           { path: 'razvaritel', element: <RazvaritelPage /> },
           { path: 'razvaritel/:razvaritelId/transaksiyalar', element: <RazvaritelTransactionsPage /> },
           { path: 'razvaritel-aralashmasi', element: <RazvaritelAralashmasiPage /> },
@@ -236,6 +231,10 @@ export const routesSection: RouteObject[] = [
           { path: 'materials/:clientId', element: <ClientMaterialsDetailPage /> },
           { path: 'order-book', element: <ClientsOrderBookPage /> },
         ],
+      },
+      {
+        path: 'partners',
+        element: <PartnersPage />,
       },
       {
         path: 'ishlab-chiqarish',
