@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { Navigate, useParams } from 'react-router';
-import { useMemo, useState, useEffect, useCallback, type MouseEvent, Fragment } from 'react';
+import { useMemo, useState, Fragment, useEffect, useCallback, type MouseEvent } from 'react';
 
 import Menu from '@mui/material/Menu';
 import Paper from '@mui/material/Paper';
@@ -27,11 +27,10 @@ import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
-import { CustomDateRangePicker, type UseDateRangePickerReturn, useDateRangePicker } from 'src/components/custom-date-range-picker';
+import { useDateRangePicker, CustomDateRangePicker, type UseDateRangePickerReturn } from 'src/components/custom-date-range-picker';
 
 import { useFinanceRates } from '../use-finance-rates';
 import { useFinanceAnalytics } from '../use-finance-analytics';

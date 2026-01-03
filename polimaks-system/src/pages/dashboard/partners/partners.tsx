@@ -7,6 +7,7 @@ import {
     Card,
     Grid,
     Menu,
+    Chip,
     Stack,
     Table,
     Button,
@@ -21,11 +22,10 @@ import {
     IconButton,
     Typography,
     DialogTitle,
+    Autocomplete,
     DialogActions,
     DialogContent,
     TableContainer,
-    Chip,
-    Autocomplete,
 } from '@mui/material';
 
 import { CONFIG } from 'src/global-config';
@@ -48,10 +48,8 @@ const CATEGORY_OPTIONS = [
     'Plyonka',
     'Kraska',
     'Razvaritel',
-    'Razvaritel aralashmasi',
     'Silindir',
     'Kley',
-    'Zapchastlar',
 ];
 
 

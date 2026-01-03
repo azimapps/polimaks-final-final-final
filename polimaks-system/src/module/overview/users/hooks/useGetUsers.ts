@@ -11,13 +11,13 @@ export const useGetAllUsers = (params: IParams) => {
     queryKey: ['all-users', params],
     queryFn: () => userApi.getAll(params),
     select: (res) => ({
-      users: usersMapper(get(res, 'data', [])),
+      users: usersMapper(get(res, 'items', [])),
       pagination: {
-        currentPage: get(res, 'currentPage'),
-        limit: get(res, 'limit'),
-        pagesCount: get(res, 'pagesCount'),
-        resultCount: get(res, 'resultCount'),
-        totalCount: get(res, 'totalCount'),
+        currentPage: undefined, // Not provided by API, calculated in component if needed
+        limit: get(res, 'limit', 10),
+        pagesCount: Math.ceil(get(res, 'total', 0) / get(res, 'limit', 10)),
+        resultCount: get(res, 'items.length', 0),
+        totalCount: get(res, 'total', 0),
       },
     }),
   });

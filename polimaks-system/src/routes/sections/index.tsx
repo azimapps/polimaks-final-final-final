@@ -29,6 +29,10 @@ const KraskaPage = lazy(() => import('src/pages/dashboard/ombor/kraska'));
 const KraskaTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/kraska-transaksiyalar')
 );
+const SuyuqKraskaPage = lazy(() => import('src/pages/dashboard/ombor/suyuq-kraska'));
+const SuyuqKraskaTransactionsPage = lazy(
+  () => import('src/pages/dashboard/ombor/suyuq-kraska-transaksiyalar')
+);
 const RazvaritelPage = lazy(() => import('src/pages/dashboard/ombor/razvaritel'));
 const RazvaritelTransactionsPage = lazy(
   () => import('src/pages/dashboard/ombor/razvaritel-transaksiyalar')
@@ -68,6 +72,8 @@ const StaffCrmPage = lazy(() => import('src/pages/dashboard/staff/crm'));
 const StaffWorkerPage = lazy(() => import('src/pages/dashboard/staff/worker'));
 const StaffAccountantPage = lazy(() => import('src/pages/dashboard/staff/accountant'));
 const StaffPlannerPage = lazy(() => import('src/pages/dashboard/staff/planner'));
+const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
+const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const FinancePage = lazy(() => import('src/pages/dashboard/finance'));
 const FinanceIncomePage = lazy(() => import('src/pages/dashboard/finance/income'));
 const FinanceExpensePage = lazy(() => import('src/pages/dashboard/finance/expense'));
@@ -165,6 +171,11 @@ export const routesSection: RouteObject[] = [
           { path: 'plyonka/:plyonkaId/transaksiyalar', element: <PlyonkaTransactionsPage /> },
           { path: 'kraska', element: <KraskaPage /> },
           { path: 'kraska/:kraskaId/transaksiyalar', element: <KraskaTransactionsPage /> },
+          { path: 'suyuq-kraska', element: <SuyuqKraskaPage /> },
+          {
+            path: 'suyuq-kraska/:suyuqKraskaId/transaksiyalar',
+            element: <SuyuqKraskaTransactionsPage />,
+          },
           { path: 'razvaritel', element: <RazvaritelPage /> },
           { path: 'razvaritel/:razvaritelId/transaksiyalar', element: <RazvaritelTransactionsPage /> },
           { path: 'razvaritel-aralashmasi', element: <RazvaritelAralashmasiPage /> },
@@ -206,6 +217,14 @@ export const routesSection: RouteObject[] = [
           { path: 'worker', element: <StaffWorkerPage /> },
           { path: 'accountant', element: <StaffAccountantPage /> },
           { path: 'planner', element: <StaffPlannerPage /> },
+        ],
+      },
+      {
+        path: 'user',
+        children: [
+          { index: true, element: <UserListPage /> },
+          { path: 'list', element: <UserListPage /> },
+          { path: 'profile', element: <UserProfilePage /> },
         ],
       },
       {

@@ -1,0 +1,15 @@
+[
+    {
+        "id": "sk-1",
+        "colorName": "Qizil Suyuq",
+        "colorHex": "#ff0000",
+        "totalKg": 100,
+        "pricePerKg": 5.5,
+        "priceCurrency": "USD",
+        "seriyaNumber": "SK-RED-001",
+        "marka": "Akzo",
+        "createdDate": "2025-01-01",
+        "supplier": "AkzoNobel",
+        "description": "Initial stock"
+    }
+]

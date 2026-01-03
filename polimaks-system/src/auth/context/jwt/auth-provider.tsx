@@ -38,7 +38,7 @@ export function AuthProvider({ children }: Props) {
     }
 
     try {
-      const accessToken = decodeToken(cookies.get('m_at') as string)?._id || '';
+      const accessToken = decodeToken(cookies.get('m_at') as string)?.id?.toString() || '';
 
       if (accessToken) {
         const res = await axios.get(endpoints.auth.me(accessToken));
